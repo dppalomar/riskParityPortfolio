@@ -1,0 +1,283 @@
+---
+title: "Design of Portfolio of Stocks to Track an Index"
+author: "Konstantinos Benidis and Daniel P. Palomar"
+date: "`r Sys.Date()`"
+output:
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+  bookdown::html_document2:  
+    base_format: prettydoc::html_pretty
+    theme: tactile
+    highlight: vignette
+    fig_caption: yes
+    number_sections: no
+    toc: yes
+    toc_depth: 2
+header-includes:
+  \allowdisplaybreaks
+indent: yes
+csl: ieee.csl
+bibliography: refs.bib
+vignette: >
+  %\VignetteIndexEntry{Design of portfolio of stocks to track an index}
+  %\VignetteKeyword{sparse, portfolio, financial index, tracking}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.retina = 2,
+  out.width = "75%",
+  dpi = 96
+)
+knit_hooks$set(pngquant = hook_pngquant)
+#Help on bookdown: https://bookdown.org/yihui/bookdown/
+#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "all")
+#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "bookdown::html_document2")
+#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "bookdown::pdf_document2")
+#tools::compactPDF("vignettes/SparseIndexTracking-vignette.pdf", gs_quality = "ebook")
+```
+
+-----------
+> This vignette illustrates the design of sparse portfolios that aim to track a financial index with the package `sparseIndexTracking` (with a comparison with other packages) and gives a description of the algorithms used.
+
+
+# Comparison with other packages
+There are currently no other R packages for index tracking. In paper [@BenFengPal2018] and monograph [@BenFengPal2018b], a detailed comparison in terms of execution speed and performance is made with the mixed-integer quadratic programming (MIQP) solver Gurobi (for which R has an interface via package `ROI` and plugin `ROI.plugin.gurobi`).
+
+# Usage of the package
+We start by loading the package and real data of the index S&P 500 and its underlying assets:
+```{r, message = FALSE}
+library(sparseIndexTracking)
+library(xts)
+data(INDEX_2010)
+```
+The data `INDEX_2010` contains a list with two xts objects:
+
+> 1. `X`: A $T\times N$ xts with the daily linear returns of the $N$ assets that were in the index during the year 2010 (total $T$ trading days)
+  2. `SP500`: A $T\times 1$ xts with the daily linear returns of the index S\&P 500 during the same period.
+
+Note that we use xts objects just for illustration purposes. The function `spIndexTrack()` can also be invoked passing simple data arrays or dataframes.
+
+Based on the above quantities we create a training window, which we will use to create our portfolios, and a testing window, which will be used to assess the performance of the designed portfolios. For simplicity, here we consider the first six (trading) months of the dataset (~126 days) as the training window, and the subsequent six months as the testing window:
+```{r}
+X_train <- INDEX_2010$X[1:126]
+X_test <- INDEX_2010$X[127:252]
+r_train <- INDEX_2010$SP500[1:126]
+r_test <- INDEX_2010$SP500[127:252]
+```
+
+Now, we use the four modes (four available tracking errors) of the `spIndexTrack()` algorithm to design our portfolios:
+```{r, cache = TRUE}
+# ETE
+w_ete <- spIndexTrack(X_train, r_train, lambda = 1e-7, u = 0.5, measure = 'ete')
+cat('Number of assets used:', sum(w_ete > 1e-6))
+
+# DR
+w_dr <- spIndexTrack(X_train, r_train, lambda = 2e-8, u = 0.5, measure = 'dr')
+cat('Number of assets used:', sum(w_dr > 1e-6))
+
+# HETE
+w_hete <- spIndexTrack(X_train, r_train, lambda = 8e-8, u = 0.5, measure = 'hete', hub = 0.05)
+cat('Number of assets used:', sum(w_hete > 1e-6))
+
+# HDR
+w_hdr <- spIndexTrack(X_train, r_train, lambda = 2e-8, u = 0.5, measure = 'hdr', hub = 0.05)
+cat('Number of assets used:', sum(w_hdr > 1e-6))
+```
+
+Finally, we plot the actual value of the index in the testing window in comparison with the values of the designed portfolios:
+```{r}
+plot(cbind("PortfolioETE" = cumprod(1 + X_test %*% w_ete$w), cumprod(1 + r_test)), 
+     legend.loc = "topleft", main = "Cumulative P&L")
+plot(cbind("PortfolioDR" = cumprod(1 + X_test %*% w_dr$w), cumprod(1 + r_test)),
+     legend.loc = "topleft", main = "Cumulative P&L")
+plot(cbind("PortfolioHETE" = cumprod(1 + X_test %*% w_hete$w), cumprod(1 + r_test)),
+     legend.loc = "topleft", main = "Cumulative P&L")
+plot(cbind("PortfolioHDR" = cumprod(1 + X_test %*% w_hdr$w), cumprod(1 + r_test)),
+     legend.loc = "topleft", main = "Cumulative P&L")
+```
+
+In the above examples we used a single training and testing window. In practice, we need to perform this task sequentially for many windows in order to assess an algorithm or to distinguish the differences between the various tracking errors. 
+
+Ideally, the ETE and HETE portfolios should have Excess P&L close to zero since their purpose is to track as closely as possible the index, whereas the DR and HDR portfolios should have a positive Excess P&L since their purpose is to beat the index. Finally, Huber should shine in periods of high volatility where many extreme returns are observed (like the great recession). 
+
+All of the above can be observed in Figures \@ref(fig:dotcom) - \@ref(fig:stablemarket) where we applied the four modes of the algorithm in the index S&P 500 considering three different periods. All the constructed portfolios consist of 40 assets, the training and testing windows were set to 6 months and 1 month, respectively, while monthly returns were used. The upper plot of each period (Normalized P&L) shows the wealth of the index and the four portfolios, which are normalized to the index value each time they are rebalanced. The lower plot of each period (Excess P&L) shows the cumulative difference of the portfolios and the index due to normalization, i.e., it is equivalent to a second account that keeps track of our excess profits or losses.    
+
+
+```{r dotcom, echo = FALSE, out.width = '80%', fig.cap = "Dot-com bubble."}
+knitr::include_graphics('figures/per1_126_22_hub4_w.png', auto_pdf = TRUE)
+```
+
+```{r greatres, echo = FALSE, out.width = '80%', fig.cap = "Great recession."}
+knitr::include_graphics('figures/per2_126_22_hub4_w.png', auto_pdf = TRUE)
+```
+
+```{r stablemarket, echo = FALSE, out.width = '80%', fig.cap = "Stable market."}
+knitr::include_graphics('figures/per4_126_22_hub4_w.png', auto_pdf = TRUE)
+```
+
+For a more detailed discussion please refer to [@BenFengPal2018] and [@BenFengPal2018b].
+
+# Explanation of the algorithms
+
+## `spIndexTrack()`: Sparse portfolio construction
+
+Assume that an index is composed of $N$ assets. We denote by $\mathbf{r}^b=[r_1^b,\dots,r_T^b]^\top\in\mathbb{R}^T$ and $\mathbf{X}=[\mathbf{r}_1,\dots,\mathbf{r}_T]^\top\in\mathbb{R}^{T\times N}$ the (arithmetic) net returns of the index and the $N$ assets in the past $T$ days, respectively, with $\mathbf{r}_t\in\mathbb{R}^N$ denoting the net returns of the $N$ assets at the $t$-th day.
+
+The goal of `spIndexTrack()` is the design of a (sparse) portfolio $\mathbf{w}\in\mathbb{R}_+^N$, with $\mathbf{w}^\top\mathbf{1} = 1$, that tracks closely the index, i.e., $\mathbf{X}\mathbf{w} \approx \mathbf{r}^b$, based on [@BenFengPal2018]. The underlying optimization problem that is solved is
+
+\begin{equation}
+\begin{array}{ll}
+\underset{\mathbf{w}}{\text{minimize}} & \text{TE}(\mathbf{w}) + \lambda\|\mathbf{w}\|_0\\
+\textsf{subject to}
+ & \mathbf{w}^\top\mathbf{1}=1\\
+ & \mathbf{0}\leq\mathbf{w}\leq u\mathbf{1},
+\end{array} 
+(\#eq:general-form)
+\end{equation}
+\noindent where $\text{TE}(\mathbf{w})$ is a general tracking error (we will see specific tracking errors shortly), $\lambda$ is a regularization parameter that controls the sparsity of the portfolio, and $u$ is an upper bound on the weights of the portfolio.
+
+The $\ell_0$-"norm" is approximated by the continuous and differentiable (for $w \geq 0$) function
+
+\begin{equation}
+\rho_{p,u}(w) = \frac{\log(1 + w/p)}{\log(1 + u/p)},
+\end{equation}
+\noindent where $p>0$ is a parameter that controls the approximation. This leads to the following approximate problem:
+
+\begin{equation}
+\begin{array}{ll}
+\underset{\mathbf{w}}{\text{minimize}} & \text{TE}(\mathbf{w}) + \lambda\mathbf{1}^\top\boldsymbol{\rho}_{p,u}(\mathbf{w})\\
+\textsf{subject to}
+ & \mathbf{w}^\top\mathbf{1}=1\\
+ & \mathbf{0}\leq\mathbf{w}\leq u\mathbf{1},
+\end{array}
+(\#eq:approx-form)
+\end{equation}
+\noindent where $\boldsymbol{\rho}_{p,u}(\mathbf{w})=[\mathbf{\rho}_{p,u}(w_1),\dots,\rho_{p,u}(w_N)]^\top$.
+
+There are four available tracking errors $\text{TE}(\mathbf{w}$) in `spIndexTrack()`:
+
+* Empirical tracking error (ETE):
+
+$$
+\text{ETE}(\mathbf{w}) = \frac{1}{T}\big\|\mathbf{r}^b - \mathbf{X}\mathbf{w}\big\|_2^2
+$$
+
+* Downside risk (DR):
+
+$$
+\text{DR}(\mathbf{w}) = \frac{1}{T}\big\|(\mathbf{r}^b-\mathbf{X}\mathbf{w})^+\big\|_2^2
+$$     
+
+* Huber empirical tracking error (HETE):
+
+$$
+\text{HETE}(\mathbf{w}) = \frac{1}{T}\mathbf{1}^\top\boldsymbol{\phi}\left(\mathbf{r}^b - \mathbf{X}\mathbf{w}\right)
+$$ 
+
+* Huber downside risk (HDR):
+$$
+\text{HDR}(\mathbf{w}) = \frac{1}{T}\mathbf{1}^\top\boldsymbol{\phi}\left((\mathbf{r}^b-\mathbf{X}\mathbf{w})^+\right)
+$$ 
+where $\boldsymbol{\phi}(\mathbf{x}) = [\phi(x_1), \dots, \phi(x_T)]^\top$ and 
+$$
+\phi(x) = \begin{cases}
+x^2 &\quad |x| \leq M\\
+M(2|x| - M) &\quad |x| > M,
+\end{cases}
+$$
+with $M>0$ being the Huber parameter.
+
+
+Regardless of the selected tracking error measure, problem \@ref(eq:approx-form) can be solved via Majorization-Minimization (MM) [@SunBabPal2018] with an iterative closed-form update algorithm (with iterations denoted by $k$). It can be shown that all of the above variations boil down to the iterative optimization of the following convex problem:
+
+\begin{equation}
+\begin{array}{ll}
+\underset{\mathbf{w}}{\text{minimize}} & \mathbf{w}^\top\mathbf{w} + {\mathbf{q}^{(k)}}^\top\mathbf{w}\\
+\textsf{subject to} & \mathbf{w}\in\mathcal{W}_{u},
+\end{array} 
+(\#eq:MM-iterative-form)
+\end{equation}
+\noindent where 
+$$
+\mathcal{W}_{u} = \big\{\mathbf{w} \big| \mathbf{w}^\top\mathbf{1} = 1, \mathbf{0}\leq\mathbf{w}\leq u\mathbf{1}\big\},
+$$
+and $\mathbf{q}^{(k)}\in\mathbb{R}^N$. 
+
+What differentiates the various tracking errors is the exact form of $\mathbf{q}^{(k)}$ that we need to compute at each iteration $k$ of the algorithm:
+$$
+\begin{aligned}
+  \mathbf{q}_{\text{ETE}}^{(k)} & = \frac{1}{\lambda_{\text{max}}^{(\mathbf{L}_1)}}(2(\mathbf{L}_1 - \lambda_{\text{max}}^{(\mathbf{L}_1)}\mathbf{I})\mathbf{w}^{(k)} + \lambda{\mathbf{d}_{p,u}^{(k)}} -\frac{2}{T}\mathbf{X}^\top\mathbf{r}^b),\\
+  \mathbf{q}_{\text{DR}}^{(k)} & = \frac{1}{\lambda_{\text{max}}^{(\mathbf{L}_1)}} (\frac{2}{T} 2(\mathbf{L}_1 - \lambda_{\text{max}}^{(\mathbf{L}_1)}\mathbf{I})\mathbf{w}^{(k)} + \lambda\mathbf{d}_{p,u}^{(k)} + \frac{2}{T}\mathbf{X}^\top(\mathbf{y}^{(k)} - \mathbf{r}^b)),\\
+  \mathbf{q}_{\text{HETE}}^{(k)} & = \frac{1}{\lambda_{\text{max}}^{(\mathbf{L}_2)}}(2(\mathbf{L}_2 - \lambda_{\text{max}}^{(\mathbf{L}_2)}\mathbf{I})\mathbf{w}^{(k)} + \lambda{\mathbf{d}_{p,u}^{(k)}} -\frac{2}{T}\mathbf{X}^\top\text{Diag}(\mathbf{a}^{(k)})\mathbf{r}^b),\\ 
+  \mathbf{q}_{\text{HDR}}^{(k)} & = \frac{1}{\lambda_{\text{max}}^{(\mathbf{L}_3)}}(2(\mathbf{L}_3 - \lambda_{\text{max}}^{(\mathbf{L}_3)}\mathbf{I})\mathbf{w}^{(k)} + \lambda{\mathbf{d}_{p,u}^{(k)}} +\frac{2}{T}\mathbf{X}^\top\text{Diag}(\mathbf{b}^{(k)})(\mathbf{c}^{(k)} - \mathbf{r}^b)),
+\end{aligned}
+$$
+where $\lambda_{\text{max}}^{(\mathbf{A})}$ denotes the maximum eigenvalue of a matrix $\mathbf{A}$, $\mathbf{I}$ denotes the identity matrix, $\text{Diag}(\mathbf{x})$ is a diagonal matrix with the vector $\mathbf{x}$ at its principal diagonal, and  
+\begin{align}
+  \mathbf{d}_{p,u}^{(k)} & = \left[d_{p,u}(w_1^{(k)}),\dots,d_{p,u}(w_N^{(k)})\right]^\top,\\
+	d_{p,u}(w^{(k)}) & = \frac{1}{\log(1 + u/p)(p+w^{(k)})},\\
+	\mathbf{y}^{(k)} & = -(\mathbf{X}\mathbf{w}^{(k)} - \mathbf{r}^b)^+,\\
+	\mathbf{a}^{(k)} & = [a([\mathbf{r}^b - \mathbf{X}\mathbf{w}^{(k)}]_1),\dots,a([\mathbf{r}^b - \mathbf{X}\mathbf{w}^{(k)}]_T)]^\top,\\
+	a(x) & = \begin{cases} 1 &\quad |x|\leq M\\
+	\frac{M}{|x|} &\quad |x| > M,\end{cases}\\
+	\mathbf{b}^{(k)} & = [b([\mathbf{r}^b - \mathbf{X}\mathbf{w}^{(k)}]_1),\dots,b([\mathbf{r}^b - \mathbf{X}\mathbf{w}^{(k)}]_T)]^\top,\\
+	b(x) & = \begin{cases} \frac{M}{M - 2x} &\quad x < 0\\
+	1 &\quad0\leq x\leq M\\
+	\frac{M}{x} &\quad x > M,\end{cases}\\
+	\mathbf{c}^{(k)} & = [c([\mathbf{r}^b - \mathbf{X}\mathbf{w}^{(k)}]_1),\dots,c([\mathbf{r}^b - \mathbf{X}\mathbf{w}^{(k)}]_T)]^\top,\\
+	c(x) & = \begin{cases} x &\quad x < 0\\
+	0 &\quad x \geq 0,\end{cases}\\
+	\mathbf{L}_1 & = \frac{1}{T}\mathbf{X}^\top\mathbf{X},\\
+	\mathbf{L}_2 & = \frac{1}{T}\mathbf{X}^\top\text{Diag}(\mathbf{a}^{(k)})\mathbf{X},\\
+	\mathbf{L}_3 & = \frac{1}{T}\mathbf{X}^\top\text{Diag}(\mathbf{b}^{(k)})\mathbf{X}.
+\end{align}
+
+
+The following propositions provide a waterfilling structured solution of problem \@ref(eq:MM-iterative-form), considering two special cases, namely, $u=1$ and $u<1$.
+
+```{proposition, name = "AS$_1$", label = "AS1"}
+The optimal solution of the optimization problem \@ref(eq:MM-iterative-form) with $u=1$ is
+  $$\mathbf{w}^\star = \left(-\frac{1}{2}(\mu\mathbf{1} + \mathbf{q})\right)^+,$$	
+  with $$\mu = -\frac{\sum_{i\in\mathcal{A}}q_i + 2}{\text{card}(\mathcal{A})},$$	
+  and $$\mathcal{A} = \big\{j \big| \mu + q_j < 0\big\},$$	
+  where $\mathcal{A}$ can be determined in $O(\log(N))$ steps. 
+
+```{proposition, name = "AS$_u$", label = "ASu"}
+The optimal solution of the optimization problem \@ref(eq:MM-iterative-form) with $u<1$ is
+  $$\mathbf{w}^\star = \left(\min\left(-\frac{1}{2}(\mu\mathbf{1} + \mathbf{q}),u\mathbf{1}\right)\right)^+,$$	
+  with $$\mu = -\frac{\sum_{j\in\mathcal{B}_2}q_j + 2 - \text{card}(\mathcal{B}_1)2u}{\text{card}(\mathcal{B}_2)},$$	
+  and $$\begin{aligned}
+	\mathcal{B}_1 &= \big\{j \big| \mu + q_j \leq -2u\big\},\\
+	\mathcal{B}_2 &= \big\{j \big| -2u < \mu + q_j < 0\big\},
+	\end{aligned}$$	
+  where $\mathcal{B}_1$ and $\mathcal{B}_2$ can be determined in $O(N\log(N))$ steps. 
+```  
+We refer to the iterative procedure of Proposition \@ref(prp:AS1) as AS$_{1}(\mathbf{q})$ (Active-Set for $u=1$) and of Proposition \@ref(prp:ASu) as AS$_u(\mathbf{q})$ (Active-Set for general $u<1$). The iterative closed-form update algorithm is given in Algorithm 1 (where AS$_{1|u}(\mathbf{q})$ means AS$_1(\mathbf{q})$ or AS$_u(\mathbf{q})$).
+
+> **Algorithm 1**  
+  1. Set $k=0$ and choose an initial point $\mathbf{w}^{(0)}$ (by default set to $\mathbf{w}^{(0)} = \frac{1}{N}\mathbf{1}$)  
+  2. Compute $\mathbf{q}$ according to the selected tracking error  
+  3. Find the optimal solution $\mathbf{w}^\star$ with AS$_{1|u}(\mathbf{q})$ and set it equal to $\mathbf{w}^{(k+1)}$  
+  4. $k \gets k+1$  
+  5. Repeat steps 2-4 until convergence  
+  6. Return $\mathbf{w}^{(k)}$  
+
+Finally, note that the approximate problem is controlled by the parameter $p$, and in particular, as $p\rightarrow0$ we get  $\rho_{p,u}\rightarrow\ell_0$. However, by setting small values to $p$, it is likely that the algorithm will get stuck to a local minimum. To solve this issue we start with large values for $p$, i.e., a "loose" approximation, and solve the corresponding optimization problem. Then, we sequentially decrease $p$, i.e., we "tighten" the approximation, and solve the problem again using the previous solution as an initial point. In practice we are interested only in the last, "tightest" problem. For each problem that is solved (i.e., for fixed $p$) we utilize an acceleration scheme that increases the convergence speed of the MM algorithm. For details, please refer to [@Varadhan2008].   
+
+
+
+# References {-}
+\setlength{\parindent}{-0.2in}
+\setlength{\leftskip}{0.2in}
+\setlength{\parskip}{8pt}
+\noindent

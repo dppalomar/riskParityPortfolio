@@ -1,0 +1,2 @@
+RP_Regularized_PO.m is the matlab function that corresponds to the risk parity algorithm (GSRP). The other files might be used when running the RP_Regularized_PO.m
+Those files are the original ones majorly implemented by Yiyong FENG with some modification by Linlong WU.
