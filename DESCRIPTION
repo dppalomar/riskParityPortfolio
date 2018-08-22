@@ -1,5 +1,5 @@
 Package: riskParityPortfolio
-Title: Design the Risk Parity Portfolio
+Title: Design of Risk Parity Portfolios
 Version: 0.1.0
 Description: Computation of sparse portfolios for financial index tracking, i.e., joint
     selection of a subset of the assets that compose the index and computation 
