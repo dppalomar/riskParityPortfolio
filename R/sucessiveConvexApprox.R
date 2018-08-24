@@ -1,17 +1,43 @@
 # This module contains the code to implement the SCA
 # problem described in FengPalomar-ICASSP2016.pdf
 
-theta_update <- function(theta, x, w, g, gamma) {
+library(CVXR)
+
+theta_update <- function(theta_k, x, w, g, gamma) {
+  x <-
   theta_hat <- sum(x * g(w, Sigma))
   return(theta + gamma * (theta_hat - theta))
 }
 
-w_update <- function(...) {
-  return(NA)
+w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
+                     mu, Sigma, tau, type = "1") {
+  w <- Variable(length(w_k))
+  F <- negLogLikelihood(...)
+
+
+  obj_fun <- Minimize(F + l1 * D + l2 * P + tau * sum((w - w_k) ^ 2))
+
+  return(w + gamma * (w_hat - w))
 }
 
 
-d1 <- function(x, p = 0.05, e = 1e-4) {
+negLogLikelihood <- function(w, nu, mu, Sigma) {
+  return(t(w) %*% (Sigma %*% w - nu * mu))
+}
+
+
+negLogPrior <- function(l1, l2, type = "1") {
+  if (type == "1") {
+    D <- norm(d1(w_k) * w, type = type)
+  } else if (type == "2") {
+    D <- sum(d2(w_k) * (w ^ 2))
+  } else {
+    stop("type is not implemented")
+  }
+}
+
+
+d1 <- function(x, p = 2e-3, e = 1e-8) {
   d1x <- rep(0, length(x))
   mask <- (abs(x) <= e)
   d1x[mask] <- abs(x) / (e * (p + e))
@@ -21,7 +47,7 @@ d1 <- function(x, p = 0.05, e = 1e-4) {
 }
 
 
-d2 <- function(x, p = 0.05, e = 1e-4) {
+d2 <- function(x, p = 2e-3, e = 1e-8) {
   d2x <- rep(0, length(x))
   mask <- (abs(x) <= e)
   d2x[mask] <- 1 / (e * (p + e))
@@ -31,4 +57,5 @@ d2 <- function(x, p = 0.05, e = 1e-4) {
 }
 
 g <- function(w, Sigma) {
+  return (w * (Sigma %*% w))
 }
