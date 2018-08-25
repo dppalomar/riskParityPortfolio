@@ -50,12 +50,10 @@ d1 <- function(x, p = 2e-3, e = 1e-8) {
 
 
 d2 <- function(x, p = 2e-3, e = 1e-8) {
-  d2x <- rep(0, length(x))
+  d2x <- rep(1 / (e * (p + e)), length(x))
   abs_x <- abs(x)
-  mask <- (abs_x <= e)
-  not_mask <- !mask
-  d2x[mask] <- 1 / (e * (p + e))
-  d2x[not_mask] <- 1 / (abs_x[not_mask] * (abs_x[not_mask] + p))
+  mask <- (abs_x > e)
+  d2x[mask] <- 1 / (abs_x[mask] * (abs_x[mask] + p))
   d2x <- d2x / (2 * log(1 + 1 / p))
   return (d2x)
 }
