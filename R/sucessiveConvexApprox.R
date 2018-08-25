@@ -39,23 +39,38 @@ negLogPrior <- function(l1, l2, type = "1") {
 
 d1 <- function(x, p = 2e-3, e = 1e-8) {
   d1x <- rep(0, length(x))
-  mask <- (abs(x) <= e)
-  d1x[mask] <- abs(x) / (e * (p + e))
-  d1x[!mask] <- 1 / ((abs(x) + p))
+  abs_x <- abs(x)
+  mask <- (abs_x <= e)
+  not_mask <- !mask
+  d1x[mask] <- abs_x[mask] / (e * (p + e))
+  d1x[not_mask] <- 1 / (abs_x[not_mask] + p)
   d1x <- d1x / log(1 + 1 / p)
-  return(d1x)
+  return (d1x)
 }
 
 
 d2 <- function(x, p = 2e-3, e = 1e-8) {
   d2x <- rep(0, length(x))
-  mask <- (abs(x) <= e)
+  abs_x <- abs(x)
+  mask <- (abs_x <= e)
+  not_mask <- !mask
   d2x[mask] <- 1 / (e * (p + e))
-  d2x[!mask] <- 1 / (abs(x) * (abs(x) + p))
+  d2x[not_mask] <- 1 / (abs_x[not_mask] * (abs_x[not_mask] + p))
   d2x <- d2x / (2 * log(1 + 1 / p))
-  return(d2x)
+  return (d2x)
 }
 
 g <- function(w, Sigma) {
   return (w * (Sigma %*% w))
+}
+
+rho <- function(x, p, e) {
+  val <- rep(0, length(x))
+  abs_x <- abs(x)
+  mask <- (abs_x <= e)
+  not_mask <- !mask
+  val[mask] <- x[mask] ^ 2 / (2 * e * (p + e))
+  val[not_mask] <- log(1 + abs_x[not_mask] / p) - log(1 + e / p) + e / (2 * (p + e))
+  val <- val / log(1 + 1 / p)
+  return (val)
 }
