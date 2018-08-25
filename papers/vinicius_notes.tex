@@ -72,13 +72,27 @@ is given as
 where
 \begin{itemize}
     \item $F(\bm{w}) \triangleq \bm{w}^{T}(\nu \bm{\mu} + \Sigma\bm{w})$
-    \item $R(\bm{w}, \theta) \triangleq \sum_{i=1}^{n}(g_i(\bm{w} - \theta))^{2}\mathbb{I}_{\{w_i \neq 0\}}$
+    \item $R(\bm{w}, \theta) \triangleq \sum_{i=1}^{n}(g_i(\bm{w}) - \theta)^{2}\mathbb{I}_{\{w_i \neq 0\}}$
+    \item $g_i(\bm{w}) \triangleq w_i\left(\bm{\Sigma}\bm{w}\right)_{i}$
 \end{itemize}
+
+\subsection{$\theta$ - update}
+For fixed $\bm{w}$, say $\bm{w}^{k}$, the objective function reduces to
+\begin{align}\begin{array}{ll}
+\underset{\theta}{\textsf{minimize}} & \sum_{i=1}^{n}\left[\left(g_i(\bm{w}^{k}) -
+                                       \theta\right)\rho^{\epsilon}_{p}\left(w^{k}_{i}\right)\right]^2,
+\end{array}\end{align}
+which is the classical univariate weighted least squares problem whose solution is given as
+\begin{align}
+\hat{\theta} = \sum_{i=1}^{n}x^{k}_{i}g_{i}\left(\bm{w}^{k}\right),
+\end{align}
+where $x^{k}_{i} = \dfrac{\left(\rho^{\epsilon}_p\left(w^{k}_i\right)\right)^{2}}
+                  {\sum^{n}_{j = 1}\left(\rho^{\epsilon}_{p}\left(w^{k}_j\right)\right)^{2}}$.
 
 \subsection{w - update}
 For a fixed $\theta$:
 \begin{align}\begin{array}{ll}
-\underset{\bm{w}, \theta}{\textsf{minimize}} & F(\bm{w}) + \lambda_{1}||D^{k}_{o}\bm{w}||^{o}_{o} +
+\underset{\bm{w}}{\textsf{minimize}} & F(\bm{w}) + \lambda_{1}||D^{k}_{o}\bm{w}||^{o}_{o} +
 \lambda_{2}P(\bm{w}, \theta^{k}) + \tau ||\bm{w} - \bm{w}^{k}||^{2}_{2}\\
 \textsf{subject to} & \bm{w}^{T}\bm{1} = 1, \bm{w} \in \mathcal{W},
 \end{array}\end{align}
@@ -87,6 +101,11 @@ where
 P(\bm{w}, \theta) \triangleq \sum^{n}_{i=1}\left\{\tilde{g}_{i}(\bm{w}^{k}, \theta) +
                   (\nabla\tilde{g}_{i}(\bm{w}^{k}, \theta))^{T}(\bm{w} - \bm{w}^{k})\right\}^{2}
 \end{align}
+\begin{itemize}
+\item $\tilde{g}_{i}(\bm{w}^{k}, \theta) \triangleq (g_i(\bm{w}) - \theta) \rho^{\epsilon}_{p}(w_{i})$
+\item $\nabla_{\bm{w}}\tilde{g}_{i}(\bm{w}^{k}, \theta) = \rho^{\epsilon}_{p}(w_i)\cdot\nabla_{\bm{w}} g_{i}(\bm{w}) +
+       \left[(g_{i}(\bm{w}) - \theta)\cdot\nabla_{\bm{w}}\rho^{\epsilon}_{p}(w_i)\right]\cdot \bm{e}_i$
+\end{itemize}
 
 
 \end{document}

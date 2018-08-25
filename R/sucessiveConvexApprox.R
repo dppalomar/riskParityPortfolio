@@ -26,7 +26,7 @@ negLogLikelihood <- function(w, nu, mu, Sigma) {
 }
 
 
-negLogPrior <- function(l1, l2, type = "1") {
+negLogPrior <- function(l1 = .1, l2 = 4, type = "1") {
   if (type == "1") {
     D <- norm(d1(w_k) * w, type = type)
   } else if (type == "2") {
