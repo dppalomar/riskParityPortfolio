@@ -63,6 +63,8 @@ w_j \dfrac{(\bm{\Sigma}{\bm{w}})_{j}}{\sqrt{\bm{w}^{T}\bm{\Sigma}\bm{w}}}~\foral
 \end{equation}
 
 \section{Problem formulae}
+The problem of designing risk-parity portfolios with asset selection, as formulated by Feng \& Palomar,
+is given as
 \begin{align}\begin{array}{ll}
 \underset{\bm{w}, \theta}{\textsf{minimize}} & F(\bm{w}) + \lambda_{1}||\bm{w}||_{0} + \lambda_{2}R(\bm{w}, \theta)\\
 \textsf{subject to} & \bm{w}^{T}\bm{1} = 1, \bm{w} \in \mathcal{W},
@@ -70,7 +72,21 @@ w_j \dfrac{(\bm{\Sigma}{\bm{w}})_{j}}{\sqrt{\bm{w}^{T}\bm{\Sigma}\bm{w}}}~\foral
 where
 \begin{itemize}
     \item $F(\bm{w}) \triangleq \bm{w}^{T}(\nu \bm{\mu} + \Sigma\bm{w})$
+    \item $R(\bm{w}, \theta) \triangleq \sum_{i=1}^{n}(g_i(\bm{w} - \theta))^{2}\mathbb{I}_{\{w_i \neq 0\}}$
 \end{itemize}
+
+\subsection{w - update}
+For a fixed $\theta$:
+\begin{align}\begin{array}{ll}
+\underset{\bm{w}, \theta}{\textsf{minimize}} & F(\bm{w}) + \lambda_{1}||D^{k}_{o}\bm{w}||^{o}_{o} +
+\lambda_{2}P(\bm{w}, \theta^{k}) + \tau ||\bm{w} - \bm{w}^{k}||^{2}_{2}\\
+\textsf{subject to} & \bm{w}^{T}\bm{1} = 1, \bm{w} \in \mathcal{W},
+\end{array}\end{align}
+where
+\begin{align}
+P(\bm{w}, \theta) \triangleq \sum^{n}_{i=1}\left\{\tilde{g}_{i}(\bm{w}^{k}, \theta) +
+                  (\nabla\tilde{g}_{i}(\bm{w}^{k}, \theta))^{T}(\bm{w} - \bm{w}^{k})\right\}^{2}
+\end{align}
 
 
 \end{document}
