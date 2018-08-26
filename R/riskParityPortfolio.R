@@ -1,4 +1,4 @@
-#' Jointly estimates a portifolio with risk-parity strategy and asset selection
+#' Jointly estimates a portfolio with risk-parity strategy and asset selection
 #'
 #' @param mu mean vector of the random returns of n assets
 #' @param Sigma positive definite covariance matrix of the random returns
@@ -26,11 +26,15 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
                                 l1 = 1e-1, l2 = 4, tau = 1e-3, type = "1",
                                 p = 2e-3, e = 1e-8,
                                 maxiter = 5000, w_tol = 1e-4,
-                                theta_tol = 1e-4, ftol = 1e-6) {
+                                theta_tol = 1e-4, ftol = 1e-5) {
 
   if (is.na(risk_contrib)) {
     # g is defined in successiveConvexApprox.R
     risk_contrib = g
+  }
+
+  if (is.na(w0)) {
+    w0 <- mu / sum(mu)
   }
 
   # initialization

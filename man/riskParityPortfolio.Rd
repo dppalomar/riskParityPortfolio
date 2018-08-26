@@ -2,12 +2,12 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolio}
 \alias{riskParityPortfolio}
-\title{Jointly estimates a portifolio with risk-parity strategy and asset selection}
+\title{Jointly estimates a portfolio with risk-parity strategy and asset selection}
 \usage{
 riskParityPortfolio(mu, Sigma, w0 = NA, risk_contrib = NA,
   gamma = 0.1, zeta = 0.01, nu = 0.5, l1 = 0.1, l2 = 4,
   tau = 0.001, type = "1", p = 0.002, e = 1e-08, maxiter = 5000,
-  w_tol = 1e-04, theta_tol = 1e-04, ftol = 1e-04)
+  w_tol = 1e-04, theta_tol = 1e-04, ftol = 1e-06)
 }
 \arguments{
 \item{mu}{mean vector of the random returns of n assets}
@@ -46,5 +46,5 @@ selected assets}
 \item{ftol}{convergence tolerance on the objective function}
 }
 \description{
-Jointly estimates a portifolio with risk-parity strategy and asset selection
+Jointly estimates a portfolio with risk-parity strategy and asset selection
 }

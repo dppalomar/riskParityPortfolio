@@ -48,7 +48,7 @@ negLogPrior <- function(w, w_k, theta, Sigma, l1, l2, p, e, tau, type) {
   if (type == "1") {
     D <- sum(abs(d1(w_k, p, e) * w))
   } else if (type == "2") {
-    D <- sum(d2(w_k, p, e) * (w ^ 2))
+    D <- sum(d2(w_k, p, e) * (w * w))
   } else {
     stop("type is not implemented")
   }
