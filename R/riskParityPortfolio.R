@@ -57,6 +57,7 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
     nll <- negLogLikelihood(w, nu, mu, Sigma)
     nll_seq <- c(nll_seq, nll)
     fun <- nll + negLogPrior(w, w0, theta, Sigma, l1, l2, p, e, tau, type)
+    fun_seq <- c(fun_seq, fun)
     ferr <- abs(fun - fun0) / max(1., abs(fun))
     if (ferr < ftol)
       break
@@ -67,5 +68,5 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
     fun0 <- fun
   }
 
-  return(w)
+  return(w, negloglike = nll_seq, obj_fun = fun_seq)
 }

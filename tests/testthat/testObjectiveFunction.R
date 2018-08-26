@@ -29,7 +29,7 @@ test_that("we can minimize negLogLikelihood", {
   Sigma <- diag(runif(n))
   mu <- runif(n)
   nu <- .5
-  nll <- negLogLikelihood(w, nu, mu, Sigma)
+  nll <- negLogLikelihoodCVX(w, nu, mu, Sigma)
   obj_fun <- CVXR::Minimize(nll)
   prob <- CVXR::Problem(obj_fun, constraints = list(sum(w) == 1))
   res <- solve(prob)

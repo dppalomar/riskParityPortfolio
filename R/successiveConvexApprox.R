@@ -21,7 +21,7 @@ theta_update <- function(theta_k, w_k, Sigma, g, p, e, gamma) {
 w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
                      mu, Sigma, tau, p, e, type) {
   w <- CVXR::Variable(length(w_k))
-  nll <- negLogLikelihood(w, nu, mu, Sigma)
+  nll <- negLogLikelihoodCVX(w, nu, mu, Sigma)
   nlprior <- negLogPrior(w, w_k, theta_k, Sigma, l1, l2, p, e, tau, type)
   obj_fun <- CVXR::Minimize(nll + nlprior)
   prob <- CVXR::Problem(obj_fun, constraints = list(w >= 0, sum(w) == 1))
@@ -32,8 +32,14 @@ w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
 
 
 #' @export
-negLogLikelihood <- function(w, nu, mu, Sigma) {
+negLogLikelihoodCVX <- function(w, nu, mu, Sigma) {
   return (CVXR::quad_form(w, Sigma) - nu * t(w) %*% mu)
+}
+
+
+#' @export
+negLogLikelihood <- function(w, nu, mu, Sigma) {
+  return (t(w) %*% (Sigma %*% w - nu * mu))
 }
 
 
