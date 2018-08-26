@@ -3,10 +3,17 @@
 
 library(CVXR)
 
-theta_update <- function(theta_k, x, w, g, gamma) {
-  x <-
-  theta_hat <- sum(x * g(w, Sigma))
-  return(theta + gamma * (theta_hat - theta))
+#' Update step for the average RCs of the selected assets
+#'
+#' @param theta the avg RCs at the previous iteration
+#' @param w the portfolio weights at the previous iteration
+#' @param g function to represent the risk controbution
+#' @param gamma the learning rate
+theta_update <- function(theta_k, w_k, g, gamma) {
+  rho_sq <- rho(w_k) ^ 2
+  x <- rho_sq / sum(rho_sq ^ 2)
+  theta_hat <- sum(x * g(w_k, Sigma))
+  return(theta_k + gamma * (theta_hat - theta_k))
 }
 
 w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
@@ -62,6 +69,12 @@ g <- function(w, Sigma) {
   return (w * (Sigma %*% w))
 }
 
+g_grad <- function(w, Sigma) {
+  return (2 * Sigma %*% w)
+}
+
+
+#' Approximation for the lp-norm, 0 < p < 1
 rho <- function(x, p, e) {
   val <- rep(0, length(x))
   abs_x <- abs(x)
@@ -69,6 +82,18 @@ rho <- function(x, p, e) {
   not_mask <- !mask
   val[mask] <- x[mask] ^ 2 / (2 * e * (p + e))
   val[not_mask] <- log(1 + abs_x[not_mask] / p) - log(1 + e / p) + e / (2 * (p + e))
+  val <- val / log(1 + 1 / p)
+  return (val)
+}
+
+#' Gradient of the approximation for the lp-norm, 0 < p < 1, w.r.t. to x
+rho_grad <- function(x, p, e) {
+  val <- rep(0, length(x))
+  abs_x <- abs(x)
+  mask <- (abs_x <= e)
+  not_mask <- !mask
+  val[mask] <- x[mask] / (e * (p + e))
+  val[not_mask] <- sign(x[not_mask]) / (p + abs_x[not_mask])
   val <- val / log(1 + 1 / p)
   return (val)
 }
