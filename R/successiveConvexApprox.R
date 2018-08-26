@@ -9,6 +9,8 @@ library(CVXR)
 #' @param w the portfolio weights at the previous iteration
 #' @param g function to represent the risk controbution
 #' @param gamma the learning rate
+#'
+#' @export
 theta_update <- function(theta_k, w_k, g, gamma) {
   rho_sq <- rho(w_k) ^ 2
   x <- rho_sq / sum(rho_sq ^ 2)
@@ -17,12 +19,13 @@ theta_update <- function(theta_k, w_k, g, gamma) {
 }
 
 
+#' @export
 w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
                      mu, Sigma, tau, type = "1") {
   w <- Variable(length(w_k))
   nll <- negLogLikelihood(w, nu, mu, Sigma)
   nlprior <- negLogPrior(w, w_k, Sigma, l1, l2, p, e, tau, type)
-  obj_fun <- Minimize(F + l1 * D + l2 * P + tau * sum((w - w_k) ^ 2))
+  obj_fun <- Minimize(nll + nlprior)
   prob <- Problem(obj_fun, constraints = list(sum(w) == 1))
   result <- solve(prob)
   w_hat <- result$getValue(w)
@@ -30,11 +33,13 @@ w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
 }
 
 
+#' @export
 negLogLikelihood <- function(w, nu, mu, Sigma) {
   return (t(w) %*% (Sigma %*% w - nu * mu))
 }
 
 
+#' @export
 negLogPrior <- function(w, w_k, Sigma, l1 = .1, l2 = 4, p = 2e-3, e = 1e-8,
                         tau = 1e-3, type = "1") {
   if (type == "1") {
@@ -52,6 +57,7 @@ negLogPrior <- function(w, w_k, Sigma, l1 = .1, l2 = 4, p = 2e-3, e = 1e-8,
 }
 
 
+#' @export
 d1 <- function(x, p = 2e-3, e = 1e-8) {
   d1x <- rep(0, length(x))
   abs_x <- abs(x)
@@ -64,6 +70,7 @@ d1 <- function(x, p = 2e-3, e = 1e-8) {
 }
 
 
+#' @export
 d2 <- function(x, p = 2e-3, e = 1e-8) {
   d2x <- rep(1 / (e * (p + e)), length(x))
   abs_x <- abs(x)
@@ -74,21 +81,25 @@ d2 <- function(x, p = 2e-3, e = 1e-8) {
 }
 
 
+#' @export
 g <- function(w, Sigma) {
   return (w * (Sigma %*% w))
 }
 
 
+#' @export
 g_grad <- function(w, Sigma) {
   return (2 * Sigma %*% w)
 }
 
 
+#' @export
 g_tilde <- function(w, theta, p, e, Sigma) {
   return ((g(w, Sigma) - theta) * rho(w, p, e))
 }
 
 
+#' @export
 g_tilde_grad <- function(w, theta, p, e, Sigma) {
   return(rho(w, p, e) * g_grad(w, Sigma) +
          (g(w, Sigma) - theta) * rho_grad(w, p, e))
@@ -96,6 +107,7 @@ g_tilde_grad <- function(w, theta, p, e, Sigma) {
 
 
 #' Approximation for the lp-norm, 0 < p < 1
+#' @export
 rho <- function(x, p, e) {
   val <- rep(0, length(x))
   abs_x <- abs(x)
@@ -108,6 +120,7 @@ rho <- function(x, p, e) {
 }
 
 #' Gradient of the approximation for the lp-norm, 0 < p < 1, w.r.t. to x
+#' @export
 rho_grad <- function(x, p, e) {
   val <- rep(0, length(x))
   abs_x <- abs(x)

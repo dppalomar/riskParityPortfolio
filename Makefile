@@ -6,3 +6,6 @@ install:
 
 test:
 	Rscript -e "devtools::test()"
+
+all:
+	make build && make install && make test
