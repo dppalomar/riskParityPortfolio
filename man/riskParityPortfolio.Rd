@@ -6,8 +6,8 @@
 \usage{
 riskParityPortfolio(mu, Sigma, w0 = NA, risk_contrib = NA,
   gamma = 0.1, zeta = 0.01, nu = 0.5, l1 = 0.1, l2 = 4,
-  tau = 0.001, type = "1", maxiter = 5000, w_tol = 1e-04,
-  theta_tol = 1e-04, ftol = 1e-04)
+  tau = 0.001, type = "1", p = 0.002, e = 1e-08, maxiter = 5000,
+  w_tol = 1e-04, theta_tol = 1e-04, ftol = 1e-04)
 }
 \arguments{
 \item{mu}{mean vector of the random returns of n assets}

@@ -1,8 +1,6 @@
 # This module contains the code to implement the SCA
 # problem described in FengPalomar-ICASSP2016.pdf
 
-library(CVXR)
-
 #' Update step for the average RCs of the selected assets
 #'
 #' @param theta the avg RCs at the previous iteration
@@ -11,8 +9,8 @@ library(CVXR)
 #' @param gamma the learning rate
 #'
 #' @export
-theta_update <- function(theta_k, w_k, g, gamma) {
-  rho_sq <- rho(w_k) ^ 2
+theta_update <- function(theta_k, w_k, g, p, e, gamma) {
+  rho_sq <- rho(w_k, p, e) ^ 2
   x <- rho_sq / sum(rho_sq ^ 2)
   theta_hat <- sum(x * g(w_k, Sigma))
   return(theta_k + gamma * (theta_hat - theta_k))
@@ -21,12 +19,12 @@ theta_update <- function(theta_k, w_k, g, gamma) {
 
 #' @export
 w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
-                     mu, Sigma, tau, type = "1") {
-  w <- Variable(length(w_k))
+                     mu, Sigma, tau, p, e, type) {
+  w <- CVXR::Variable(length(w_k))
   nll <- negLogLikelihood(w, nu, mu, Sigma)
-  nlprior <- negLogPrior(w, w_k, Sigma, l1, l2, p, e, tau, type)
-  obj_fun <- Minimize(nll + nlprior)
-  prob <- Problem(obj_fun, constraints = list(sum(w) == 1))
+  nlprior <- negLogPrior(w, w_k, theta_k, Sigma, l1, l2, p, e, tau, type)
+  obj_fun <- CVXR::Minimize(nll + nlprior)
+  prob <- CVXR::Problem(obj_fun, constraints = list(sum(w) == 1))
   result <- solve(prob)
   w_hat <- result$getValue(w)
   return(w_k + gamma * (w_hat - w_k))
@@ -35,22 +33,21 @@ w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
 
 #' @export
 negLogLikelihood <- function(w, nu, mu, Sigma) {
-  return (t(w) %*% (Sigma %*% w - nu * mu))
+  return (t(w) %*% Sigma %*% w - nu * t(w) %*% mu)
 }
 
 
 #' @export
-negLogPrior <- function(w, w_k, Sigma, l1 = .1, l2 = 4, p = 2e-3, e = 1e-8,
-                        tau = 1e-3, type = "1") {
+negLogPrior <- function(w, w_k, theta, Sigma, l1, l2, p, e, tau, type) {
   if (type == "1") {
-    D <- norm(d1(w_k) * w, type = type)
+    D <- sum(abs(d1(w_k, p, e) * w))
   } else if (type == "2") {
-    D <- sum(d2(w_k) * (w ^ 2))
+    D <- sum(d2(w_k, p, e) * (w ^ 2))
   } else {
     stop("type is not implemented")
   }
 
-  P <- sum((g_tilde(w_k, theta) +
+  P <- sum((g_tilde(w_k, theta, p, e, Sigma) +
             sum(g_tilde_grad(w_k, theta, p, e, Sigma) * (w - w_k))) ^ 2)
 
   return (l1 * D + l2 * P + tau * sum((w - w_k) ^ 2))
@@ -58,7 +55,7 @@ negLogPrior <- function(w, w_k, Sigma, l1 = .1, l2 = 4, p = 2e-3, e = 1e-8,
 
 
 #' @export
-d1 <- function(x, p = 2e-3, e = 1e-8) {
+d1 <- function(x, p, e) {
   d1x <- rep(0, length(x))
   abs_x <- abs(x)
   mask <- (abs_x <= e)
@@ -71,7 +68,7 @@ d1 <- function(x, p = 2e-3, e = 1e-8) {
 
 
 #' @export
-d2 <- function(x, p = 2e-3, e = 1e-8) {
+d2 <- function(x, p, e) {
   d2x <- rep(1 / (e * (p + e)), length(x))
   abs_x <- abs(x)
   mask <- (abs_x > e)
