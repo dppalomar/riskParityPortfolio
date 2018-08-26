@@ -26,7 +26,7 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
                                 l1 = 1e-1, l2 = 4, tau = 1e-3, type = "1",
                                 p = 2e-3, e = 1e-8,
                                 maxiter = 5000, w_tol = 1e-4,
-                                theta_tol = 1e-4, ftol = 1e-4) {
+                                theta_tol = 1e-4, ftol = 1e-6) {
 
   if (is.na(risk_contrib)) {
     # g is defined in successiveConvexApprox.R
@@ -68,5 +68,5 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
     fun0 <- fun
   }
 
-  return(w, negloglike = nll_seq, obj_fun = fun_seq)
+  return(list(portfolio_weights = w, negloglike = nll_seq, obj_fun = fun_seq))
 }
