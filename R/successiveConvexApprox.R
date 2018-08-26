@@ -9,7 +9,7 @@
 #' @param gamma the learning rate
 #'
 #' @export
-theta_update <- function(theta_k, w_k, g, p, e, gamma) {
+theta_update <- function(theta_k, w_k, Sigma, g, p, e, gamma) {
   rho_sq <- rho(w_k, p, e) ^ 2
   x <- rho_sq / sum(rho_sq ^ 2)
   theta_hat <- sum(x * g(w_k, Sigma))
@@ -33,7 +33,7 @@ w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
 
 #' @export
 negLogLikelihood <- function(w, nu, mu, Sigma) {
-  return (t(w) %*% Sigma %*% w - nu * t(w) %*% mu)
+  return (t(w) %*% (Sigma %*% w - nu * mu))
 }
 
 

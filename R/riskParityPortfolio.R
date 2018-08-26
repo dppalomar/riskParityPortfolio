@@ -45,7 +45,7 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
 
   for (k in 1:maxiter) {
     # update theta
-    theta <- theta_update(theta0, w0, risk_contrib, p, e, gamma)
+    theta <- theta_update(theta0, w0, Sigma, risk_contrib, p, e, gamma)
     # update w
     w <- w_update(w0, theta, nu, gamma, l1, l2, mu, Sigma, tau, p, e, type)
     # check tolerance on parameters

@@ -4,7 +4,7 @@
 \alias{theta_update}
 \title{Update step for the average RCs of the selected assets}
 \usage{
-theta_update(theta_k, w_k, g, p, e, gamma)
+theta_update(theta_k, w_k, Sigma, g, p, e, gamma)
 }
 \arguments{
 \item{g}{function to represent the risk controbution}

@@ -1,7 +1,6 @@
 context("testNormLpApproximation.R")
 library(riskParityPortfolio)
 library(testthat)
-library(patrick)
 
 test_that("lp norm approximation", {
   x <- c(-runif(50), runif(50))
