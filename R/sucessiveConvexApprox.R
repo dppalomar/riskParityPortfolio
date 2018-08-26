@@ -16,24 +16,27 @@ theta_update <- function(theta_k, w_k, g, gamma) {
   return(theta_k + gamma * (theta_hat - theta_k))
 }
 
+
 w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
                      mu, Sigma, tau, type = "1") {
   w <- Variable(length(w_k))
-  F <- negLogLikelihood(...)
-
-
+  nll <- negLogLikelihood(w, nu, mu, Sigma)
+  nlprior <- negLogPrior(w, w_k, Sigma, l1, l2, p, e, tau, type)
   obj_fun <- Minimize(F + l1 * D + l2 * P + tau * sum((w - w_k) ^ 2))
-
-  return(w + gamma * (w_hat - w))
+  prob <- Problem(obj_fun, constraints = list(sum(w) == 1))
+  result <- solve(prob)
+  w_hat <- result$getValue(w)
+  return(w_k + gamma * (w_hat - w_k))
 }
 
 
 negLogLikelihood <- function(w, nu, mu, Sigma) {
-  return(t(w) %*% (Sigma %*% w - nu * mu))
+  return (t(w) %*% (Sigma %*% w - nu * mu))
 }
 
 
-negLogPrior <- function(l1 = .1, l2 = 4, type = "1") {
+negLogPrior <- function(w, w_k, Sigma, l1 = .1, l2 = 4, p = 2e-3, e = 1e-8,
+                        tau = 1e-3, type = "1") {
   if (type == "1") {
     D <- norm(d1(w_k) * w, type = type)
   } else if (type == "2") {
@@ -41,6 +44,11 @@ negLogPrior <- function(l1 = .1, l2 = 4, type = "1") {
   } else {
     stop("type is not implemented")
   }
+
+  P <- sum((g_tilde(w_k, theta) +
+            sum(g_tilde_grad(w_k, theta, p, e, Sigma) * (w - w_k))) ^ 2)
+
+  return (l1 * D + l2 * P + tau * sum((w - w_k) ^ 2))
 }
 
 
@@ -65,12 +73,25 @@ d2 <- function(x, p = 2e-3, e = 1e-8) {
   return (d2x)
 }
 
+
 g <- function(w, Sigma) {
   return (w * (Sigma %*% w))
 }
 
+
 g_grad <- function(w, Sigma) {
   return (2 * Sigma %*% w)
+}
+
+
+g_tilde <- function(w, theta, p, e, Sigma) {
+  return ((g(w, Sigma) - theta) * rho(w, p, e))
+}
+
+
+g_tilde_grad <- function(w, theta, p, e, Sigma) {
+  return(rho(w, p, e) * g_grad(w, Sigma) +
+         (g(w, Sigma) - theta) * rho_grad(w, p, e))
 }
 
 
