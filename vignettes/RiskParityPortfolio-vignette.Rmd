@@ -1,9 +1,9 @@
 ---
 title: "Design of Risk Parity Portfolios"
-author: "Konstantinos Benidis and Daniel P. Palomar"
+author: "Convex Group - HKUST"
 date: "`r Sys.Date()`"
 output:
-  bookdown::html_document2:  
+  bookdown::html_document2:
     base_format: prettydoc::html_pretty
     theme: tactile
     highlight: vignette
@@ -47,15 +47,22 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 -----------
-> This vignette illustrates the design of risk-parity portfolios, widely used by practitioners in the financial industry, with the package `riskParityPortfolio` (with a comparison with other packages) and gives a description of the algorithms used.
+> This vignette illustrates the design of risk-parity portfolios, widely
+used by practitioners in the financial industry, with the package
+`riskParityPortfolio` (with a comparison with other packages) and gives a
+description of the algorithms used.
 
 
 # Comparison with other packages
 Existing packages that I quickly found (a more thorough search is due):
 
-- Package [cccp](https://CRAN.R-project.org/package=cccp) contains function `rp` (and the package itself may be useful for solving conic optimization problems)
-- Package [FinCovRegularization](https://CRAN.R-project.org/package=FinCovRegularization) contains function `RiskParity` (the package may be useful for covariance matrix regularization, which is one of my upcoming projects...)
-- Here you can find some simple code for risk parity portfolio: http://nakisa.org/bankr-useful-financial-r-snippets/risk-parity-portfolios-r/
+- Package [cccp](https://CRAN.R-project.org/package=cccp) contains function
+  `rp` (and the package itself may be useful for solving conic optimization problems)
+- Package [FinCovRegularization](https://CRAN.R-project.org/package=FinCovRegularization)
+  contains function `RiskParity` (the package may be useful for covariance matrix
+  regularization, which is one of my upcoming projects...)
+- Here you can find some simple code for risk parity portfolio:
+  http://nakisa.org/bankr-useful-financial-r-snippets/risk-parity-portfolios-r/
 
 
 Websites to check:
@@ -65,7 +72,7 @@ Websites to check:
     + https://www.ipe.com/risk-parity-nice-idea-awkward-reality/40026.article
     + http://news.morningstar.com/pdfs/gmohiddenrisks.pdf
     + [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1707478](https://poseidon01.ssrn.com/delivery.php?ID=627112031031103007064105094120011126017039000080068005126025111090071066081066070105028099044055108047124122088001010030007073027083008052040016105021001064069010102067081035117114090021065029088023126004127071004099065117107106112098070107115124110106&EXT=pdf)
-- More links: 
+- More links:
     + https://pdfs.semanticscholar.org/094d/24b924caa659442065401999d7a77e06953e.pdf
     + https://cdn2.hubspot.net/hubfs/2529352/Blog/2010_03_nepc_risk_parity.pdf?t=1501681499185
     + [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1271972](https://poseidon01.ssrn.com/delivery.php?ID=674066092020082067126002014081023101038046007020059034127067087110126097099074024028056033058006042055014026025104115125094096053082054001060113114077012099097084088041055020094031067088066022127012071031066030120074011017069123085091021101101072024&EXT=pdf)
