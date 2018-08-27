@@ -24,9 +24,8 @@
 riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
                                 gamma = 1e-1, zeta = 1e-2, nu = 5e-1,
                                 l1 = 1e-1, l2 = 4, tau = 1e-3, type = "1",
-                                p = 2e-3, e = 1e-8,
-                                maxiter = 5000, w_tol = 1e-4,
-                                theta_tol = 1e-4, ftol = 1e-5) {
+                                p = 2e-3, e = 1e-8, maxiter = 5000,
+                                w_tol = 1e-4, theta_tol = 1e-4, ftol = 1e-4) {
 
   if (is.na(risk_contrib)) {
     # g is defined in successiveConvexApprox.R

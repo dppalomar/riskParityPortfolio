@@ -78,9 +78,22 @@ Websites to check:
     + [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1271972](https://poseidon01.ssrn.com/delivery.php?ID=674066092020082067126002014081023101038046007020059034127067087110126097099074024028056033058006042055014026025104115125094096053082054001060113114077012099097084088041055020094031067088066022127012071031066030120074011017069123085091021101101072024&EXT=pdf)
 
 
-
-
 # Usage of the package
+```{r, cache = TRUE}
+library(riskParityPortfolio)
+stock_index <- c(1:10)
+Sigma <- diag(c(1:10) ^ 2)
+mu <- runif(10)
+res <- riskParityPortfolio(mu, Sigma, nu = 0., type = "1", ftol = 1e-4)
+niter <- length(res$obj_fun)
+par(mfrow = c(1, 2))
+plot(stock_index, res$portfolio_weights, type = "b", pch=19, cex=.6,
+     col = scales::alpha("black", .5), xlab = "Stock number",
+     ylab = "Portfolio weights")
+plot(c(1:niter), res$obj_fun, type = "b", pch=19, cex=.6,
+     col = scales::alpha("black", .5), xlab = "Iteration number",
+     ylab = "Objective function value")
+```
 
 
 # Explanation of the algorithms

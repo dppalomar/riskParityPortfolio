@@ -6,3 +6,5 @@ inst/doc
 README_cache
 *.aux
 *.log
+RiskParityPortfolio-vignette_cache/
+RiskParityPortfolio-vignette_files/
