@@ -32,7 +32,7 @@ riskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
     risk_contrib = g
   }
 
-  if (is.na(w0)) {
+  if (any(is.na(w0))) {
     w0 <- 1 / diag(Sigma)
     w0 <- w0 / sum(w0)
   }
