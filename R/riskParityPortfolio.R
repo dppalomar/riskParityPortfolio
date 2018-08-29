@@ -16,22 +16,22 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
   if (is.na(tau)) {
     tau <- .05 * sum(diag(Sigma)) / (2 * length(mu))
   }
+  # build constraints
+  w <- CVXR::Variable(length(mu))
   constraints <- list(sum(w) == 1)
   if (!shortselling) {
-    constraints <- list(constraints, w >= 0)
+    constraints <- c(constraints, w >= 0)
   }
 
   nll_seq <- c()
   fun_seq <- c()
-  funk <- - Inf
-
-  w <- CVXR::Variable(length(mu))
+  funk <- Inf
   for (k in 1:maxiter) {
     # auxiliary quantities
     AkT <- t(g_grad(wk, Sigma))
     gk <- t(g(wk, Sigma))
-    Qk <- 2 * AkT %*% Ak + tau * I
-    qk <- 2 * AkT %*% g(wk) - Qk %*% wk
+    Qk <- 2 * AkT %*% t(AkT) + tau * diag(nrow(AkT))
+    qk <- 2 * AkT %*% g(wk, Sigma) - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     F <- negLogLikelihoodCVX(w, nu, mu, Sigma)
     P <- .5 * CVXR::quad_form(w, Qk) + t(w) %*% qk
@@ -41,7 +41,7 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
     w_hat <- result$getValue(w)
     w_next <- wk + gamma * (w_hat - wk)
     # save likelihood and objective function values
-    nll_seq <- c(nll_seq, negLoglikelihood(wk, nu, mu, Sigma))
+    nll_seq <- c(nll_seq, negLogLikelihood(w_next, nu, mu, Sigma))
     fun_next <- result$value
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters
@@ -51,7 +51,7 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
       break
     }
     # check convergence on objective function
-    ferr <- abs(fun_next - funk) / max(1., abs(funk))
+    ferr <- abs(fun_next - funk) / max(1., abs(fun_next))
     if (ferr < ftol) {
       wk <- w_next
       break
@@ -62,5 +62,6 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(portfolio_weights = w_next, negloglike = nll_seq, obj_fun = fun_seq)
+  return(list(portfolio_weights = w_next,
+              negloglike = nll_seq, obj_fun = fun_seq))
 }
