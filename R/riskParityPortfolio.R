@@ -8,16 +8,15 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
                                    lambda = .5, maxiter = 500, ftol = 1e-5,
                                    wtol = 1e-5) {
   if (any(is.na(w0))) {
-    wk <- 1 / diag(Sigma)
-    wk <- wk / sum(wk)
+    wk <- rep(1 / nrow(Sigma), nrow(Sigma))
   } else {
     wk <- w0
   }
   if (is.na(tau)) {
-    tau <- .05 * sum(diag(Sigma)) / (2 * length(mu))
+    tau <- .05 * sum(diag(Sigma)) / (2 * nrow(Sigma))
   }
   # build constraints
-  w <- CVXR::Variable(length(mu))
+  w <- CVXR::Variable(nrow(Sigma))
   constraints <- list(sum(w) == 1)
   if (!shortselling) {
     constraints <- c(constraints, w >= 0)
