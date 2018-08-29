@@ -1,7 +1,7 @@
 # This module contains the code to implement the SCA
 # solution for the risk parity portfolio design problem
 # as presented in FengPalomar-TSP2015.pdf
-
+# @'export
 riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
                                    w0 = NA, gamma = .9, zeta = .1, tau = .5,
                                    lambda = .5, maxiter = 500) {
@@ -21,9 +21,9 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
   funk <- - Inf
 
   w <- CVXR::Variable(length(mu))
-  for k in (1:maxiter) {
+  for (k in 1:maxiter) {
     # auxiliary quantities
-    AkT <- g_grad(wk, Sigma)
+    AkT <- t(g_grad(wk, Sigma))
     gk <- t(g(wk, Sigma))
     Qk <- 2 * AkT %*% Ak + tau * I
     qk <- 2 * AkT %*% g(wk) - Qk %*% wk

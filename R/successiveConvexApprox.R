@@ -92,7 +92,8 @@ g <- function(w, Sigma) {
 
 #' @export
 g_grad <- function(w, Sigma) {
-  return (2 * Sigma %*% w)
+  # Jacobian of the Hadamard product
+  return (diag(as.vector(Sigma %*% w)) + diag(as.vector(w)) %*% Sigma)
 }
 
 
