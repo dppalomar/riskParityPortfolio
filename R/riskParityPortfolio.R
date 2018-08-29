@@ -18,6 +18,7 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
 
   nll_seq <- c()
   fun_seq <- c()
+  funk <- - Inf
 
   w <- CVXR::Variable(length(mu))
   for k in (1:maxiter) {
@@ -36,10 +37,23 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
     w_next <- wk + gamma * (w_hat - wk)
     # save likelihood and objective function values
     nll_seq <- c(nll_seq, negLoglikelihood(wk, nu, mu, Sigma))
-    funk <- result$value
-    fun_seq <- c(fun_seq, funk)
+    fun_next <- result$value
+    fun_seq <- c(fun_seq, fun_next)
+    # check convergence on parameters
+    w_err <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
+    if (w_err < wtol) {
+      wk <- w_next
+      break
+    }
+    # check convergence on objective function
+    ferr <- abs(fun_next - funk) / max(1., abs(funk))
+    if (ferr < ftol) {
+      wk <- w_next
+      break
+    }
     # update variables
     wk <- w_next
+    funk <- fun_next
     gamma <- gamma * (1 - zeta * gamma)
   }
 
