@@ -4,7 +4,7 @@
 
 #' @export
 riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
-                                   w0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
+                                   w0 = NA, gamma = .9, zeta = .1, tau = 1e-6,
                                    lambda = .5, maxiter = 500, ftol = 1e-5,
                                    wtol = 1e-5) {
   N <- nrow(Sigma)
@@ -29,8 +29,7 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
   for (k in 1:maxiter) {
     # auxiliary quantities
     AkT <- t(g_grad(wk, Sigma))
-    gk <- t(g(wk, Sigma))
-    Qk <- 2 * AkT %*% t(AkT) + tau * diag(nrow(AkT))
+    Qk <- 2 * AkT %*% t(AkT) + tau * diag(N)
     qk <- 2 * AkT %*% g(wk, Sigma) - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     F <- CVXR::quad_form(w, Sigma) - nu * t(w) %*% mu
@@ -47,13 +46,11 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
     # check convergence on parameters
     werr <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
     if (werr < wtol) {
-      wk <- w_next
       break
     }
     # check convergence on objective function
     ferr <- abs(fun_next - funk) / max(1., abs(fun_next))
     if (ferr < ftol) {
-      wk <- w_next
       break
     }
     # update variables
@@ -62,6 +59,6 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(list(portfolio_weights = w_next,
+  return(list(portfolio_weights = w_next, risk_contrib = w_next * (Sigma %*% w_next),
               negloglike = nll_seq, obj_fun = fun_seq))
 }
