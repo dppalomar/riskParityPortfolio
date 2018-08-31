@@ -1,8 +1,13 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+sparseEigen
+===========
+
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/sparseEigen)](http://cran.r-project.org/package=sparseEigen) [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/sparseEigen)](http://cran.r-project.org/package=sparseEigen) ![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/sparseEigen?color=brightgreen)
+
 sparseIndexTracking
 ===================
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/sparseEigen)](http://cran.r-project.org/package=sparseEigen) [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/sparseEigen)](http://cran.r-project.org/package=sparseEigen) ![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/sparseEigen?color=brightgreen)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/sparseIndexTracking)](http://cran.r-project.org/package=sparseIndexTracking) [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/sparseIndexTracking)](http://cran.r-project.org/package=sparseIndexTracking) ![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/sparseIndexTracking?color=brightgreen)
 
 Computation of sparse portfolios for financial index tracking, i.e., joint selection of a subset of the assets that compose the index and computation of their relative weights (capital allocation). The level of sparsity of the portfolios, i.e., the number of selected assets, is controlled through a regularization parameter. Different tracking measures are available, namely, the empirical tracking error (ETE), downside risk (DR), Huber empirical tracking error (HETE), and Huber downside risk (HDR). See vignette for a detailed documentation and comparison, with several illustrative examples.
 

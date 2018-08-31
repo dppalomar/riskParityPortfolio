@@ -23,11 +23,18 @@ opts_chunk$set(
 knit_hooks$set(pngquant = hook_pngquant)
 ```
 
-# sparseIndexTracking
+# sparseEigen
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/sparseEigen)](http://cran.r-project.org/package=sparseEigen)
 [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/sparseEigen)](http://cran.r-project.org/package=sparseEigen)
 ![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/sparseEigen?color=brightgreen)
+
+# sparseIndexTracking
+
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/sparseIndexTracking)](http://cran.r-project.org/package=sparseIndexTracking)
+[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/sparseIndexTracking)](http://cran.r-project.org/package=sparseIndexTracking)
+![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/sparseIndexTracking?color=brightgreen)
+
 
 Computation of sparse portfolios for financial index tracking, i.e., joint 
 selection of a subset of the assets that compose the index and computation 
