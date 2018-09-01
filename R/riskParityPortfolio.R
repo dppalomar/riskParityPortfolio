@@ -3,10 +3,10 @@
 # as presented in FengPalomar-TSP2015.pdf
 
 #' @export
-riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
-                                   w0 = NA, gamma = .9, zeta = .1, tau = 1e-6,
-                                   lambda = .5, maxiter = 500, ftol = 1e-5,
-                                   wtol = 1e-5) {
+riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
+                                   shortselling = FALSE, w0 = NA, gamma = .9,
+                                   zeta = .1, tau = 1e-6, lambda = .5,
+                                   maxiter = 500, ftol = 1e-5, wtol = 1e-5) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     wk <- rep(1 / N, N)
@@ -18,7 +18,10 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, shortselling = FALSE,
   }
   # build constraints
   w <- CVXR::Variable(N)
-  constraints <- list(sum(w) == 1)
+  constraints <- list()
+  if (budget) {
+    constraints <- c(constraints, sum(w) == 1)
+  }
   if (!shortselling) {
     constraints <- c(constraints, w >= 0)
   }
