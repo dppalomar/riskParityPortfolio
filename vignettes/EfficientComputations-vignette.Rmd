@@ -76,7 +76,7 @@ $$\begin{aligned}
 To effectively implement the SCA method we need efficient computation of the risk contribution terms contained in $\mathbf{g}(\mathbf{w})$ and their gradients contained in the Jacobian matrix $\mathbf{A}(\mathbf{w}) = \left[\nabla g_{1}(\mathbf{w}),\dots,\nabla g_{N}(\mathbf{w})\right]^T$.
 
 
-**Notation:**  
+**Notation:**
 
 - Define the $i$-th risk contribution: $x_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i$ (in R: `x <- w*(Sigma %*% w)`)
 - Gradient of $R(\mathbf{w})$: $\nabla_{\mathbf{w}} R = \left[ \frac{\partial R}{\partial w_1}, \ldots, \frac{\partial R}{\partial w_N} \right]^T$
@@ -109,10 +109,10 @@ Matrix $\mathbf{A}$ is more involved to compute. Using the M-notation: $\nabla g
 
 **This derivation is in the making:**
 
-Observations: 
+Observations:
 
 1. each terms $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ is symmetric, i.e., $\nabla g_{ij} = \nabla g_{ji}$
-2. we need $\mathbf{A}$ only through the terms $\mathbf{A}^T\mathbf{A}$ and $\mathbf{A}^T\mathbf{g}$, which can simplify things a lot
+2. we need $\mathbf{A}$ only through the terms $\mathbf{A}^T\mathbf{A}$ (which is symmetric) and $\mathbf{A}^T\mathbf{g}$, which can simplify things a lot
 3. can we compute efficiently $(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ for all $i=1,\ldots,N$ at once?. Yes!!:
 $$\left[\mathbf{M}_1\mathbf{w}, \ldots, \mathbf{M}_N\mathbf{w}\right] = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$$
 and
