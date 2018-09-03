@@ -9,7 +9,8 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
                                    maxiter = 500, ftol = 1e-5, wtol = 1e-5) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
-    wk <- rep(1 / N, N)
+    wk <- 1 / sqrt(diag(Sigma))
+    wk <- wk / sum(wk)
   } else {
     wk <- w0
   }
