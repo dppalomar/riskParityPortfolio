@@ -63,6 +63,24 @@ w_j \dfrac{(\bm{\Sigma}{\bm{w}})_{j}}{\sqrt{\bm{w}^{T}\bm{\Sigma}\bm{w}}}~\foral
 \end{equation}
 
 \section{Risk-parity portfolio design: problem formulae}
+\begin{align}\begin{array}{ll}
+    \underset{\bm{w}}{\textsf{minimize}} & \dfrac{1}{2}\bm{w}^{T}\bm{Q}^{k}\bm{w} +
+    \bm{w}^{T}\bm{q}^{k} + \lambda F(\bm{w})\\
+\textsf{subject to} & \bm{w}^{T}\bm{1} = 1, \bm{w} \in \mathcal{W},
+\end{array}\end{align}
+where
+\begin{align}
+    \bm{Q}^{k} & \triangleq 2(\bm{A}^{k})^{T}\bm{A}^{k} + \tau \bm{I},\\
+    \bm{q}^{k} & \triangleq 2(\bm{A}^{k})^{T}\bm{g}(\bm{w}^{k}) - \bm{Q}^{k}\bm{w}^{k},
+\end{align}
+and
+\begin{align}
+    \bm{A}^{k} & \triangleq \left[\nabla_{\bm{w}} g_{1}\left(\bm{w}^{k}\right), ...,
+                                \nabla_{\bm{w}} g_{n}\left(\bm{w}^{k}\right)\right]^{T} \\
+    \bm{g}\left(\bm{w}^{k}\right) & \triangleq \left[g_{1}\left(\bm{w}^{k}\right), ...,
+                                                   g_{n}\left(\bm{w}^{k}\right)\right]^{T}
+\end{align}
+
 
 \section{Sparse risk-parity portfolio design: problem formulae}
 The problem of designing risk-parity portfolios with asset selection, as formulated by Feng \& Palomar,

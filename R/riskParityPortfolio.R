@@ -5,7 +5,7 @@
 #' @export
 riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
                                    shortselling = FALSE, w0 = NA, gamma = .9,
-                                   zeta = .1, tau = 1e-6, lambda = .5,
+                                   zeta = 1e-7, tau = NA, lambda = .5,
                                    maxiter = 500, ftol = 1e-5, wtol = 1e-5) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
