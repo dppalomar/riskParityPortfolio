@@ -1,0 +1,92 @@
+---
+title: "Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio"
+author: "Convex Group - HKUST"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    base_format: prettydoc::html_pretty
+    theme: tactile
+    highlight: vignette
+    fig_caption: yes
+    number_sections: no
+    toc: yes
+    toc_depth: 2
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+header-includes:
+  \allowdisplaybreaks
+indent: yes
+csl: ieee.csl
+bibliography: refs.bib
+vignette: >
+  %\VignetteIndexEntry{Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio}
+  %\VignetteKeyword{portfolio, risk-parity, risk, optimization}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.retina = 2,
+  out.width = "75%",
+  dpi = 96
+)
+knit_hooks$set(pngquant = hook_pngquant)
+#Help on bookdown: https://bookdown.org/yihui/bookdown/
+```
+
+-----------
+> This note contains compact expressions for the risk and corresponding
+Jacobians for efficient implementation
+
+
+# General risk-parity portfolio formulation
+The risk-parity portfolio formulation is of the form:
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & R(\mathbf{w})\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
+\end{array}$$
+where the risk term is of the form
+$$R(\mathbf{w}) = \sum_{i,j=1}^{N}(g_{ij}(\mathbf{w}))^{2}$$
+or simply
+$$R(\mathbf{w}) = \sum_{i=1}^{N}(g_{i}(\mathbf{w}))^{2}.$$
+
+**Notation:**  
+
+- Define the $i$-th risk contribution: $x_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i$
+- Gradient of $R(\mathbf{w})$: $\nabla_{\mathbf{w}} R = \left[ \frac{\partial R}{\partial w_1}, \ldots, \frac{\partial R}{\partial w_N} \right]^T$
+- Jacobian of $\mathbf{w}$: $\textsf{J}_\mathbf{w}\mathbf{x} = \frac{\partial \mathbf{x}}{\partial \mathbf{w}^T}$ (note that the Jacobian of a scalar function is the traspose of the gradient)
+- For the single index case: $\mathbf{g}(\mathbf{w}) = \left[g_1(\mathbf{w}), \ldots, g_N(\mathbf{w}) \right]^T$
+- For the double index case: $\mathbf{G}(\mathbf{w}) = (g_{ij}(\mathbf{w}))$ and $\mathbf{g}(\mathbf{w})=\textsf{vec}(\mathbf{G}(\mathbf{w}))$
+
+
+# Original formulation
+Let's focus on one specific risk expression:
+$$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} = \sum_{i,j=1}^{N}(x_i - x_j)^2 = 2N\sum_ix_i^2 - 2\left(\sum_ix_i\right)^2$$
+which can be coded as `2*N*sum(x^2) - 2*sum(x)^2`.
+
+This risk expression corresponds to
+$$g_{ij}(\mathbf{w})=w_i(\boldsymbol{\Sigma}\mathbf{w})_{i}-w_j(\boldsymbol{\Sigma}\mathbf{w})_j = x_i - x_j,$$
+which can be coded as `g <- rep(x, times = N) - rep(x, each = N)`. So another way to compute $R(\mathbf{w})$ is with `sum(g^2)`, but it's not as efficient as the previous computation since $\mathbf{g}$ has $N^2$ elements.
+
+Let's compute now the gradient of $R(\mathbf{w})$:
+
+- $\frac{\partial R}{\partial x_i}=4(Nx_i-\sum_ix_i)$ $\Longrightarrow$ $\nabla_{\mathbf{x}}R = 4(N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1})$
+- $\frac{\partial x_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i$ $\Longrightarrow$ $\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$
+- chain rule: using Jacobians is $\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$, using gradients is $(\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$ or, more conveniently, $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R$:
+$$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1}),$$
+which can be coded as `4*(Sigma*w + diag(Sigma %*% w)) %*% *(N*x-sum(x)*rep(1, N))`.
+
+
+
+
+
+
+
