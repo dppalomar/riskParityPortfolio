@@ -12,12 +12,50 @@
 
 <meta name="author" content="Convex Group - HKUST" />
 
-<meta name="date" content="2018-09-03" />
+<meta name="date" content="2018-09-04" />
 
 <title>Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio</title>
 
 
 
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
 
 
 
@@ -35,7 +73,7 @@
 <header>
 <h1 class="title toc-ignore">Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio</h1>
 <h3 class="author">Convex Group - HKUST</h3>
-<h3 class="date">2018-09-03</h3>
+<h3 class="date">2018-09-04</h3>
 </header>
 
 <hr>
@@ -44,7 +82,9 @@
 <div id="TOC" class="toc">
 <ul>
 <li><a href="#general-risk-parity-portfolio-formulation">General risk-parity portfolio formulation</a></li>
-<li><a href="#original-formulation">Original formulation</a></li>
+<li><a href="#original-formulation-with-double-summation">Original formulation with double summation</a></li>
+<li><a href="#formulation-with-single-summation">Formulation with single summation</a></li>
+<li><a href="#references">References</a></li>
 </ul>
 </div>
 
@@ -54,29 +94,97 @@
 </blockquote>
 <div id="general-risk-parity-portfolio-formulation" class="section level1">
 <h1>General risk-parity portfolio formulation</h1>
-<p>The risk-parity portfolio formulation is of the form: <span class="math display">\[\begin{array}{ll}
+<p>The risk-parity portfolio formulation is of the form <span class="citation">[1]</span>: <span class="math display">\[\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &amp; R(\mathbf{w})\\
 \textsf{subject to} &amp; \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
 \end{array}\]</span> where the risk term is of the form <span class="math display">\[R(\mathbf{w}) = \sum_{i,j=1}^{N}(g_{ij}(\mathbf{w}))^{2}\]</span> or simply <span class="math display">\[R(\mathbf{w}) = \sum_{i=1}^{N}(g_{i}(\mathbf{w}))^{2}.\]</span></p>
+<p>This problem can be solved directly with some nonlinear solver (for which we need to be able to compute the risk term <span class="math inline">\(R(\mathbf{w})\)</span> (even better if the gradient is computed) as well as with the Successive Convex Approximation (SCA) method developed in <span class="citation">[2]</span>. The algorithm iteratively solves a sequence of QP problems of the form: <span class="math display">\[
+\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} &amp; \tilde{U}\left(\mathbf{w},\mathbf{w}^{k}\right)=\frac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w}+\mathbf{w}^{T}\mathbf{q}^{k}+\lambda F\left(\mathbf{w}\right)\\
+\textsf{subject to} &amp; \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
+\end{array}
+\]</span> where <span class="math display">\[\begin{aligned}
+\mathbf{g}\left(\mathbf{w}^{k}\right) &amp; \triangleq \left[g_{1}\left(\mathbf{w}^{k}\right),\dots,g_{N}\left(\mathbf{w}^{k}\right)\right]^{T}\\
+\mathbf{A}^{k}\left(\mathbf{w}^{k}\right) &amp;\triangleq \left[\nabla g_{1}\left(\mathbf{w}^{k}\right),\dots,\nabla g_{N}\left(\mathbf{w}^{k}\right)\right]^{T},\\
+\mathbf{Q}^{k} &amp;\triangleq 2\left(\mathbf{A}^{k}\right)^{T}\mathbf{A}^{k}+\tau\mathbf{I},\\
+\mathbf{q}^{k} &amp;\triangleq 2\left(\mathbf{A}^{k}\right)^{T}\mathbf{g}\left(\mathbf{w}^{k}\right)-\mathbf{Q}^{k}\mathbf{w}^{k}.
+\end{aligned}\]</span> To effectively implement the SCA method we need efficient computation of the risk contribution terms contained in <span class="math inline">\(\mathbf{g}(\mathbf{w})\)</span> and their gradients contained in the Jacobian matrix <span class="math inline">\(\mathbf{A}(\mathbf{w}) = \left[\nabla g_{1}(\mathbf{w}),\dots,\nabla g_{N}(\mathbf{w})\right]^T\)</span>.</p>
 <p><strong>Notation:</strong></p>
 <ul>
-<li>Define the <span class="math inline">\(i\)</span>-th risk contribution: <span class="math inline">\(x_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i\)</span></li>
+<li>Define the <span class="math inline">\(i\)</span>-th risk contribution: <span class="math inline">\(x_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i\)</span> (in R: <code>x &lt;- w*(Sigma %*% w)</code>)</li>
 <li>Gradient of <span class="math inline">\(R(\mathbf{w})\)</span>: <span class="math inline">\(\nabla_{\mathbf{w}} R = \left[ \frac{\partial R}{\partial w_1}, \ldots, \frac{\partial R}{\partial w_N} \right]^T\)</span></li>
 <li>Jacobian of <span class="math inline">\(\mathbf{w}\)</span>: <span class="math inline">\(\textsf{J}_\mathbf{w}\mathbf{x} = \frac{\partial \mathbf{x}}{\partial \mathbf{w}^T}\)</span> (note that the Jacobian of a scalar function is the traspose of the gradient)</li>
 <li>For the single index case: <span class="math inline">\(\mathbf{g}(\mathbf{w}) = \left[g_1(\mathbf{w}), \ldots, g_N(\mathbf{w}) \right]^T\)</span></li>
 <li>For the double index case: <span class="math inline">\(\mathbf{G}(\mathbf{w}) = (g_{ij}(\mathbf{w}))\)</span> and <span class="math inline">\(\mathbf{g}(\mathbf{w})=\textsf{vec}(\mathbf{G}(\mathbf{w}))\)</span></li>
+<li>M-notation <span class="citation">[2]</span>: for unification purposes, one can express the risk contributions and risk term in terms of the matrix <span class="math inline">\(\mathbf{M}_i\)</span>, whose <span class="math inline">\(i\)</span>-th row is equal to that of <span class="math inline">\(\boldsymbol{\Sigma}\)</span> and is zero elsewhere. Then it follows that <span class="math inline">\(x_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i=\mathbf{w}^T\mathbf{M}_i\mathbf{w}\)</span> (although for computational purposes it is far more efficient to use former expression of <span class="math inline">\(x_i\)</span> than the latter).</li>
 </ul>
 </div>
-<div id="original-formulation" class="section level1">
-<h1>Original formulation</h1>
-<p>Let’s focus on one specific risk expression: <span class="math display">\[R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} = \sum_{i,j=1}^{N}(x_i - x_j)^2 = 2N\sum_ix_i^2 - 2\left(\sum_ix_i\right)^2\]</span> which can be coded as <code>2*N*sum(x^2) - 2*sum(x)^2</code>.</p>
-<p>This risk expression corresponds to <span class="math display">\[g_{ij}(\mathbf{w})=w_i(\boldsymbol{\Sigma}\mathbf{w})_{i}-w_j(\boldsymbol{\Sigma}\mathbf{w})_j = x_i - x_j,\]</span> which can be coded as <code>g &lt;- rep(x, times = N) - rep(x, each = N)</code>. So another way to compute <span class="math inline">\(R(\mathbf{w})\)</span> is with <code>sum(g^2)</code>, but it’s not as efficient as the previous computation since <span class="math inline">\(\mathbf{g}\)</span> has <span class="math inline">\(N^2\)</span> elements.</p>
+<div id="original-formulation-with-double-summation" class="section level1">
+<h1>Original formulation with double summation</h1>
+<p>Let’s focus on one specific risk expression: <span class="math display">\[R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} = \sum_{i,j=1}^{N}(x_i - x_j)^2 = 2N\sum_ix_i^2 - 2\left(\sum_ix_i\right)^2\]</span> which can be efficiently coded as <code>risk &lt;- 2*N*sum(x^2) - 2*sum(x)^2</code>.</p>
 <p>Let’s compute now the gradient of <span class="math inline">\(R(\mathbf{w})\)</span>:</p>
 <ul>
 <li><span class="math inline">\(\frac{\partial R}{\partial x_i}=4(Nx_i-\sum_ix_i)\)</span> <span class="math inline">\(\Longrightarrow\)</span> <span class="math inline">\(\nabla_{\mathbf{x}}R = 4(N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1})\)</span></li>
 <li><span class="math inline">\(\frac{\partial x_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i\)</span> <span class="math inline">\(\Longrightarrow\)</span> <span class="math inline">\(\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\)</span></li>
-<li>chain rule: using Jacobians is <span class="math inline">\(\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}\)</span>, using gradients is <span class="math inline">\((\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}\)</span> or, more conveniently, <span class="math inline">\(\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R\)</span>: <span class="math display">\[\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1}),\]</span> which can be coded as <code>4*(Sigma*w + diag(Sigma %*% w)) %*% *(N*x-sum(x)*rep(1, N))</code>.</li>
+<li>chain rule: using Jacobians is <span class="math inline">\(\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}\)</span>, using gradients is <span class="math inline">\((\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}\)</span> or, more conveniently, <span class="math inline">\(\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R\)</span>: <span class="math display">\[\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1}),\]</span> which can be coded as <code>risk_grad &lt;- 4*(Sigma*w + diag(Sigma %*% w)) %*% (N*x-sum(x)*rep(1, N))</code>. Another way to code it is:<br />
+<code>v &lt;- (N*x-sum(x)*rep(1, N))</code> <code>risk_grad &lt;- 4*(Sigma %*% (w*v) + (Sigma %*% w)*v)</code></li>
 </ul>
+<p>However, if we are interested in implenting the SCA method, this is not enough. Then we need an expression for the risk contributions contained in <span class="math inline">\(\mathbf{g}\)</span> as well as its Jacobian matrix <span class="math inline">\(\mathbf{A}\)</span>.</p>
+<p>The risk deviations are <span class="math display">\[g_{ij}(\mathbf{w})=w_i(\boldsymbol{\Sigma}\mathbf{w})_{i}-w_j(\boldsymbol{\Sigma}\mathbf{w})_j = x_i - x_j,\]</span> which can be efficiently coded as <code>g &lt;- rep(x, times = N) - rep(x, each = N)</code>. So another way to compute <span class="math inline">\(R(\mathbf{w})\)</span> is with <code>sum(g^2)</code>, but it’s not as efficient as the previous computation since <span class="math inline">\(\mathbf{g}\)</span> has <span class="math inline">\(N^2\)</span> elements.</p>
+<p>Matrix <span class="math inline">\(\mathbf{A}\)</span> is more involved to compute. Using the M-notation: <span class="math inline">\(\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}\)</span> (recall that <span class="math inline">\(\mathbf{A} = \left[\nabla g_{11},\dots,\nabla g_{NN}\right]^T\)</span>). But we need an efficient way to compute this…</p>
+<p><strong>This derivation is in the making:</strong></p>
+<p>Observations:</p>
+<ol style="list-style-type: decimal">
+<li>each terms <span class="math inline">\(\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}\)</span> is symmetric, i.e., <span class="math inline">\(\nabla g_{ij} = \nabla g_{ji}\)</span></li>
+<li>we need <span class="math inline">\(\mathbf{A}\)</span> only through the terms <span class="math inline">\(\mathbf{A}^T\mathbf{A}\)</span> (which are symmetric) and <span class="math inline">\(\mathbf{A}^T\mathbf{g}\)</span>, which can simplify things a lot</li>
+<li><p>can we compute efficiently <span class="math inline">\((\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}\)</span> for all <span class="math inline">\(i=1,\ldots,N\)</span> at once?. Yes!!: <span class="math display">\[\left[\mathbf{M}_1\mathbf{w}, \ldots, \mathbf{M}_N\mathbf{w}\right] = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\]</span> and <span class="math display">\[\left[\mathbf{M}_1^T\mathbf{w}, \ldots, \mathbf{M}^T_N\mathbf{w}\right] = \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\]</span> So that <span class="math display">\[(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i}\]</span> and <span class="math display">\[\nabla g_{ij} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i} + \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,j}\]</span> <span class="math display">\[[\nabla g_{ij}]_k = \delta_{ki}(\boldsymbol{\Sigma}\mathbf{w})_i + \boldsymbol{\Sigma}_{k,i}w_i + \delta_{kj}(\boldsymbol{\Sigma}\mathbf{w})_j + \boldsymbol{\Sigma}_{k,j}w_j\]</span></p></li>
+<li><p>TBD: <span class="math display">\[[\mathbf{A}^T\mathbf{A}]_{kl} = \sum_{i,j} [\nabla g_{ij}]_k[\nabla g_{ij}]_l\]</span> Consider one of the cross terms after the multiplication: <span class="math display">\[\sum_{i,j} \boldsymbol{\Sigma}_{k,i}w_i \cdot \boldsymbol{\Sigma}_{l,j}w_j = \]</span></p></li>
+</ol>
+</div>
+<div id="formulation-with-single-summation" class="section level1">
+<h1>Formulation with single summation</h1>
+<p>Consider now the risk expression with a single index: <span class="math display">\[R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2} = \sum_{i=1}^{N}\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)^{2}\]</span> where <span class="math inline">\(b_{i}=\frac{1}{N}\)</span>. This can be efficiently coded as <code>risk &lt;- sum((x/sum(x)-b)^2)</code>.</p>
+<p>Let’s compute now the gradient of <span class="math inline">\(R(\mathbf{w})\)</span>:</p>
+<ul>
+<li>first, w.r.t. <span class="math inline">\(\mathbf{x}\)</span>:</li>
+</ul>
+<p><span class="math display">\[\begin{aligned}
+\frac{\partial R}{\partial x_j}
+ &amp; = 2\sum_i\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)\left(\frac{\delta_{ij}}{\mathbf{1}^{T}\mathbf{x}}-\frac{x_i}{(\mathbf{1}^{T}\mathbf{x})^2} \right)\\
+ &amp; = 2\sum_i\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)\frac{\delta_{ij}}{\mathbf{1}^{T}\mathbf{x}}
+ - 2\sum_i\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)\frac{x_i}{(\mathbf{1}^{T}\mathbf{x})^2}\\
+ &amp; = \frac{2}{\mathbf{1}^{T}\mathbf{x}}\left(\left(\frac{x_j}{\mathbf{1}^{T}\mathbf{x}}-b_j\right)
+ - \left(\frac{\mathbf{x}}{\mathbf{1}^{T}\mathbf{x}}-\mathbf{b}\right)^T\frac{\mathbf{x}}{(\mathbf{1}^{T}\mathbf{x})^2}\right)
+\end{aligned}\]</span> and <span class="math display">\[\nabla_{\mathbf{x}}R = \frac{2}{\mathbf{1}^{T}\mathbf{x}}\left(\left(\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}-\mathbf{b}\right)
+ - \mathbf{1}\cdot\frac{\left(\mathbf{x}/(\mathbf{1}^{T}\mathbf{x})-\mathbf{b}\right)^T\mathbf{x}}{(\mathbf{1}^{T}\mathbf{x})^2}\right)\]</span></p>
+<ul>
+<li><p><span class="math inline">\(\frac{\partial x_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i\)</span> <span class="math inline">\(\Longrightarrow\)</span> <span class="math inline">\(\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\)</span></p></li>
+<li><p>chain rule: using Jacobians is <span class="math inline">\(\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}\)</span>, using gradients is <span class="math inline">\((\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}\)</span> or, more conveniently, <span class="math inline">\(\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R\)</span>:</p></li>
+</ul>
+<p><span class="math display">\[\nabla_{\mathbf{w}}R = \frac{2}{\mathbf{1}^T\mathbf{x}}(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}))\left(\left(\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}-\mathbf{b}\right)
+ - \mathbf{1}\cdot\frac{\left(\mathbf{x}/(\mathbf{1}^{T}\mathbf{x})-\mathbf{b}\right)^T\mathbf{x}}{(\mathbf{1}^{T}\mathbf{x})^2}\right),\]</span> which can be coded as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sum_x &lt;-<span class="st"> </span><span class="kw">sum</span>(x)
+x_b &lt;-<span class="st"> </span>x<span class="op">/</span>sum_x <span class="op">-</span><span class="st"> </span>b
+v &lt;-<span class="st"> </span>x_b <span class="op">-</span><span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span>, N) <span class="op">*</span><span class="st"> </span>(<span class="kw">t</span>(x_b) <span class="op">%*%</span><span class="st"> </span>x)<span class="op">/</span>(sum_x<span class="op">^</span><span class="dv">2</span>)
+risk_grad &lt;-<span class="st"> </span>(<span class="dv">2</span><span class="op">/</span>sum_x) <span class="op">*</span><span class="st"> </span>(Sigma <span class="op">%*%</span><span class="st"> </span>(w<span class="op">*</span>v) <span class="op">+</span><span class="st"> </span>(Sigma <span class="op">%*%</span><span class="st"> </span>w)<span class="op">*</span>v)</code></pre></div>
+<p>However, if we are interested in implenting the SCA method, this is not enough. Then we need an expression for the risk contributions contained in <span class="math inline">\(\mathbf{g}\)</span> as well as its Jacobian matrix <span class="math inline">\(\mathbf{A}\)</span>.</p>
+<p>The risk deviations are <span class="math display">\[g_i(\mathbf{w}) = \frac{x_i}{\mathbf{1}^T\mathbf{x}}-b_i,\]</span> which can be efficiently coded as <code>g &lt;- x/sum(x) - b</code>.</p>
+<p>Matrix <span class="math inline">\(\mathbf{A}=\left[\nabla g_1,\dots,\nabla g_N\right]^T\)</span> is more involved to compute (we will avoid the M-notation as it gets too involved). The partial derivative is <span class="math display">\[\frac{\partial g_i}{\partial x_j} = \frac{\delta_{ij}}{\mathbf{1}^T\mathbf{x}} - \frac{x_i}{(\mathbf{1}^T\mathbf{x})^2}\]</span> and the gradient is <span class="math display">\[\nabla_\mathbf{x} g_i = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{e}_i-\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}\right)\]</span> where <span class="math inline">\(\mathbf{e}_i\)</span> is the <span class="math inline">\(i\)</span>-canonical vector (all-zero except a 1 at the <span class="math inline">\(i\)</span>-th position). We can then write the Jacobian as <span class="math display">\[\textsf{J}_{\mathbf{x}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right),\]</span> where <span class="math inline">\(\otimes\)</span> denotes Kronecker product. Finally we can use the Jacobian chain rule (recall that <span class="math inline">\(\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\)</span>): <span class="math display">\[\mathbf{A} \triangleq \textsf{J}_{\mathbf{w}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right) \cdot \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right),\]</span> which can be more efficiently expressed as <span class="math display">\[\mathbf{A} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right)-\frac{1}{\mathbf{1}^T\mathbf{x}}\mathbf{1}\otimes\left(\mathbf{x}^T\left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right)\right)\right).\]</span> This can be efficiently coded as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sum_x &lt;-<span class="st"> </span><span class="kw">sum</span>(x)
+Mat &lt;-<span class="st"> </span><span class="kw">t</span>(Sigma<span class="op">*</span>w) <span class="op">+</span><span class="st"> </span><span class="kw">diag</span>(Sigma <span class="op">%*%</span><span class="st"> </span>w)
+A &lt;-<span class="st"> </span>(<span class="dv">1</span><span class="op">/</span>sum_x) <span class="op">*</span><span class="st"> </span>(Mat <span class="op">-</span><span class="st"> </span>(<span class="dv">1</span><span class="op">/</span>sum_x)<span class="op">*</span><span class="kw">matrix</span>((<span class="kw">t</span>(x) <span class="op">%*%</span><span class="st"> </span>Mat), N, N, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<p>   </p>
+<div id="refs" class="references">
+<div id="ref-FengPal2016monograph">
+<p>[1] Y. Feng and D. P. Palomar, <em>A Signal Processing Perspective on Financial Engineering</em>. Foundations; Trends in Signal Processing, Now Publishers, 2016.</p>
+</div>
+<div id="ref-FengPal2015riskparity">
+<p>[2] Y. Feng and D. P. Palomar, “SCRIP: Successive convex optimization methods for risk parity portfolios design,” <em>IEEE Trans. Signal Process.</em>, vol. 63, no. 19, pp. 5285–5300, Oct. 2015.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
