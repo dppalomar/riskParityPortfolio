@@ -86,7 +86,7 @@ To effectively implement the SCA method we need efficient computation of the ris
 - M-notation [@FengPal2015riskparity]: for unification purposes, one can express the risk contributions and risk term in terms of the matrix $\mathbf{M}_i$, whose $i$-th row is equal to that of $\boldsymbol{\Sigma}$ and is zero elsewhere. Then it follows that $x_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i=\mathbf{w}^T\mathbf{M}_i\mathbf{w}$ (although for computational purposes it is far more efficient to use former expression of $x_i$ than the latter).
 
 
-# Original formulation
+# Original formulation with double summation
 Let's focus on one specific risk expression:
 $$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} = \sum_{i,j=1}^{N}(x_i - x_j)^2 = 2N\sum_ix_i^2 - 2\left(\sum_ix_i\right)^2$$
 which can be efficiently coded as `risk <- 2*N*sum(x^2) - 2*sum(x)^2`.
@@ -97,33 +97,98 @@ Let's compute now the gradient of $R(\mathbf{w})$:
 - $\frac{\partial x_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i$ $\Longrightarrow$ $\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$
 - chain rule: using Jacobians is $\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$, using gradients is $(\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$ or, more conveniently, $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R$:
 $$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1}),$$
-which can be coded as `risk_grad <- 4*(Sigma*w + diag(Sigma %*% w)) %*% *(N*x-sum(x)*rep(1, N))`.
+which can be coded as `risk_grad <- 4*(Sigma*w + diag(Sigma %*% w)) %*% (N*x-sum(x)*rep(1, N))`. Another way to code it is:  
+`v <- (N*x-sum(x)*rep(1, N))`
+`risk_grad <- 4*(Sigma %*% (w*v) + (Sigma %*% w)*v)`
 
-If we are interested in implenting the SCA method, then we need an expression for the risk contributions contained in $\mathbf{g}$ as well as its Jacobian matrix $\mathbf{A}$.
 
-The risk contributions are
+However, if we are interested in implenting the SCA method, this is not enough. Then we need an expression for the risk contributions contained in $\mathbf{g}$ as well as its Jacobian matrix $\mathbf{A}$.
+
+The risk deviations are
 $$g_{ij}(\mathbf{w})=w_i(\boldsymbol{\Sigma}\mathbf{w})_{i}-w_j(\boldsymbol{\Sigma}\mathbf{w})_j = x_i - x_j,$$
 which can be efficiently coded as `g <- rep(x, times = N) - rep(x, each = N)`. So another way to compute $R(\mathbf{w})$ is with `sum(g^2)`, but it's not as efficient as the previous computation since $\mathbf{g}$ has $N^2$ elements.
 
-Matrix $\mathbf{A}$ is more involved to compute. Using the M-notation: $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ (recall that $\mathbf{A} = \left[\nabla g_1,\dots,\nabla g_N\right]^T$). But we need an efficient way to compute this...
+Matrix $\mathbf{A}$ is more involved to compute. Using the M-notation: $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ (recall that $\mathbf{A} = \left[\nabla g_{11},\dots,\nabla g_{NN}\right]^T$). But we need an efficient way to compute this...
 
 **This derivation is in the making:**
 
 Observations:
 
 1. each terms $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ is symmetric, i.e., $\nabla g_{ij} = \nabla g_{ji}$
-2. we need $\mathbf{A}$ only through the terms $\mathbf{A}^T\mathbf{A}$ (which is symmetric) and $\mathbf{A}^T\mathbf{g}$, which can simplify things a lot
+2. we need $\mathbf{A}$ only through the terms $\mathbf{A}^T\mathbf{A}$ (which are symmetric) and $\mathbf{A}^T\mathbf{g}$, which can simplify things a lot
 3. can we compute efficiently $(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ for all $i=1,\ldots,N$ at once?. Yes!!:
 $$\left[\mathbf{M}_1\mathbf{w}, \ldots, \mathbf{M}_N\mathbf{w}\right] = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$$
 and
 $$\left[\mathbf{M}_1^T\mathbf{w}, \ldots, \mathbf{M}^T_N\mathbf{w}\right] = \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$$
+So that $$(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i}$$
+and 
+$$\nabla g_{ij} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i} + \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,j}$$
+$$[\nabla g_{ij}]_k = \delta_{ki}(\boldsymbol{\Sigma}\mathbf{w})_i + \boldsymbol{\Sigma}_{k,i}w_i + \delta_{kj}(\boldsymbol{\Sigma}\mathbf{w})_j + \boldsymbol{\Sigma}_{k,j}w_j$$
 
 4. TBD:
-$$\begin{aligned}
-\nabla g_{ij} & = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}\\
-& = \mathbf{M}_i\mathbf{w} + \mathbf{M}_i^T\mathbf{w} + \mathbf{M}_j\mathbf{w} + \mathbf{M}_j^T\mathbf{w}\\
-\end{aligned}$$
+$$[\mathbf{A}^T\mathbf{A}]_{kl} = \sum_{i,j} [\nabla g_{ij}]_k[\nabla g_{ij}]_l$$
+Consider one of the cross terms after the multiplication:
+$$\sum_{i,j} \boldsymbol{\Sigma}_{k,i}w_i \cdot \boldsymbol{\Sigma}_{l,j}w_j = $$
 
+
+# Formulation with single summation
+Consider now the risk expression with a single index:
+$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2} = \sum_{i=1}^{N}\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)^{2}$$
+where $b_{i}=\frac{1}{N}$. This can be efficiently coded as `risk <- sum((x/sum(x)-b)^2)`.
+
+Let's compute now the gradient of $R(\mathbf{w})$:
+
+- first, w.r.t. $\mathbf{x}$:
+
+$$\begin{aligned}
+\frac{\partial R}{\partial x_j}
+ & = 2\sum_i\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)\left(\frac{\delta_{ij}}{\mathbf{1}^{T}\mathbf{x}}-\frac{x_i}{(\mathbf{1}^{T}\mathbf{x})^2} \right)\\
+ & = 2\sum_i\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)\frac{\delta_{ij}}{\mathbf{1}^{T}\mathbf{x}}
+ - 2\sum_i\left(\frac{x_i}{\mathbf{1}^{T}\mathbf{x}}-b_i\right)\frac{x_i}{(\mathbf{1}^{T}\mathbf{x})^2}\\
+ & = \frac{2}{\mathbf{1}^{T}\mathbf{x}}\left(\left(\frac{x_j}{\mathbf{1}^{T}\mathbf{x}}-b_j\right)
+ - \left(\frac{\mathbf{x}}{\mathbf{1}^{T}\mathbf{x}}-\mathbf{b}\right)^T\frac{\mathbf{x}}{(\mathbf{1}^{T}\mathbf{x})^2}\right)
+\end{aligned}$$
+and
+$$\nabla_{\mathbf{x}}R = \frac{2}{\mathbf{1}^{T}\mathbf{x}}\left(\left(\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}-\mathbf{b}\right)
+ - \mathbf{1}\cdot\frac{\left(\mathbf{x}/(\mathbf{1}^{T}\mathbf{x})-\mathbf{b}\right)^T\mathbf{x}}{(\mathbf{1}^{T}\mathbf{x})^2}\right)$$
+
+- $\frac{\partial x_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i$ $\Longrightarrow$ $\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$
+
+- chain rule: using Jacobians is $\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$, using gradients is $(\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$ or, more conveniently, $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R$:
+
+$$\nabla_{\mathbf{w}}R = \frac{2}{\mathbf{1}^T\mathbf{x}}(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}))\left(\left(\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}-\mathbf{b}\right)
+ - \mathbf{1}\cdot\frac{\left(\mathbf{x}/(\mathbf{1}^{T}\mathbf{x})-\mathbf{b}\right)^T\mathbf{x}}{(\mathbf{1}^{T}\mathbf{x})^2}\right),$$
+which can be coded as  
+```{r, eval=FALSE}
+sum_x <- sum(x)
+x_b <- x/sum_x - b
+v <- x_b - rep(1, N) * (t(x_b) %*% x)/(sum_x^2)
+risk_grad <- (2/sum_x) * (Sigma %*% (w*v) + (Sigma %*% w)*v)
+```
+
+
+However, if we are interested in implenting the SCA method, this is not enough. Then we need an expression for the risk contributions contained in $\mathbf{g}$ as well as its Jacobian matrix $\mathbf{A}$.
+
+The risk deviations are
+$$g_i(\mathbf{w}) = \frac{x_i}{\mathbf{1}^T\mathbf{x}}-b_i,$$
+which can be efficiently coded as `g <- x/sum(x) - b`.
+
+Matrix $\mathbf{A}=\left[\nabla g_1,\dots,\nabla g_N\right]^T$ is more involved to compute (we will avoid the M-notation as it gets too involved). The partial derivative is
+$$\frac{\partial g_i}{\partial x_j} = \frac{\delta_{ij}}{\mathbf{1}^T\mathbf{x}} - \frac{x_i}{(\mathbf{1}^T\mathbf{x})^2}$$
+and the gradient is 
+$$\nabla_\mathbf{x} g_i = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{e}_i-\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}\right)$$
+where $\mathbf{e}_i$ is the $i$-canonical vector (all-zero except a 1 at the $i$-th position). We can then write the Jacobian as
+$$\textsf{J}_{\mathbf{x}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right),$$ where $\otimes$ denotes Kronecker product.
+Finally we can use the Jacobian chain rule (recall that $\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$):
+$$\mathbf{A} \triangleq \textsf{J}_{\mathbf{w}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right) \cdot \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right),$$
+which can be more efficiently expressed as
+$$\mathbf{A} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right)-\frac{1}{\mathbf{1}^T\mathbf{x}}\mathbf{1}\otimes\left(\mathbf{x}^T\left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right)\right)\right).$$
+This can be efficiently coded as
+```{r, eval=FALSE}
+sum_x <- sum(x)
+Mat <- t(Sigma*w) + diag(Sigma %*% w)
+A <- (1/sum_x) * (Mat - (1/sum_x)*matrix((t(x) %*% Mat), N, N, byrow = TRUE)
+```
 
 
 
