@@ -32,16 +32,17 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
   funk <- Inf
   for (k in 1:maxiter) {
     # auxiliary quantities
-    AkT <- t(g_grad(wk, Sigma))
+    AkT <- t(compute_A(wk, Sigma))
     Qk <- 2 * AkT %*% t(AkT) + tau * diag(N)
-    qk <- 2 * AkT %*% g(wk, Sigma) - Qk %*% wk
+    qk <- 2 * AkT %*% g_16(wk, Sigma) - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     F <- CVXR::quad_form(w, Sigma) - nu * t(w) %*% mu
     P <- .5 * CVXR::quad_form(w, Qk) + t(w) %*% qk
     obj_fun <- CVXR::Minimize(P + lambda * F)
     prob <- CVXR::Problem(obj_fun, constraints = constraints)
-    result <- solve(prob)
-    w_hat <- result$getValue(w)
+    #result <- solve(prob)
+    result <- quadprog::solve.QP(Qk, -qk, matrix(1, N, 1), 1, meq = 1)
+    w_hat <- result$solution
     w_next <- wk + gamma * (w_hat - wk)
     # save likelihood and objective function values
     nll_seq <- c(nll_seq, t(w_next) %*% Sigma %*% w_next - nu * t(w_next) %*% mu)
@@ -63,6 +64,7 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(list(portfolio_weights = w_next, risk_contrib = w_next * (Sigma %*% w_next),
+  return(list(portfolio_weights = w_next,
+              risk_contributions = w_next * (Sigma %*% w_next),
               negloglike = nll_seq, obj_fun = fun_seq))
 }
