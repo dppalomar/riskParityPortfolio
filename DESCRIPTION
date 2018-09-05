@@ -15,8 +15,15 @@ Depends:
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports:
 RoxygenNote: 6.1.0
+LinkingTo:
+    Rcpp,
+    RcppEigen
+Imports:
+    Rcpp,
+    RcppEigen
+Remotes:
+    google/patrick
 Suggests:
     xts,
     knitr,
