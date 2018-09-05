@@ -85,7 +85,7 @@ riskParityPortfolioQP <- function(Sigma, w0 = NA, gamma = .9,
   funk <- Inf
   for (k in 1:maxiter) {
     # auxiliary quantities
-    Ak <- computeA(wk, Sigma)
+    Ak <- compute_A(wk, Sigma)
     risks <-  wk * (Sigma %*% wk)
     g_wk <- rep(risks, times = N) - rep(risks, each = N)
     Qk <- 2 * crossprod(Ak) + tau * diag(N)
