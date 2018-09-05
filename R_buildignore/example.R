@@ -34,7 +34,7 @@ library(PerformanceAnalytics)
 #mu <- colMeans(X_log_trn)
 #Sigma <- cov(X_log_trn)
 
-N <- 10
+N <- 30
 mu <- runif(N)
 Sigma <- diag((1:N) ^ 2)
 Sigma[1, 2] <- 50
