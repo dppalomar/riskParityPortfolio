@@ -67,8 +67,7 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
 }
 
 #' @export
-riskParityPortfolioGenSolver <- function(mu, Sigma, budget = TRUE, shortselling = FALSE,
-                                         nu = 0, w0 = NA, lambda = .5) {
+riskParityPortfolioGenSolver <- function(Sigma, w0 = NA) {
   if (any(is.na(w0))) {
     w0 <- 1 / sqrt(diag(Sigma))
     w0 <- w0 / sum(w0)
@@ -88,7 +87,8 @@ riskParityPortfolioGenSolver <- function(mu, Sigma, budget = TRUE, shortselling 
     return(risk_grad)
   }
 
-  res <- optim(w0, fn, fn_grad, Sigma = Sigma, method = "BFGS")
+  res <- constrOptim(w0, fn, fn_grad, ui = diag(N), ci = rep(0, N),
+                     Sigma = Sigma, method = "BFGS")
   wopt <- res$par
   return(list(init_portfolio_weights = w0,
               portfolio_weights = wopt,

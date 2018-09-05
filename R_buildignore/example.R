@@ -41,8 +41,9 @@ Sigma <- diag((1:N) ^ 2)
 #res <- riskParityPortfolioCVX(mu, Sigma, tau = 1e-6,
 #                              zeta = .1, gamma = .99, ftol = 1e-16, wtol = 1e-10)
 
-res <- riskParityPortfolioGenSolver(mu, Sigma, w0 = rep(1/N, N))
+res <- riskParityPortfolioGenSolver(Sigma, w0 = rep(1/N, N))
 cat(res$init_portfolio_weights, '\n')
-cat(res$portfolio_weights)
+cat(res$portfolio_weights, '\n')
+cat(sum(res$portfolio_weights))
 barplot(t(res$portfolio_weights))
 barplot(t(res$risk_contributions))
