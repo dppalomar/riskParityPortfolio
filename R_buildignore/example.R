@@ -38,13 +38,11 @@ N <- 10
 mu <- runif(N)
 Sigma <- diag((1:N) ^ 2)
 
-res <- riskParityPortfolioCVX(mu, Sigma, tau = 1e-6,
-                              zeta = .1, gamma = .99, ftol = 1e-16, wtol = 1e-10)
-print(res)
-N_iter <- length(res$obj_fun)
-plot(c(1:N_iter), res$obj_fun, type = "b", pch=19, cex=.6,
-     col = scales::alpha("black", .5), xlab = "Iteration number",
-     ylab = "Objective function")
+#res <- riskParityPortfolioCVX(mu, Sigma, tau = 1e-6,
+#                              zeta = .1, gamma = .99, ftol = 1e-16, wtol = 1e-10)
 
+res <- riskParityPortfolioGenSolver(mu, Sigma, w0 = rep(1/N, N))
+cat(res$init_portfolio_weights, '\n')
+cat(res$portfolio_weights)
 barplot(t(res$portfolio_weights))
-barplot(t(res$risk_contrib))
+barplot(t(res$risk_contributions))

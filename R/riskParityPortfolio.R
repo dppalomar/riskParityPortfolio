@@ -1,7 +1,5 @@
-# This module contains the code to implement the SCA
-# solution for the risk parity portfolio design problem
-# as presented in FengPalomar-TSP2015.pdf
-
+library(stats)
+#' Implements the risk parity portfolio using SCA and CVXR
 #' @export
 riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
                                    shortselling = FALSE, w0 = NA, gamma = .9,
@@ -66,4 +64,33 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
   return(list(portfolio_weights = w_next,
               risk_contributions = w_next * (Sigma %*% w_next),
               negloglike = nll_seq, obj_fun = fun_seq))
+}
+
+#' @export
+riskParityPortfolioGenSolver <- function(mu, Sigma, budget = TRUE, shortselling = FALSE,
+                                         nu = 0, w0 = NA, lambda = .5) {
+  if (any(is.na(w0))) {
+    w0 <- 1 / sqrt(diag(Sigma))
+    w0 <- w0 / sum(w0)
+  }
+
+  N <- nrow(Sigma)
+  fn <- function(w, Sigma) {
+    wSw <- w * (Sigma %*% w)
+    risk <- 2 * (N * sum(wSw^2) - sum(wSw)^2)
+    return (risk)
+  }
+
+  fn_grad <- function(w, Sigma) {
+    wSw <- w * (Sigma %*% w)
+    v <- (N * wSw - sum(wSw) * rep(1, N))
+    risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
+    return(risk_grad)
+  }
+
+  res <- optim(w0, fn, fn_grad, Sigma = Sigma, method = "BFGS")
+  wopt <- res$par
+  return(list(init_portfolio_weights = w0,
+              portfolio_weights = wopt,
+              risk_contributions = wopt * (Sigma %*% wopt)))
 }
