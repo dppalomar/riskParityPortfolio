@@ -40,9 +40,8 @@ riskParityPortfolioCVX <- function(mu, Sigma, nu = 0, budget = TRUE,
     P <- .5 * CVXR::quad_form(w, Qk) + t(w) %*% qk
     obj_fun <- CVXR::Minimize(P + lambda * F)
     prob <- CVXR::Problem(obj_fun, constraints = constraints)
-    #result <- solve(prob)
-    result <- quadprog::solve.QP(Qk, -qk, matrix(1, N, 1), 1, meq = 1)
-    w_hat <- result$solution
+    result <- solve(prob)
+    w_hat <- result$getValue(w)
     w_next <- wk + gamma * (w_hat - wk)
     # save likelihood and objective function values
     nll_seq <- c(nll_seq, t(w_next) %*% Sigma %*% w_next - nu * t(w_next) %*% mu)
