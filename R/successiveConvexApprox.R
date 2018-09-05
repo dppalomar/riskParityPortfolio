@@ -1,8 +1,16 @@
 #' @export
-g_16 <- function(w, Sigma) {
+computeA <- function(w, Sigma) {
   N <- length(w)
-  risks <-  w * (Sigma %*% w)
-  return (rep(risks, times = N) - rep(risks, each = N))
+  g <- rep(NA, N^2)
+  diagSw <- diag(as.vector(Sigma %*% w))
+  Sdiagw <- Sigma %*% diag(w)
+  A <- matrix(NA, N^2, N)
+  for (i in 1:N) {
+    for (j in 1:N) {
+      A[i + (j-1)*N, ] <-  diagSw[i, ] + Sdiagw[i, ] - (diagSw[j, ] + Sdiagw[j, ])
+    }
+  }
+  return(A)
 }
 
 #' @export

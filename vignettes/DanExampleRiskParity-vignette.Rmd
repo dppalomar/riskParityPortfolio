@@ -1,0 +1,66 @@
+---
+title: "Design of Risk Parity Portfolios"
+author: "Convex Group - HKUST"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    base_format: prettydoc::html_pretty
+    theme: tactile
+    highlight: vignette
+    fig_caption: yes
+    number_sections: no
+    toc: yes
+    toc_depth: 2
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+header-includes:
+  \allowdisplaybreaks
+indent: yes
+csl: ieee.csl
+bibliography: refs.bib
+vignette: >
+  %\VignetteIndexEntry{Design of Risk Parity Portfolios}
+  %\VignetteKeyword{portfolio, risk-parity, risk, optimization}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.retina = 2,
+  out.width = "75%",
+  dpi = 96
+)
+knit_hooks$set(pngquant = hook_pngquant)
+#Help on bookdown: https://bookdown.org/yihui/bookdown/
+#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "all")
+#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "bookdown::html_document2")
+#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "bookdown::pdf_document2")
+#tools::compactPDF("vignettes/SparseIndexTracking-vignette.pdf", gs_quality = "ebook")
+```
+
+-----------
+> This vignette illustrates the design of risk-parity portfolios, widely
+used by practitioners in the financial industry, with the package
+`riskParityPortfolio` (with a comparison with other packages) and gives a
+description of the algorithms used.
+
+
+
+
+# Explanation of the algorithms
+
+
+
+# References {-}
+\setlength{\parindent}{-0.2in}
+\setlength{\leftskip}{0.2in}
+\setlength{\parskip}{8pt}
+\noindent
