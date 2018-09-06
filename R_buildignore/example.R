@@ -3,9 +3,9 @@ library(xts)
 library(quantmod)
 library(PerformanceAnalytics)
 
-N <- 100
+N <- 30
 Sigma <- diag((1:N) ^ 2)
-Sigma[1, 2] <- 50
+Sigma[1, 2] <- 10
 
 w_diag <- 1/sqrt(diag(Sigma))
 w_diag <- w_diag/sum(w_diag)

@@ -3,10 +3,11 @@ computeA <- function(w, Sigma) {
   N <- length(w)
   diagSw <- Sigma * w
   Sdiagw <- Sigma %*% diag(w)
-  A <- matrix(NA, N^2, N)
+  M <- diagSw + Sdiagw
+  A <- matrix(0, N^2, N)
   for (i in 1:N) {
     for (j in 1:N) {
-      A[i + (j-1)*N, ] <-  diagSw[, i] + Sdiagw[, i] - (diagSw[, j] + Sdiagw[, j])
+      A[i + (j-1)*N, ] <-  M[, i] - M[, j]
     }
   }
   return(A)
