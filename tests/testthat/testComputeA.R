@@ -3,8 +3,9 @@ library(riskParityPortfolio)
 library(testthat)
 
 test_that("computations of A are equivalent", {
-  w <- runif(10)
-  Sigma <- matrix(runif(100), nrow = 10)
+  N <- 3
+  w <- runif(N)
+  Sigma <- matrix(runif(N ^ 2), nrow = N)
   A1 <- compute_A(w, Sigma)
   A2 <- computeACpp(w, Sigma)
   expect_that(all(A1 == A2), is_true())
