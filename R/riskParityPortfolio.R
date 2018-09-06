@@ -171,7 +171,7 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   res <- alabama::constrOptim.nl(w0, fn, fn_grad,
                                  hin = shortselling, hin.jac = shortselling.jac,
                                  heq = budget, heq.jac = budget.jac,
-                                 Sigma = Sigma)
+                                 Sigma = Sigma, control.outer = list(trace = FALSE))
   wopt <- res$par
   return(list(portfolio_weights = wopt,
               risk_contributions = wopt * (Sigma %*% wopt),

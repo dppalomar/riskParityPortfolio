@@ -81,18 +81,38 @@ Websites to check:
 # Usage of the package
 ```{r, cache = TRUE}
 library(riskParityPortfolio)
-stock_index <- c(1:10)
-Sigma <- diag(c(1:10) ^ 2)
-mu <- runif(10)
-res <- riskParityPortfolio(mu, Sigma, nu = 0., type = "1", ftol = 1e-4)
-niter <- length(res$obj_fun)
-par(mfrow = c(1, 2))
-plot(stock_index, res$portfolio_weights, type = "b", pch=19, cex=.6,
-     col = scales::alpha("black", .5), xlab = "Stock number",
-     ylab = "Portfolio weights")
-plot(c(1:niter), res$obj_fun, type = "b", pch=19, cex=.6,
-     col = scales::alpha("black", .5), xlab = "Iteration number",
-     ylab = "Objective function value")
+library(xts)
+library(quantmod)
+library(PerformanceAnalytics)
+
+N <- 10
+stocks_index <- c(1:N)
+Sigma <- diag(stocks_index ^ 2)
+# add some correlation between stocks 1 and 2
+Sigma[2, 1] <- 10
+Sigma[1, 2] <- 10
+
+res_gen <- riskParityPortfolioGenSolver(Sigma)
+res_qp <- riskParityPortfolioQP(Sigma)
+
+w_diag <- 1/sqrt(diag(Sigma))
+w_diag <- w_diag/sum(w_diag)
+
+w_all <- cbind(res_gen$portfolio_weights, res_qp$portfolio_weights, w_diag)
+colnames(w_all) <- c("risk-parity-gen-solver", "risk-parity-sca", "risk-parity-diag")
+rownames(w_all) <- stocks_index
+round(w_all, digits = 2)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE,
+        legend = colnames(w_all), col = rainbow8equal[1:3])
+
+risk_contrib_all <- cbind(res_gen$risk_contribution, res_qp$risk_contribution,
+                          w_diag * (Sigma %*% w_diag))
+colnames(risk_contrib_all) <- c("rc-gen-solver", "rc-sca", "rc-diag")
+rownames(risk_contrib_all) <- stocks_index
+barplot(t(risk_contrib_all),
+        main = "Risk contribution", xlab = "stocks", beside = TRUE,
+        legend = colnames(w_all), col = rainbow8equal[1:3])
 ```
 
 
