@@ -68,7 +68,7 @@ riskParityPortfolioCVX <- function(Sigma, w0 = NA, budget = TRUE,
 riskParityPortfolioQP <- function(Sigma, w0 = NA, budget = TRUE,
                                   shortselling = FALSE, gamma = .9,
                                   zeta = 1e-7, tau = NA, maxiter = 500,
-                                  ftol = 1e-5, wtol = 1e-5) {
+                                  ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     wk <- 1 / sqrt(diag(Sigma))
@@ -94,9 +94,9 @@ riskParityPortfolioQP <- function(Sigma, w0 = NA, budget = TRUE,
     meq <- 0
   }
   # compute and store objective function at the initial value
-  fn <- function(w, Sigma, N) {
-    x <-  w * (Sigma %*% w)
-    return(2 * (N * sum(x ^ 2) - sum(x) ^ 2))
+  fn <- function(w, Sigma) {
+    wSw <- w * (Sigma %*% w)
+    return(2 * (N * sum(wSw^2) - sum(wSw)^2))
   }
   fun_k <- fn(wk, Sigma, N)
   fun_seq <- c(fun_k)
@@ -143,7 +143,7 @@ riskParityPortfolioQP <- function(Sigma, w0 = NA, budget = TRUE,
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          shortselling = FALSE, maxiter = 500,
-                                         ftol = 1e-5, wtol = 1e-5) {
+                                         ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
 
   if (any(is.na(w0))) {
@@ -157,7 +157,6 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     budget <- function(w, ...) {
       return (sum(w) - 1)
     }
-
     budget.jac <- function(w, ...) {
       return (matrix(1, 1, N))
     }
@@ -170,7 +169,6 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     shortselling <- function(w, ...) {
       return (w)
     }
-
     shortselling.jac <- function(w, ...) {
       return (diag(N))
     }
@@ -181,8 +179,7 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
 
   fn <- function(w, Sigma) {
     wSw <- w * (Sigma %*% w)
-    risk <- 2 * (N * sum(wSw^2) - sum(wSw)^2)
-    return (risk)
+    return(2 * (N * sum(wSw^2) - sum(wSw)^2))
   }
 
   fn_grad <- function(w, Sigma) {
