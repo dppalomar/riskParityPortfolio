@@ -2,11 +2,12 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioQP}
 \alias{riskParityPortfolioQP}
-\title{Implements the risk parity portfolio using SCA and CVXR}
+\title{Implements the risk parity portfolio using SCA and QP solver}
 \usage{
-riskParityPortfolioQP(Sigma, w0 = NA, gamma = 0.9, zeta = 1e-07,
-  tau = NA, maxiter = 500, ftol = 1e-05, wtol = 1e-05)
+riskParityPortfolioQP(Sigma, w0 = NA, budget = TRUE,
+  shortselling = FALSE, gamma = 0.9, zeta = 1e-07, tau = NA,
+  maxiter = 500, ftol = 1e-05, wtol = 1e-05)
 }
 \description{
-Implements the risk parity portfolio using SCA and CVXR
+Implements the risk parity portfolio using SCA and QP solver
 }

@@ -14,4 +14,4 @@ test:
 	Rscript -e "devtools::test()"
 
 all:
-	make clean && make build && make install && make test
+	make build && make install && make test
