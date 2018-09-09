@@ -12,6 +12,6 @@ test_that("risk gradient formulations are equivalent", {
   v <- (N * x - sum(x) * rep(1, N))
   risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
   # second approach
-  risk_grad_alt <- 4 * (Sigma * w + diag(Sigma %*% w)) %*% (N * x - sum(x) * rep(1, N))
+  risk_grad_alt <- 4 * (Sigma * w + diag(as.vector(Sigma %*% w))) %*% (N * x - sum(x) * rep(1, N))
   #expect_that(all(risk_grad_alt == risk_grad), is_true())
 })

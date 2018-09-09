@@ -4,8 +4,7 @@ using namespace Eigen;
 
 //' @export
 // [[Rcpp::export]]
-Eigen::MatrixXd computeACpp(const Eigen::VectorXd& w, const Eigen::MatrixXd& Sigma) {
-  const int N = w.size();
+Eigen::MatrixXd compute_A_double_index(const Eigen::VectorXd& w, const Eigen::MatrixXd& Sigma, const int N) {
   Eigen::MatrixXd A = Eigen::MatrixXd::Zero(N * N, N);
 
   for (int i = 0; i < N-1; ++i) {

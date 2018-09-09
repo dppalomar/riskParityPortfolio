@@ -6,21 +6,22 @@
 
 using namespace Rcpp;
 
-// computeACpp
-Eigen::MatrixXd computeACpp(const Eigen::VectorXd& w, const Eigen::MatrixXd& Sigma);
-RcppExport SEXP _riskParityPortfolio_computeACpp(SEXP wSEXP, SEXP SigmaSEXP) {
+// compute_A_double_index
+Eigen::MatrixXd compute_A_double_index(const Eigen::VectorXd& w, const Eigen::MatrixXd& Sigma, const int N);
+RcppExport SEXP _riskParityPortfolio_compute_A_double_index(SEXP wSEXP, SEXP SigmaSEXP, SEXP NSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type w(wSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Sigma(SigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(computeACpp(w, Sigma));
+    Rcpp::traits::input_parameter< const int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_A_double_index(w, Sigma, N));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_riskParityPortfolio_computeACpp", (DL_FUNC) &_riskParityPortfolio_computeACpp, 2},
+    {"_riskParityPortfolio_compute_A_double_index", (DL_FUNC) &_riskParityPortfolio_compute_A_double_index, 3},
     {NULL, NULL, 0}
 };
 

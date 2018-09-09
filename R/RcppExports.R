@@ -2,7 +2,7 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @export
-computeACpp <- function(w, Sigma) {
-    .Call('_riskParityPortfolio_computeACpp', PACKAGE = 'riskParityPortfolio', w, Sigma)
+compute_A_double_index <- function(w, Sigma, N) {
+    .Call('_riskParityPortfolio_compute_A_double_index', PACKAGE = 'riskParityPortfolio', w, Sigma, N)
 }
 

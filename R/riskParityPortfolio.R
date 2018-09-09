@@ -1,7 +1,8 @@
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
 riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
-                                   shortselling = FALSE, gamma = .9,
+                                   shortselling = FALSE,
+                                   formulation = "double-index", gamma = .9,
                                    zeta = 1e-7, tau = NA, maxiter = 500,
                                    ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
@@ -28,20 +29,40 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     bvec <- rep(0, N)
     meq <- 0
   }
-  # compute and store objective function at the initial value
-  fn <- function(w, Sigma, N) {
-    wSw <- w * (Sigma %*% w)
-    return(2 * (N * sum(wSw^2) - sum(wSw)^2))
+
+  if (formulation == "double-index") {
+    # define the risk function for a double-index formulation
+    fn <- function(w, Sigma, N) {
+      wSw <- w * (Sigma %*% w)
+      return(2 * (N * sum(wSw^2) - sum(wSw)^2))
+    }
+    g <- function(w, Sigma, N) {
+      wSw <-  w * (Sigma %*% w)
+      return (rep(wSw, times = N) - rep(wSw, each = N))
+    }
+    computeA <- compute_A_double_index
+  } else if (formulation == "single-index") {
+    # define the risk function for a single-index formulation
+    fn <- function(w, Sigma, N) {
+      wSw <- w * (Sigma %*% w)
+      # return (sum((wSw / sum(wSw) - 1 / N) ^ 2))
+      return (sum(wSw ^ 2) / (sum(wSw) ^ 2) - 1 / N)
+    }
+    g <- function(w, Sigma, N) {
+      wSw <- w * (Sigma %*% w)
+      return (wSw / sum(wSw) - 1 / N)
+    }
+    computeA <- compute_A_single_index_R
   }
+  # compute and store objective function at the initial value
   fun_k <- fn(wk, Sigma, N)
   fun_seq <- c(fun_k)
   time_seq <- c(0)
   start_time <- Sys.time()
   for (k in 1:maxiter) {
     # auxiliary quantities
-    Ak <- computeACpp(wk, Sigma)
-    risks <-  wk * (Sigma %*% wk)
-    g_wk <- rep(risks, times = N) - rep(risks, each = N)
+    Ak <- computeA(wk, Sigma, N)
+    g_wk <- g(wk, Sigma, N)
     Qk <- 2 * crossprod(Ak) + tau * diag(N)
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
@@ -113,12 +134,14 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   }
 
   if (formulation == "double-index") {
+    # define the risk for a double-index formulation
     fn <- function(w, Sigma, N) {
       wSw <- w * (Sigma %*% w)
       return (2 * (N * sum(wSw^2) - sum(wSw)^2))
     }
 
     if (use_gradient) {
+      # define the gradient of the risk for a double-index formulation
       fn_grad <- function(w, Sigma, N) {
         wSw <- w * (Sigma %*% w)
         v <- N * wSw - sum(wSw)
@@ -129,6 +152,7 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
       fn_grad <- NULL
     }
   } else if (formulation == "single-index") {
+    # define the risk for a single-index formulation
     fn <- function(w, Sigma, N) {
       wSw <- w * (Sigma %*% w)
       # return (sum((wSw / sum(wSw) - 1 / N) ^ 2))
@@ -136,6 +160,7 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     }
 
     if (use_gradient) {
+      # define the gradient of the risk for a single-index formulation
       fn_grad <- function(w, Sigma, N) {
         wSw <- w * (Sigma %*% w)
         sum_wSw <- sum(wSw)

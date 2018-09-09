@@ -80,7 +80,6 @@ Websites to check:
 
 # Usage of the package
 
-## Double-index case
 ```{r, cache = TRUE}
 library(riskParityPortfolio)
 library(xts)
@@ -89,7 +88,7 @@ library(PerformanceAnalytics)
 
 set.seed(123)
 
-N <- 13
+N <- 10
 stocks_index <- c(1:N)
 Sigma <- diag(stocks_index ^ 2)
 Sigma[2, 1] <- 10
@@ -97,11 +96,15 @@ Sigma[1, 2] <- 10
 S <- matrix(runif(N ^ 2), nrow = N)
 Sigma <- Sigma + S
 
-res_gen <- riskParityPortfolioGenSolver(Sigma)
-res_qp <- riskParityPortfolioSCA(Sigma)
-
-w_diag <- 1/sqrt(diag(Sigma))
+# compute the portfolio weights for the case when Sigma is diagonal
+w_diag <- 1 / sqrt(diag(Sigma))
 w_diag <- w_diag/sum(w_diag)
+```
+
+## Single-index case
+```{r, cache = TRUE}
+res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index")
+res_qp <- riskParityPortfolioSCA(Sigma, formulation = "single-index")
 
 w_all <- cbind(res_gen$w, res_qp$w, w_diag)
 colnames(w_all) <- c("risk-parity-gen-solver", "risk-parity-sca", "risk-parity-diag")
@@ -119,13 +122,44 @@ barplot(t(risk_contrib_all),
         main = "Risk contribution", xlab = "stocks", beside = TRUE,
         legend = colnames(w_all), col = rainbow8equal[1:3])
 plot(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=19, cex=.6,
-     col = "red", xlab = "Elapsed time",
+     col = "red", xlab = "Elapsed time (seconds)",
      ylab = "Objective function", main = "Convergence trend versus CPU time")
 lines(res_qp$elapsed_time, res_qp$obj_fun, type = "b", pch=18, cex=.8,
       col = "blue")
-legend(0.015, y=10, legend=c("risk-parity-gen-solver", "risk-parity-sca"),
+legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
        col=c("red", "blue"), lty=c(1, 1), cex=0.8)
 ```
+
+## Double-index case
+```{r, cache = TRUE}
+res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "double-index")
+res_qp <- riskParityPortfolioSCA(Sigma, formulation = "double-index")
+
+w_all <- cbind(res_gen$w, res_qp$w, w_diag)
+colnames(w_all) <- c("risk-parity-gen-solver", "risk-parity-sca", "risk-parity-diag")
+rownames(w_all) <- stocks_index
+round(w_all, digits = 2)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE,
+        legend = colnames(w_all), col = rainbow8equal[1:3])
+
+risk_contrib_all <- cbind(res_gen$risk_contribution, res_qp$risk_contribution,
+                          w_diag * (Sigma %*% w_diag))
+colnames(risk_contrib_all) <- c("rc-gen-solver", "rc-sca", "rc-diag")
+rownames(risk_contrib_all) <- stocks_index
+barplot(t(risk_contrib_all),
+        main = "Risk contribution", xlab = "stocks", beside = TRUE,
+        legend = colnames(w_all), col = rainbow8equal[1:3])
+plot(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=19, cex=.6,
+     col = "red", xlab = "Elapsed time (seconds)",
+     ylab = "Objective function", main = "Convergence trend versus CPU time")
+lines(res_qp$elapsed_time, res_qp$obj_fun, type = "b", pch=18, cex=.8,
+      col = "blue")
+legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
+       col=c("red", "blue"), lty=c(1, 1), cex=0.8)
+```
+
+
 
 
 # Explanation of the algorithms
