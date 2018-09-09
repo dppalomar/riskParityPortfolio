@@ -76,12 +76,12 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters
     werr <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
-    if (werr < wtol) {
+    if ((werr < wtol) & k > 1) {
       break
     }
     # check convergence on objective function
     ferr <- abs(fun_next - fun_k) / max(1., abs(fun_next))
-    if (ferr < ftol) {
+    if ((ferr < ftol) & k > 1) {
       break
     }
     # update variables

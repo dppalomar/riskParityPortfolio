@@ -91,10 +91,8 @@ set.seed(123)
 N <- 10
 stocks_index <- c(1:N)
 Sigma <- diag(stocks_index ^ 2)
-Sigma[2, 1] <- 10
-Sigma[1, 2] <- 10
 S <- matrix(runif(N ^ 2), nrow = N)
-Sigma <- Sigma + S
+Sigma <- Sigma + 10 * (S + t(S))
 
 # compute the portfolio weights for the case when Sigma is diagonal
 w_diag <- 1 / sqrt(diag(Sigma))
@@ -165,10 +163,8 @@ legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
 set.seed(123)
 
 N <- 100
-stocks_index <- c(1:N)
-Sigma <- diag(stocks_index ^ 2)
 S <- matrix(runif(N ^ 2), nrow = N)
-Sigma <- Sigma + S
+Sigma <- 10 * (S + t(S))
 
 res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index")
 res_gen_nograd <- riskParityPortfolioGenSolver(Sigma,
