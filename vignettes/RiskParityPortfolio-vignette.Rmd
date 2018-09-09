@@ -98,7 +98,7 @@ S <- matrix(runif(N ^ 2), nrow = N)
 Sigma <- Sigma + S
 
 res_gen <- riskParityPortfolioGenSolver(Sigma)
-res_qp <- riskParityPortfolioQP(Sigma)
+res_qp <- riskParityPortfolioSCA(Sigma)
 
 w_diag <- 1/sqrt(diag(Sigma))
 w_diag <- w_diag/sum(w_diag)

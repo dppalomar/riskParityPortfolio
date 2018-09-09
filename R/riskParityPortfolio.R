@@ -65,10 +65,10 @@ riskParityPortfolioCVX <- function(Sigma, w0 = NA, budget = TRUE,
 
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
-riskParityPortfolioQP <- function(Sigma, w0 = NA, budget = TRUE,
-                                  shortselling = FALSE, gamma = .9,
-                                  zeta = 1e-7, tau = NA, maxiter = 500,
-                                  ftol = 1e-9, wtol = 1e-9) {
+riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
+                                   shortselling = FALSE, gamma = .9,
+                                   zeta = 1e-7, tau = NA, maxiter = 500,
+                                   ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     wk <- 1 / sqrt(diag(Sigma))
@@ -142,10 +142,10 @@ riskParityPortfolioQP <- function(Sigma, w0 = NA, budget = TRUE,
 #' solver from the alabama package
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
-                                         shortselling = FALSE, maxiter = 500,
+                                         shortselling = FALSE, use_gradient = TRUE,
+                                         formulation = "double-index", maxiter = 500,
                                          ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
-
   if (any(is.na(w0))) {
     wk <- 1 / sqrt(diag(Sigma))
     wk <- wk / sum(wk)
@@ -177,16 +177,42 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     shortselling.jac <- NULL
   }
 
-  fn <- function(w, Sigma, N) {
-    wSw <- w * (Sigma %*% w)
-    return(2 * (N * sum(wSw^2) - sum(wSw)^2))
-  }
+  if (formulation == "double-index") {
+    fn <- function(w, Sigma, N) {
+      wSw <- w * (Sigma %*% w)
+      return (2 * (N * sum(wSw^2) - sum(wSw)^2))
+    }
 
-  fn_grad <- function(w, Sigma, N) {
-    wSw <- w * (Sigma %*% w)
-    v <- (N * wSw - sum(wSw) * rep(1, N))
-    risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
-    return (risk_grad)
+    if (use_gradient) {
+      fn_grad <- function(w, Sigma, N) {
+        wSw <- w * (Sigma %*% w)
+        v <- N * wSw - sum(wSw)
+        risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
+        return (risk_grad)
+      }
+    } else {
+      fn_grad <- NULL
+    }
+  } else if (formulation == "single-index") {
+    fn <- function(w, Sigma, N) {
+      wSw <- w * (Sigma %*% w)
+      return (sum((wSw / sum(wSw) - 1 / N) ^ 2))
+    }
+
+    if (use_gradient) {
+      fn_grad <- function(w, Sigma, N) {
+        wSw <- w * (Sigma %*% w)
+        sum_wSw <- sum(wSw)
+        wSw_b <- wSw / sum_wSw - 1 / N
+        v <- wSw_b - sum(wSw_b * wSw) / (sum_wSw ^ 2)
+        risk_grad <- (2 / sum_wSw) * (Sigma %*% (w * v) + (Sigma %*% w) * v)
+        return (risk_grad)
+      }
+    } else {
+      fn_grad <- NULL
+    }
+  } else {
+    stop("formulation ", formulation, " is not included.")
   }
 
   fun_k <- Inf
