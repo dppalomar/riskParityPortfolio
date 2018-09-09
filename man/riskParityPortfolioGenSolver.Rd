@@ -6,7 +6,7 @@
 solver from the alabama package}
 \usage{
 riskParityPortfolioGenSolver(Sigma, w0 = NA, budget = TRUE,
-  shortselling = FALSE, maxiter = 500, ftol = 1e-05, wtol = 1e-05)
+  shortselling = FALSE, maxiter = 500, ftol = 1e-09, wtol = 1e-09)
 }
 \description{
 Implements the risk parity portfolio using a general constrained

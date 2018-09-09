@@ -94,7 +94,7 @@ riskParityPortfolioQP <- function(Sigma, w0 = NA, budget = TRUE,
     meq <- 0
   }
   # compute and store objective function at the initial value
-  fn <- function(w, Sigma) {
+  fn <- function(w, Sigma, N) {
     wSw <- w * (Sigma %*% w)
     return(2 * (N * sum(wSw^2) - sum(wSw)^2))
   }
@@ -177,12 +177,12 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     shortselling.jac <- NULL
   }
 
-  fn <- function(w, Sigma) {
+  fn <- function(w, Sigma, N) {
     wSw <- w * (Sigma %*% w)
     return(2 * (N * sum(wSw^2) - sum(wSw)^2))
   }
 
-  fn_grad <- function(w, Sigma) {
+  fn_grad <- function(w, Sigma, N) {
     wSw <- w * (Sigma %*% w)
     v <- (N * wSw - sum(wSw) * rep(1, N))
     risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
@@ -190,14 +190,14 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   }
 
   fun_k <- Inf
-  fun_seq <- c(fn(wk, Sigma))
+  fun_seq <- c(fn(wk, Sigma, N))
   time_seq <- c(0)
   start_time <- Sys.time()
   for (i in 1:maxiter) {
     res <- alabama::constrOptim.nl(wk, fn, fn_grad, hin = shortselling,
                                    hin.jac = shortselling.jac,
                                    heq = budget, heq.jac = budget.jac,
-                                   Sigma = Sigma,
+                                   Sigma = Sigma, N = N,
                                    control.outer = list(trace = FALSE, itmax = 1))
     # save objective value and elapsed time
     end_time <- Sys.time()

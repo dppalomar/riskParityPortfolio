@@ -6,7 +6,7 @@
 \usage{
 riskParityPortfolioQP(Sigma, w0 = NA, budget = TRUE,
   shortselling = FALSE, gamma = 0.9, zeta = 1e-07, tau = NA,
-  maxiter = 500, ftol = 1e-05, wtol = 1e-05)
+  maxiter = 500, ftol = 1e-09, wtol = 1e-09)
 }
 \description{
 Implements the risk parity portfolio using SCA and QP solver
