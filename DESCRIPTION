@@ -21,7 +21,8 @@ LinkingTo:
     RcppEigen
 Imports:
     Rcpp,
-    RcppEigen
+    RcppEigen,
+    Matrix
 Remotes:
     google/patrick
 Suggests:
