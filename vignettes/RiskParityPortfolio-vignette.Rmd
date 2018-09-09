@@ -89,7 +89,7 @@ library(PerformanceAnalytics)
 
 set.seed(123)
 
-N <- 10
+N <- 13
 stocks_index <- c(1:N)
 Sigma <- diag(stocks_index ^ 2)
 Sigma[2, 1] <- 10
