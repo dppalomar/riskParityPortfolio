@@ -160,6 +160,34 @@ legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
 ```
 
 
+## Test with large number of stocks, single-index case
+```{r, cache = TRUE}
+set.seed(123)
+
+N <- 100
+stocks_index <- c(1:N)
+Sigma <- diag(stocks_index ^ 2)
+S <- matrix(runif(N ^ 2), nrow = N)
+Sigma <- Sigma + S
+
+res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index")
+res_gen_nograd <- riskParityPortfolioGenSolver(Sigma,
+                                               formulation = "single-index",
+                                               use_gradient = FALSE)
+res_qp <- riskParityPortfolioSCA(Sigma, formulation = "single-index")
+
+plot(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=19, cex=.6,
+     col = "red", xlab = "Elapsed time (seconds)",
+     ylab = "Objective function", main = "Convergence trend versus CPU time")
+lines(res_gen_nograd$elapsed_time, res_gen_nograd$obj_fun, type = "b", pch=18, cex=.8,
+      col = "green")
+lines(res_qp$elapsed_time, res_qp$obj_fun, type = "b", pch=18, cex=.8,
+      col = "blue")
+legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-gen-solver-nograd",
+                            "risk-parity-sca"),
+       col=c("red", "green", "blue"), lty=c(1, 1, 1), cex=0.8)
+```
+
 
 
 # Explanation of the algorithms
