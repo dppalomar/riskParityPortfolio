@@ -14,7 +14,7 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
                                    shortselling = FALSE,
                                    formulation = "double-index", gamma = .9,
                                    zeta = 1e-7, tau = NA, maxiter = 500,
-                                   ftol = 1e-9, wtol = 1e-9) {
+                                   ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     wk <- 1 / sqrt(diag(Sigma))
@@ -44,7 +44,7 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     # define the risk function for a double-index formulation
     fn <- function(w, Sigma, N) {
       wSw <- w * (Sigma %*% w)
-      return(2 * (N * sum(wSw^2) - sum(wSw)^2))
+      return (2 * (N * sum(wSw^2) - sum(wSw)^2))
     }
     g <- function(w, Sigma, N) {
       wSw <-  w * (Sigma %*% w)
@@ -109,8 +109,8 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          shortselling = FALSE, use_gradient = TRUE,
-                                         formulation = "double-index", method = "alabama",
-                                         maxiter = 500, ftol = 1e-9, wtol = 1e-9) {
+                                         formulation = "double-index", method = "slsqp",
+                                         maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     w0 <- 1 / sqrt(diag(Sigma))
