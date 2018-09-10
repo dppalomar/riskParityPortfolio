@@ -1,3 +1,13 @@
+#' Implements the risk parity portfolio for the case of diagonal Sigma
+#' that satisfies the constraints sum(w) = 1 and w >= 0.
+#'
+#' @export
+riskParityPortfolioDiagSigma <- function(Sigma) {
+  w <- 1 / sqrt(diag(Sigma))
+  w <- w / sum(w)
+  return (list(w = w, r = w * (Sigma %*% w)))
+}
+
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
 riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
