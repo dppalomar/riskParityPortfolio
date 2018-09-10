@@ -99,8 +99,8 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          shortselling = FALSE, use_gradient = TRUE,
-                                         formulation = "double-index", maxiter = 500,
-                                         ftol = 1e-9, wtol = 1e-9) {
+                                         formulation = "double-index", method = "alabama",
+                                         maxiter = 500, ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     w0 <- 1 / sqrt(diag(Sigma))
@@ -176,13 +176,24 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
 
   fun_seq <- c(fn(w0, Sigma, N))
   time_seq <- c(0)
+  if (method == "alabama") {
   start_time <- Sys.time()
-  res <- alabama::constrOptim.nl(w0, fn, fn_grad, hin = shortselling,
-                                 hin.jac = shortselling.jac,
-                                 heq = budget, heq.jac = budget.jac,
-                                 Sigma = Sigma, N = N,
-                                 control.outer = list(trace = FALSE, itmax = maxiter))
-  end_time <- Sys.time()
+    res <- alabama::constrOptim.nl(w0, fn, fn_grad, hin = shortselling,
+                                   hin.jac = shortselling.jac,
+                                   heq = budget, heq.jac = budget.jac,
+                                   Sigma = Sigma, N = N,
+                                   control.outer = list(trace = FALSE,
+                                                        itmax = maxiter))
+    end_time <- Sys.time()
+  } else if (method == "slsqp") {
+    start_time <- Sys.time()
+    res <- nloptr::slsqp(w0, fn, fn_grad, hin = shortselling,
+                         hinjac = shortselling.jac,
+                         heq = budget, heqjac = budget.jac,
+                         Sigma = Sigma, N = N, control = list(xtol_rel = wtol,
+                                                              ftol_rel = ftol))
+    end_time <- Sys.time()
+  }
   # save objective value and elapsed time
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
