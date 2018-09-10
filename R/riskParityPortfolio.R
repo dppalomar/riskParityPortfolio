@@ -177,7 +177,7 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   fun_seq <- c(fn(w0, Sigma, N))
   time_seq <- c(0)
   if (method == "alabama") {
-  start_time <- Sys.time()
+    start_time <- Sys.time()
     res <- alabama::constrOptim.nl(w0, fn, fn_grad, hin = shortselling,
                                    hin.jac = shortselling.jac,
                                    heq = budget, heq.jac = budget.jac,
