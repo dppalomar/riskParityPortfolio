@@ -75,17 +75,11 @@ set.seed(123)
 
 N <- 10
 stocks_index <- c(1:N)
-Sigma <- diag(stocks_index ^ 2)
-S <- matrix(runif(N ^ 2), nrow = N)
-Sigma <- Sigma + 10 * (S + t(S))
+V <- matrix(rnorm(N ^ 2), nrow = N)
+Sigma <- V %*% t(V)
 
 # compute the portfolio weights for the case when Sigma is diagonal
-w_diag <- 1 / sqrt(diag(Sigma))
-w_diag <- w_diag/sum(w_diag)
-# Vinicius: let's write a function for the diagonal case to be used like this:
-# res_diag <- riskParityPortfolioDiagSigma(diag(Sigma))
-# in the function description we need to say that it is for sum(w)=1 and w>=0.
-# Oh, to be consistent, it should return a list with the elements w and risk_contribution
+res_diag <- riskParityPortfolioDiagSigma(Sigma)
 ```
 
 ## Formulations (Vinicius: please take a look and revise and include the formulations from my .Rmd file)
@@ -129,16 +123,12 @@ $$\begin{array}{ll}
 which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
 
 
-
-
-
-
 ## Single-index case
 ```{r, cache = TRUE}
 res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index")
 res_qp <- riskParityPortfolioSCA(Sigma, formulation = "single-index")
 
-w_all <- cbind(res_gen$w, res_qp$w, w_diag)
+w_all <- cbind(res_gen$w, res_qp$w, res_diag$w)
 colnames(w_all) <- c("risk-parity-gen-solver", "risk-parity-sca", "risk-parity-diag")
 rownames(w_all) <- stocks_index
 # Vinicius, if Sigma contains rownames or colnames, we should name w with those names, so the line above would be unnecessary (we should also name risk_contribution and so)
@@ -147,18 +137,17 @@ barplot(t(w_all),
         main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE,
         legend = colnames(w_all), col = rainbow8equal[1:3])
 
-risk_contrib_all <- cbind(res_gen$risk_contribution, res_qp$risk_contribution,
-                          w_diag * (Sigma %*% w_diag))
+risk_contrib_all <- cbind(res_gen$r, res_qp$r, res_diag$r)
 colnames(risk_contrib_all) <- c("rc-gen-solver", "rc-sca", "rc-diag")
 rownames(risk_contrib_all) <- stocks_index
 barplot(t(risk_contrib_all),
         main = "Risk contribution", xlab = "stocks", beside = TRUE,
         legend = colnames(w_all), col = rainbow8equal[1:3])
-plot(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=19, cex=.6,
-     col = "red", xlab = "Elapsed time (seconds)",
+plot(res_qp$elapsed_time, res_qp$obj_fun, type = "b", pch=19, cex=.6,
+     col = "blue", xlab = "Elapsed time (seconds)",
      ylab = "Objective function", main = "Convergence trend versus CPU time")
-lines(res_qp$elapsed_time, res_qp$obj_fun, type = "b", pch=18, cex=.8,
-      col = "blue")
+lines(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=18, cex=.8,
+      col = "red")
 legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
        col=c("red", "blue"), lty=c(1, 1), cex=0.8)
 ```
@@ -168,7 +157,7 @@ legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
 res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "double-index")
 res_qp <- riskParityPortfolioSCA(Sigma, formulation = "double-index")
 
-w_all <- cbind(res_gen$w, res_qp$w, w_diag)
+w_all <- cbind(res_gen$w, res_qp$w, res_diag$w)
 colnames(w_all) <- c("risk-parity-gen-solver", "risk-parity-sca", "risk-parity-diag")
 rownames(w_all) <- stocks_index
 round(w_all, digits = 2)
@@ -176,8 +165,7 @@ barplot(t(w_all),
         main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE,
         legend = colnames(w_all), col = rainbow8equal[1:3])
 
-risk_contrib_all <- cbind(res_gen$risk_contribution, res_qp$risk_contribution,
-                          w_diag * (Sigma %*% w_diag))
+risk_contrib_all <- cbind(res_gen$r, res_qp$r, res_diag$r)
 colnames(risk_contrib_all) <- c("rc-gen-solver", "rc-sca", "rc-diag")
 rownames(risk_contrib_all) <- stocks_index
 barplot(t(risk_contrib_all),
@@ -198,25 +186,25 @@ legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
 set.seed(123)
 
 N <- 100
-S <- matrix(runif(N ^ 2), nrow = N)
-Sigma <- 10 * (S + t(S))
+V <- matrix(rnorm(N ^ 2), nrow = N)
+Sigma <- V %*% t(V)
 
-res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index")
+res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index", method = "slsqp")
 res_gen_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                               formulation = "single-index",
+                                               formulation = "single-index", method = "slsqp",
                                                use_gradient = FALSE)
 res_qp <- riskParityPortfolioSCA(Sigma, formulation = "single-index")
 
-plot(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=19, cex=.6,
-     col = "red", xlab = "Elapsed time (seconds)",
+plot(res_gen_nograd$elapsed_time, res_gen_nograd$obj_fun, type = "b", pch=19, cex=.6,
+     col = "green", xlab = "Elapsed time (seconds)",
      ylab = "Objective function", main = "Convergence trend versus CPU time")
-lines(res_gen_nograd$elapsed_time, res_gen_nograd$obj_fun, type = "b", pch=18, cex=.8,
-      col = "green")
 lines(res_qp$elapsed_time, res_qp$obj_fun, type = "b", pch=18, cex=.8,
       col = "blue")
-legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-gen-solver-nograd",
-                            "risk-parity-sca"),
-       col=c("red", "green", "blue"), lty=c(1, 1, 1), cex=0.8)
+lines(res_gen$elapsed_time, res_gen$obj_fun, type = "b", pch=17, cex=.8,
+      col = "red")
+legend("topright", legend=c("risk-parity-gen-solver-nograd",
+                            "risk-parity-sca", "risk-parity-gen-solver"),
+       col=c("green", "blue", "red"), lty=c(1, 1, 1), cex=0.8)
 ```
 
 
