@@ -181,7 +181,7 @@ legend("topright", legend=c("risk-parity-gen-solver", "risk-parity-sca"),
 ```
 
 
-## Test with large number of stocks, single-index case
+## Experiment with synthetic data: single-index case
 ```{r, cache = TRUE}
 set.seed(123)
 
@@ -189,9 +189,11 @@ N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
-res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index", method = "slsqp")
+res_gen <- riskParityPortfolioGenSolver(Sigma, formulation = "single-index",
+                                        method = "slsqp")
 res_gen_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                               formulation = "single-index", method = "slsqp",
+                                               formulation = "single-index",
+                                               method = "slsqp",
                                                use_gradient = FALSE)
 res_qp <- riskParityPortfolioSCA(Sigma, formulation = "single-index")
 
@@ -207,11 +209,9 @@ legend("topright", legend=c("risk-parity-gen-solver-nograd",
        col=c("green", "blue", "red"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-
+## Experiment with real data: single-index case
 
 # Explanation of the algorithms
-
-
 
 # References {-}
 \setlength{\parindent}{-0.2in}

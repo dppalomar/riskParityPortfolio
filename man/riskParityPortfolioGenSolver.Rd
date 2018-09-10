@@ -7,8 +7,8 @@ solver from the alabama package}
 \usage{
 riskParityPortfolioGenSolver(Sigma, w0 = NA, budget = TRUE,
   shortselling = FALSE, use_gradient = TRUE,
-  formulation = "double-index", maxiter = 500, ftol = 1e-09,
-  wtol = 1e-09)
+  formulation = "double-index", method = "slsqp", maxiter = 500,
+  ftol = 1e-09, wtol = 1e-06)
 }
 \description{
 Implements the risk parity portfolio using a general constrained
