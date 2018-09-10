@@ -103,10 +103,8 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          ftol = 1e-9, wtol = 1e-9) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
-    wk <- 1 / sqrt(diag(Sigma))
-    wk <- wk / sum(wk)
-  } else {
-    wk <- w0
+    w0 <- 1 / sqrt(diag(Sigma))
+    w0 <- w0 / sum(w0)
   }
 
   if (budget) {
@@ -176,36 +174,19 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     stop("formulation ", formulation, " is not included.")
   }
 
-  fun_k <- Inf
-  fun_seq <- c(fn(wk, Sigma, N))
+  fun_seq <- c(fn(w0, Sigma, N))
   time_seq <- c(0)
   start_time <- Sys.time()
-  for (i in 1:maxiter) {
-    res <- alabama::constrOptim.nl(wk, fn, fn_grad, hin = shortselling,
-                                   hin.jac = shortselling.jac,
-                                   heq = budget, heq.jac = budget.jac,
-                                   Sigma = Sigma, N = N,
-                                   control.outer = list(trace = FALSE, itmax = 1))
-    # save objective value and elapsed time
-    end_time <- Sys.time()
-    time_seq <- c(time_seq, end_time - start_time)
-    fun_next <- res$value
-    fun_seq <- c(fun_seq, fun_next)
-    # check convergence on parameters
-    w_next <- res$par
-    werr <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
-    if (werr < wtol) {
-      break
-    }
-    # check convergence on objective function
-    ferr <- abs(fun_next - fun_k) / max(1., abs(fun_next))
-    if (ferr < ftol) {
-      break
-    }
-    # update variables
-    wk <- w_next
-    fun_k <- fun_next
-  }
-  return(list(w = w_next, risk_contributions = w_next * (Sigma %*% w_next),
+  res <- alabama::constrOptim.nl(w0, fn, fn_grad, hin = shortselling,
+                                 hin.jac = shortselling.jac,
+                                 heq = budget, heq.jac = budget.jac,
+                                 Sigma = Sigma, N = N,
+                                 control.outer = list(trace = FALSE, itmax = maxiter))
+  end_time <- Sys.time()
+  # save objective value and elapsed time
+  time_seq <- c(time_seq, end_time - start_time)
+  fun_seq <- c(fun_seq, res$value)
+  w <- res$par
+  return(list(w = w, r = w * (Sigma %*% w),
               obj_fun = fun_seq, elapsed_time = time_seq))
 }
