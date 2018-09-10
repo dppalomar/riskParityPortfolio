@@ -1,0 +1,631 @@
+---
+title: "Risk-Parity Portfolio with R"
+subtitle: "MAFS6010R - Portfolio Optimization with R (MSc in Financial Mathematics)"
+author: 
+- name: "Daniel P. Palomar"
+  affiliation: "Hong Kong University of Science and Technology (HKUST)"
+date: '`r Sys.Date()`'
+output:
+  html_document:
+    theme: flatly
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center"
+)
+```
+
+------------
+This R session will introduce the risk-parity portfolio and compare with Markowitz portfolio.
+
+The R package **riskParityPortfolio**, available in [GitHub](https://github.com/dppalomar/riskParityPortfolio).
+
+(Useful R links: [Cookbook R](http://www.cookbook-r.com/), [Quick-R](https://www.statmethods.net/), [R documentation](https://www.rdocumentation.org/), [CRAN](https://cran.r-project.org/), [METACRAN](https://r-pkg.org/).)
+
+
+# Loading market data
+In this section, we will divide the stock market data into a training part (for the estimation of the expected return $\boldsymbol{\mu}$ and covariance matrix $\boldsymbol{\Sigma}$, and subsequent portfolio design) and a test part (for the out-of-sample performance evaluation).
+
+We start by loading some stock market data:
+```{r, echo=FALSE, message = FALSE}
+library(xts)
+library(quantmod)
+library(PerformanceAnalytics)
+```
+
+```{r, message = FALSE, cache = TRUE}
+library(xts)
+library(quantmod)
+library(PerformanceAnalytics)
+
+# set begin-end date and stock namelist
+begin_date <- "2013-01-01"
+end_date <- "2017-08-31"
+stock_namelist <- c("AAPL", "AMD", "ADI",  "ABBV", "AET", "A",  "APD", "AA","CF")
+
+# download data from YahooFinance
+prices <- xts()
+for (stock_index in 1:length(stock_namelist))
+  prices <- cbind(prices, Ad(getSymbols(stock_namelist[stock_index], 
+                                        from = begin_date, to = end_date, auto.assign = FALSE)))
+colnames(prices) <- stock_namelist
+indexClass(prices) <- "Date"
+str(prices)
+head(prices)
+tail(prices)
+
+# compute log-returns and linear returns
+X_log <- diff(log(prices))[-1]
+X_lin <- (prices/lag(prices) - 1)[-1]
+
+# or alternatively...
+X_log <- CalculateReturns(prices, "log")[-1]
+X_lin <- CalculateReturns(prices)[-1]
+
+N <- ncol(X_log)  # number of stocks
+T <- nrow(X_log)  # number of days
+```
+
+We can take a look at the prices of the selected stocks:
+```{r, fig.width = 10, fig.height = 6, out.width = "100%"}
+plot(prices/rep(prices[1, ], each = nrow(prices)), col = rainbow10equal, legend.loc = "topleft",
+     main = "Normalized prices")
+```
+
+We now divide the data into a training set and test set:
+```{r}
+# split data into training and set data
+T_trn <- round(0.7*T)  # 70% of data
+X_log_trn <- X_log[1:T_trn, ]
+X_log_tst <- X_log[(T_trn+1):T, ]
+X_lin_trn <- X_lin[1:T_trn, ]
+X_lin_tst <- X_lin[(T_trn+1):T, ]
+```
+
+
+We can now use the training set to obtain the sample estimates from the returns $\mathbf{x}_t$ (i.e., sample means and sample covariance matrix) as
+$$
+\begin{align}
+\hat{\boldsymbol{\mu}} & = \frac{1}{T}\sum_{t=1}^T \mathbf{x}_t\\
+\hat{\boldsymbol{\Sigma}} & = \frac{1}{T-1}\sum_{t=1}^T (\mathbf{x}_t - \hat{\boldsymbol{\mu}})(\mathbf{x}_t - \hat{\boldsymbol{\mu}})^T
+\end{align}
+$$
+```{r}
+mu <- colMeans(X_log_trn)
+Sigma <- cov(X_log_trn)
+```
+
+
+# Warm-up: Markowitz portfolio
+The mean-variance Markowitz portfolio with no shorting is
+$$
+\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{maximize}} & \boldsymbol{\mu}^T\mathbf{w} -\lambda\mathbf{w}^T\mathbf{\Sigma}\mathbf{w}\\
+{\textsf{subject to}}
+ & \mathbf{1}^T\mathbf{w} = 1\\
+ & \mathbf{w}\ge\mathbf{0}.
+\end{array}
+$$
+For completeness, we can also consider the Global Minimum Variance Portfolio (GMVP), which doesn't make use of $\boldsymbol{\mu}$:
+$$
+\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & \mathbf{w}^T\mathbf{\Sigma}\mathbf{w}\\
+{\textsf{subject to}}
+ & \mathbf{1}^T\mathbf{w} = 1\\
+ & \mathbf{w}\ge\mathbf{0}.
+\end{array}
+$$
+
+We can compute the optimal $\mathbf{w}$ with a solver (the closed-form solution does not exist for $\mathbf{w}\ge\mathbf{0}$):
+```{r, message = FALSE}
+library(CVXR)
+
+portolioMarkowitz <- function(mu, Sigma, lmd = 0.5) {
+  w <- Variable(nrow(Sigma))
+  prob <- Problem(Maximize(t(mu) %*% w - lmd*quad_form(w, Sigma)),
+                  constraints = list(w >= 0, sum(w) == 1))
+  result <- solve(prob)
+  return(as.vector(result$getValue(w)))
+}
+
+portolioGMVP <- function(Sigma) {
+  w <- Variable(nrow(Sigma))
+  prob <- Problem(Minimize(quad_form(w, Sigma)), 
+                  constraints = list(w >= 0, sum(w) == 1))
+  result <- solve(prob)
+  return(as.vector(result$getValue(w)))
+}
+
+w_Markowitz <- portolioMarkowitz(mu, Sigma)
+w_GMVP <- portolioGMVP(Sigma)
+```
+
+
+
+
+## Lack of diversification
+We can now observe the allocations of the portfolios:
+```{r}
+# put together all portfolios
+w_all <- cbind(w_GMVP, w_Markowitz)
+rownames(w_all) <- colnames(X_lin)
+colnames(w_all) <- c("GMVP", "Markowitz")
+round(w_all, digits = 2)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:2])
+```
+Indeed, we can clearly see that the mean-variance Markowitz portfolio concentrates all the budget in one single asset! The GMVP is much more diversified.
+
+Then we can compare the performance (in sample vs out-of-sample):
+```{r}
+# compute returns of all portfolios
+ret_all <- xts(X_lin %*% w_all, index(X_lin))
+ret_all_trn <- ret_all[1:T_trn, ]
+ret_all_tst <- ret_all[-c(1:T_trn), ]
+
+# performance
+table.AnnualizedReturns(ret_all_trn)
+table.AnnualizedReturns(ret_all_tst)
+```
+We can see that the mean-variance Markowitz portfolio performs even worse than the GMVP in the out-of-sample (the in-sample Sharpe ratio is approximately the same though).
+
+Let us plot the cumulative PnL over time:
+```{r, fig.width = 10, fig.height = 6, out.width = "100%"}
+{ chart.CumReturns(ret_all, main = "Performance of different portfolios", 
+                   wealth.index = TRUE, legend.loc = "topleft", colorset = rich8equal)
+  addEventLines(xts("training", index(X_lin[T_trn])), srt=90, pos=2, lwd = 2, col = "darkblue") }
+```
+The cum PnL may seem contradictory at first because the mean-variance portfolio seems to be doing much better than the GMVP. This is however a visual effect. The drawdown is very instructive:
+```{r, fig.width = 10, fig.height = 5, out.width = "100%"}
+{ chart.Drawdown(ret_all, main = "Performance of different portfolios", 
+                 legend.loc = "bottomleft", colorset = rich8equal)
+  addEventLines(xts("training", index(X_lin[T_trn])), srt=90, pos=2, lwd = 2, col = "darkblue") }
+```
+We can see that the drawdown of the mean-variance portfolio is indeed much worse than that of the GMVP.
+
+
+
+## Sensitivity to parameters
+To study the sensitivity with respect to the parameters $\boldsymbol{\mu}$ and $\boldsymbol{\Sigma}$, we will design multiple portfolios based on different samples from the training set:
+```{r}
+w_GMVP_acc <- w_Markowitz_acc <- NULL
+for (i in 1:8) {
+  # sample means with random samples
+  idx <- sample(1:T_trn, T_trn/2)
+  mu_ <- colMeans(X_log_trn[idx, ])
+  Sigma_ <- cov(X_log_trn[idx, ])
+  
+  # design portfolios
+  w_Markowitz_acc <- cbind(w_Markowitz_acc, portolioMarkowitz(mu_, Sigma_))
+  w_GMVP_acc <- cbind(w_GMVP_acc, portolioGMVP(Sigma_))
+}
+rownames(w_GMVP_acc) <- rownames(w_Markowitz_acc) <- colnames(X_lin)
+```
+
+The GMVP is not very sensitive since all the realizations have a similar allocation:
+```{r}
+barplot(t(w_GMVP_acc),
+        main = "Different realizations of GMVP portfolio", xlab = "stocks", ylab = "dollars", 
+        beside = TRUE, col = rainbow8equal)
+```
+
+On the other hand, the mean-variance portfolio is highly sensitive. So sensitive that the portfolio at each realization is totally different!:
+```{r}
+barplot(t(w_Markowitz_acc),
+        main = "Different realizations of Markowitz portfolio", xlab = "stocks", ylab = "dollars", 
+        beside = TRUE, col = rainbow8equal)
+```
+
+Of course the reason for this very distinct behavior is that the sensitivity w.r.t. $\boldsymbol{\mu}$ is much greater than w.r.t. $\boldsymbol{\Sigma}$ (also, the estimation error in the former is larger than in the latter).
+
+
+
+
+# Risk-parity portfolio
+As we have seen, the Markowitz porftolio, while it started the field of modern portfolio theory in 1952, has not been embraced by practitioners because it does not diversify the risk and concentrates in a few assets, also it is too sensitive to the parameters (particularly to $\boldsymbol{\mu}$).
+
+We now consider the risk-parity portfolio that precisely aims at diversifying the risk contribution and it also happens to be less sensitive to the parameters (because in its original formulation $\boldsymbol{\mu}$ is not used).
+
+Detailed information on the risk-parity portfolio can be found in the following references on which the R package **sparseIndexTracking** is based:
+
+> Yiyong Feng and Daniel P. Palomar,  _A Signal Processing Perspective on Financial Engineering_, Foundations and Trends in Signal Processing, Now Publishers, Chapter 9. 2016.
+
+> Yiyong Feng and Daniel P. Palomar, “SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design,” _IEEE Trans. on Signal Processing_, vol. 63, no. 19, pp. 5285-5300, Oct. 2015.
+
+
+## Formulation
+In its simples version, the risk-parity portfolio aims at achieving parity of the risk contributions from the different assets:
+$$w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j \qquad \forall i,j.$$
+
+Assuming that $\boldsymbol{\Sigma}$ is diagonal and with the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w}\ge\mathbf{0}$, the risk budgeting portfolio is
+$$w_i = \frac{\sqrt{b_i}/\sqrt{\Sigma_{ii}}}{\sum_{k=1}^N\sqrt{b_k}/\sqrt{\Sigma_{kk}}}, \qquad i=1,\ldots,N.$$
+In general, exact parity cannot be achieved and one needs to define a risk term to be minimized:
+$$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$$
+or simply
+$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}.$$
+
+One of the earliest risk-parity portfolio formulations is
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2}\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
+\end{array}$$
+which corresponds to $g_{i,j}(\mathbf{w})=\mathbf{w}^T(\mathbf{M}_i-\mathbf{M}_j)\mathbf{w}$ (with $\mathcal{W}$ denoting some other constraints).
+
+Another similar formulation is
+$$\begin{array}{ll}
+\underset{\mathbf{w},\theta}{\textsf{minimize}} & \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i} - \theta\right)^{2}\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W}.
+\end{array}$$
+which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
+
+
+
+## Algorithms
+
+### Closed-form solution for diagonal case
+We can try the closed-form solution for the case of diagonal $\boldsymbol{\Sigma}$ even if it is not diagonal
+```{r}
+w_diag <- 1/sqrt(diag(Sigma))
+w_diag <- w_diag/sum(w_diag)
+
+# plot
+w_all <- cbind(w_all, "risk-parity-diag" = w_diag)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:3])
+```
+
+
+
+### General nonlinear solver
+These problem formulations are all nonconvex and general-purpose nonlinear solvers may be slow:
+```{r}
+w0 <- rep(1/N, N)  # initial point
+fn <- function(w, Sigma) {
+  N <- length(w)
+  risks <-  w * (Sigma %*% w)
+  g <- rep(risks, times = N) - rep(risks, each = N)
+  return(sum(g^2))
+}
+
+# general solver
+result <- optim(par = w0, fn = fn, Sigma = Sigma,
+                method = "Nelder-Mead")
+w_gen_solver <- result$par
+
+# plot
+w_all <- cbind(w_all, "risk-parity-gen-solver" = w_gen_solver)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:4])
+```
+
+
+### R packages
+We can try some R packages for risk-parity portfolio. Let's start with the package **cccp**:
+```{r, results="hide"}
+library(cccp)  #install.packages("cccp")
+
+res_rp <- rp(w0, Sigma, rep(1/N, N))
+w_cccp <- res_rp$pdv$x
+
+# plot
+w_all <- cbind(w_all, "risk-parity-cccp" = w_cccp)
+colnames(w_all)[5] <- "risk-parity-cccp"
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:5])
+```
+
+Now, let's try the package **FinCovRegularization**:
+```{r}
+library(FinCovRegularization)  #install.packages("FinCovRegularization")
+
+w_fincovreg <- RiskParity(Sigma)
+
+# plot
+w_all <- cbind(w_all, "risk-parity-fincovreg" = w_fincovreg)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:6])
+```
+
+Finally, let's try the package **riskParityPortfolio**:
+```{r}
+cat("TBD")
+```
+
+
+### SCA method
+And finally we will devise our own algorithm based on the successive convex approximation (SCA) method. Basically, at the $k$-th iteration, one approximates the problem by a convex one around the current point $\mathbf{w}^{(k)}$. In our case, the approximated problem is a QP (assuming linear constraints in $\mathcal{W}$):
+$$
+\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & \tilde{U}\left(\mathbf{w},\mathbf{w}^{k}\right)=\frac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w}+\mathbf{w}^{T}\mathbf{q}^{k}+\lambda F\left(\mathbf{w}\right)\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
+\end{array}
+$$
+where
+$$\begin{aligned}
+\mathbf{Q}^{k} &\triangleq 2\left(\mathbf{A}^{k}\right)^{T}\mathbf{A}^{k}+\tau\mathbf{I},\\
+\mathbf{q}^{k} &\triangleq 2\left(\mathbf{A}^{k}\right)^{T}\mathbf{g}\left(\mathbf{w}^{k}\right)-\mathbf{Q}^{k}\mathbf{w}^{k},\\
+\mathbf{A}^{k} &\triangleq \left[\nabla g_{1}\left(\mathbf{w}^{k}\right),\dots,\nabla g_{N}\left(\mathbf{w}^{k}\right)\right]^{T},\\
+\mathbf{g}\left(\mathbf{w}^{k}\right) & \triangleq \left[g_{1}\left(\mathbf{w}^{k}\right),\dots,g_{N}\left(\mathbf{w}^{k}\right)\right]^{T}.
+\end{aligned}$$
+
+This QP can be solved by a solver. In the particular case of only having equality constraints $\mathbf{C}\mathbf{w}=\mathbf{c}$, then from the KKT optimality conditions the optimal solution is found as $$\hat{\mathbf{w}}^k=-{(\mathbf{Q}^k)}^{-1}(\mathbf{q}^k+\mathbf{C}^T\boldsymbol{\lambda}^k),$$ 
+where $$\boldsymbol{\lambda}^k=-\left(\mathbf{C}{(\mathbf{Q}^k)}^{-1}\mathbf{C}^T \right)^{-1}\left(\mathbf{C}{(\mathbf{Q}^k)}^{-1}\mathbf{q}^k+\mathbf{c}\right).$$
+
+Finally, the next iterate is form by introducing some smoothing:
+$$\mathbf{w}^{k+1}=\mathbf{w}^{k}+\gamma^{k}\left(\hat{\mathbf{w}}^{k}-\mathbf{w}^{k}\right),$$
+where $\gamma^{k}$ can be chosen in practice as $$\gamma^{k}=\gamma^{k-1}(1-\zeta\gamma^{k-1})$$ with $\gamma_0\in(0,1]$ and $\zeta\in(0,1)$.
+
+
+We are ready to implement our own algorithm based on the SCA approach. First we define a function that computes the functions $g_{i,j}$ and their gradients (which are needed for $\mathbf{g}\left(\mathbf{w}^{k}\right)$ and $\mathbf{A}^{k}$):
+```{r}
+compute_gA <- function(w, Sigma) {
+  N <- length(w)
+  g <- rep(NA, N^2)
+  A <- matrix(NA, N^2, N)
+  for (i in 1:N) {
+    Mi <- matrix(0, N, N)
+    Mi[i, ] <- Sigma[i, ]
+    for (j in 1:N) {
+      Mj <- matrix(0, N, N)
+      Mj[j, ] <- Sigma[j, ]
+      #g[i + (j-1)*N]   <- t(w) %*% (Mi - Mj) %*% w
+      g[i + (j-1)*N]   <- w[i]*(Sigma[i, ] %*% w) - w[j]*(Sigma[j, ] %*% w)
+      A[i + (j-1)*N, ] <- (Mi + t(Mi) - Mj - t(Mj)) %*% w
+      #A[i + (j-1)*N, ] <- (Sigma[i, ] %*% w
+    }
+  }
+  # # this is much faster: 
+  # wSw <- w * (Sigma %*% w)
+  # g <- rep(wSw, times = N) - rep(wSw, each = N)  # N^2 different g_{i,j}
+  return(list(g = g, A = A))
+}
+```
+
+Now we can implement the main loop of the SCA algorithm:
+```{r}
+library(quadprog)  # install.packages("quadprog")
+
+# parameters
+max_iter <- 40
+tau <- 1e-6
+zeta <- 0.1
+gamma <- 0.99
+# initial point
+obj_value <- NULL
+w_SCA <- rep(1/N, N)
+for (k in 1:max_iter) {
+  # compute parameters
+  gA <- compute_gA(w_SCA, Sigma)
+  g <- gA$g
+  A <- gA$A
+  Q <- 2 * t(A) %*% A + tau*diag(N)  # crossprod(A) = t(A) %*% A
+  q <- 2 * t(A) %*% g - Q %*% w_SCA
+  obj_value <- c(obj_value, sum(g^2))
+  
+  # solve problem with CVXR
+  w_ <- Variable(N)
+  prob <- Problem(Minimize(0.5*quad_form(w_, Q) + t(q) %*% w_),
+                  constraints = list(sum(w_) == 1))
+  result <- solve(prob)
+  w_ <- as.vector(result$getValue(w_))
+  
+  # solve the problem with solve.QP()
+  w__ <- solve.QP(Q, -q, matrix(1, N, 1), 1, meq = 1)$solution
+  
+  # solve problem in closed form
+  C <- matrix(1, 1, N)
+  c <- 1
+  CinvQ <- C %*% solve(Q)
+  lmd <- solve(CinvQ %*% t(C), -(CinvQ %*% q + c))
+  w___ <- solve(Q, -(q + t(C) %*% lmd))
+  
+  #sanity checks for different solvers
+  if ((err <- norm(w_ - w__, "2")/norm(w_, "2")) > 1e-2) 
+    cat("CVXR and solve.QP do not match:", err, "\n")
+  if ((err <- norm(w_ - w___, "2")/norm(w_, "2")) > 1e-2) 
+    cat("Closed-form solution and CVXR do not match:", err, "\n")
+
+  # next w
+  gamma <- gamma*(1 - zeta*gamma)
+  w_SCA_prev <- w_SCA
+  w_SCA <- w_SCA + gamma*(w_ - w_SCA)
+  
+  # stopping criterion
+  #if ((norm(w-w_prev, "2")/norm(w_prev, "2")) < 1e-6) 
+  #  break
+  if (k>1 && abs((obj_value[k]-obj_value[k-1])/obj_value[k-1]) < 1e-1)
+    break
+}
+cat("Number of iterations:", k)
+plot(obj_value, type = "b", 
+     main = "Convergence of SCA", xlab = "iteration", ylab = "objective value")
+```
+
+```{r, fig.width = 10, fig.height = 6, out.width = "90%"}
+w_all <- cbind(w_all, "risk-parity-SCA" = w_SCA)
+barplot(t(w_all),
+        main = "Portfolio allocation", xlab = "stocks", ylab = "risk", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:7])
+```
+We can see that the risk-parity portfolio is more diversified in terms of dollar allocation than Markowitz and even GMVP.  And we can also compute the risk allocation:
+```{r, fig.width = 10, fig.height = 6, out.width = "90%"}
+risk_contribution_all <- cbind("GMVP" = w_GMVP * (Sigma %*% w_GMVP),
+                               "Markowitz" = w_Markowitz * (Sigma %*% w_Markowitz),
+                               "risk-parity-diag" = w_diag * (Sigma %*% w_diag),
+                               "risk-parity-gen-solver" = w_gen_solver * (Sigma %*% w_gen_solver),
+                               "risk-parity-cccp" = w_cccp * (Sigma %*% w_cccp),
+                               "risk-parity-fincovreg" = w_fincovreg * (Sigma %*% w_fincovreg),
+                               "risk-parity-SCA" = w_SCA * (Sigma %*% w_SCA))
+barplot(t(risk_contribution_all),
+        main = "Risk allocation", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        legend = colnames(w_all), col = rainbow8equal[1:7])
+```
+Indeed, the risk-parity portfolio has an equal risk allocation (no surprise since it was designed for that purpose).
+
+
+It is instructive now to compare the performance (in sample vs out-of-sample):
+```{r}
+# compute returns of all portfolios
+ret_all <- xts(X_lin %*% w_all[, c("GMVP", "Markowitz", "risk-parity-diag", "risk-parity-SCA")], index(X_lin))
+ret_all_trn <- ret_all[1:T_trn, ]
+ret_all_tst <- ret_all[-c(1:T_trn), ]
+
+# performance
+table.AnnualizedReturns(ret_all_trn)
+table.AnnualizedReturns(ret_all_tst)
+```
+We can see that the in the in sample the risk-parity portfolio is the worst, but actually in the out-of-sample it is the best by far!
+
+Let us plot the cumulative PnL over time (recall that it looks deceptive to the untrained eye):
+```{r, fig.width = 10, fig.height = 6, out.width = "100%"}
+{ chart.CumReturns(ret_all, main = "Cum PnL of different portfolios", 
+                   wealth.index = TRUE, legend.loc = "topleft", colorset = rainbow6equal)
+  addEventLines(xts("training", index(X_lin[T_trn])), srt=90, pos=2, lwd = 2, col = "darkblue") }
+```
+The drawdown, on the other hand, clearly shows the superior performance of the risk-parity portfolio:
+```{r, fig.width = 10, fig.height = 5, out.width = "100%"}
+{ chart.Drawdown(ret_all, main = "Drawdown of different portfolios", 
+                 legend.loc = "bottomleft", colorset = rainbow6equal)
+  addEventLines(xts("training", index(X_lin[T_trn])), srt=90, pos=2, lwd = 2, col = "darkblue") }
+```
+
+
+## Formulation with expected return
+Thus far, the risk-parity formulation was dealing only with the risk contributions while ignoring the expected return. We can now design a risk-parity portfolio that also takes into account the mean return $\mathbf{w}^T\boldsymbol{\mu}$ as
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} - \lambda \mathbf{w}^T\boldsymbol{\mu}\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
+\end{array}$$
+
+
+The existing R packages cannot deal with such formulation, but the recent package **riskParityPortfolio** do_es. We can also implement it ourselves via the SCA algorithm:
+```{r}
+risk_parity_mu <- function(mu, Sigma, lmd = 1e-4, plot = FALSE) {
+  # parameters
+  max_iter <- 100
+  tau <- 1e-6
+  zeta <- 0.1
+  gamma <- 0.99
+  # initial point
+  w_SCA_mu <- rep(1/N, N)
+  obj_value <- NULL
+  #loop
+  for (k in 1:max_iter) {
+    # compute parameters
+    gA <- compute_gA(w_SCA_mu, Sigma)
+    g <- gA$g
+    A <- gA$A
+    Q <- 2 * t(A) %*% A + tau*diag(N)  # crossprod(A) = t(A) %*% A
+    q <- 2 * t(A) %*% g - Q %*% w_SCA_mu
+    obj_value <- c(obj_value, sum(g^2) - lmd*t(mu) %*% w_SCA_mu)
+    # solve the problem with solve.QP()
+    w_ <- solve.QP(Q, -(q-lmd*mu), matrix(1, N, 1), 1, meq = 1)$solution
+    # next w
+    gamma <- gamma*(1 - zeta*gamma)
+    w_SCA_mu <- w_SCA_mu + gamma*(w_ - w_SCA_mu)
+    # stopping criterion
+    if (k>1 && abs((obj_value[k]-obj_value[k-1])/obj_value[k-1]) < 1e-3)
+      break
+  }
+  if (plot) {
+    cat("Number of iterations:", k)
+    plot(obj_value, type = "b", main = "Convergence of SCA", 
+         xlab = "iteration", ylab = "objective value")
+  }
+  return(w_SCA_mu)
+}
+
+w_SCA_mu <- risk_parity_mu(mu, Sigma, lmd = 8e-5, plot = TRUE)
+w_all <- cbind(w_all[, 1:7], "risk-parity-mu" = w_SCA_mu)
+```
+
+
+Let's compare the performance (in sample vs out-of-sample):
+```{r}
+# compute returns of all portfolios
+ret_all <- xts(X_lin %*% w_all[, c("GMVP", "Markowitz", "risk-parity-diag", "risk-parity-SCA", "risk-parity-mu")], index(X_lin))
+ret_all_trn <- ret_all[1:T_trn, ]
+ret_all_tst <- ret_all[-c(1:T_trn), ]
+
+# performance
+table.AnnualizedReturns(ret_all_trn)
+table.AnnualizedReturns(ret_all_tst)
+```
+The new risk-parity portfolio that takes into account the expected return has a very good Sharpe ratio!
+
+Let us plot the cumulative PnL over time (recall that it looks deceptive to the untrained eye):
+```{r, fig.width = 10, fig.height = 6, out.width = "100%"}
+{ chart.CumReturns(ret_all, main = "Cum PnL of different portfolios", 
+                   wealth.index = TRUE, legend.loc = "topleft", colorset = rainbow6equal)
+  addEventLines(xts("training", index(X_lin[T_trn])), srt=90, pos=2, lwd = 2, col = "darkblue") }
+```
+The drawdown, on the other hand, clearly shows the superior performance of the risk-parity portfolio including the expected return:
+```{r, fig.width = 10, fig.height = 5, out.width = "100%"}
+{ chart.Drawdown(ret_all, main = "Drawdown of different portfolios", 
+                 legend.loc = "bottomleft", colorset = rainbow6equal)
+  addEventLines(xts("training", index(X_lin[T_trn])), srt=90, pos=2, lwd = 2, col = "darkblue") }
+```
+
+
+
+
+## Sensitivity to parameters
+To study the sensitivity with respect to the parameters $\boldsymbol{\mu}$ and $\boldsymbol{\Sigma}$, we will design multiple portfolios based on different samples from the training set:
+```{r}
+w_risk_parity_mu_acc <- w_risk_parity_acc <- NULL
+for (i in 1:8) {
+  # sample means with random samples
+  idx <- sample(1:T_trn, T_trn/2)
+  mu_ <- colMeans(X_log_trn[idx, ])
+  Sigma_ <- cov(X_log_trn[idx, ])
+  
+  # design risk-parity portfolio
+  w_risk_parity_acc <- cbind(w_risk_parity_acc, RiskParity(Sigma_))
+  w_risk_parity_mu_acc <- cbind(w_risk_parity_mu_acc, risk_parity_mu(mu_, Sigma_, lmd = 1e-5))
+}
+rownames(w_risk_parity_mu_acc) <- rownames(w_risk_parity_acc) <- colnames(X_lin)
+```
+
+The risk-parity portfolio is not very sensitive to the parameter $\boldsymbol{\Sigma}$ since all the realizations have a similar allocation:
+```{r}
+barplot(t(w_risk_parity_acc),
+        main = "Different realizations of risk-parity portfolio", xlab = "stocks", ylab = "dollars", 
+        beside = TRUE, col = rainbow8equal)
+```
+
+Let's check out the risk-parity portfolio that takes into account the expecter return:
+```{r}
+barplot(t(w_risk_parity_mu_acc),
+        main = "Different realizations of risk-parity with expected return portfolio", 
+        xlab = "stocks", ylab = "dollars", 
+        beside = TRUE, col = rainbow8equal)
+```
+
+We can observe that this risk-parity portfolio is still not very sensitive to the parameters including $\boldsymbol{\mu}$. However, it the value of $\lambda$ is increased to, say, $10^{-5}$ then one can observe a stronger sensitivity. In practice, one always needs to include leverage constraints $\|\mathbf{w}\|_1=1$, which would make it even more stable and less sensitive.
+
+
+
+# Conclusion
+We can conclude with the following points:
+
+- Markowitz porftolio, while it started the field of modern portfolio theory in 1952, has not been embraced by practitioners because
+    + it does not diversify the risk and concentrates in a few assets
+    + it is too sensitive to the parameters (particularly to $\boldsymbol{\mu}$).  
+- The risk-parity portfolio precisely aims at diversifying the risk contribution and it also happens to be less sensitive to the parameters.  
+- We have explored several numerical methods to design the risk-parity portfolio.
+- The R package **riskParityPortfolio** implements all the methods based on the references:
+
+> Yiyong Feng and Daniel P. Palomar,  _A Signal Processing Perspective on Financial Engineering_, Foundations and Trends in Signal Processing, Now Publishers, Chapter 9. 2016.
+
+> Yiyong Feng and Daniel P. Palomar, “SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design,” _IEEE Trans. on Signal Processing_, vol. 63, no. 19, pp. 5285-5300, Oct. 2015.
