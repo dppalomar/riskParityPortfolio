@@ -61,21 +61,6 @@ Existing packages that I quickly found (a more thorough search is due):
 - Package [FinCovRegularization](https://CRAN.R-project.org/package=FinCovRegularization)
   contains function `RiskParity` (the package may be useful for covariance matrix
   regularization, which is one of my upcoming projects...)
-- Here you can find some simple code for risk parity portfolio:
-  http://nakisa.org/bankr-useful-financial-r-snippets/risk-parity-portfolios-r/
-
-
-Websites to check:
-
-- Many links to docs related to risk parity here: https://www.r-bloggers.com/risk-parity/
-- Nice intro articles that I can use in my slides for the course:
-    + https://www.ipe.com/risk-parity-nice-idea-awkward-reality/40026.article
-    + http://news.morningstar.com/pdfs/gmohiddenrisks.pdf
-    + [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1707478](https://poseidon01.ssrn.com/delivery.php?ID=627112031031103007064105094120011126017039000080068005126025111090071066081066070105028099044055108047124122088001010030007073027083008052040016105021001064069010102067081035117114090021065029088023126004127071004099065117107106112098070107115124110106&EXT=pdf)
-- More links:
-    + https://pdfs.semanticscholar.org/094d/24b924caa659442065401999d7a77e06953e.pdf
-    + https://cdn2.hubspot.net/hubfs/2529352/Blog/2010_03_nepc_risk_parity.pdf?t=1501681499185
-    + [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1271972](https://poseidon01.ssrn.com/delivery.php?ID=674066092020082067126002014081023101038046007020059034127067087110126097099074024028056033058006042055014026025104115125094096053082054001060113114077012099097084088041055020094031067088066022127012071031066030120074011017069123085091021101101072024&EXT=pdf)
 
 
 # Usage of the package
@@ -97,6 +82,10 @@ Sigma <- Sigma + 10 * (S + t(S))
 # compute the portfolio weights for the case when Sigma is diagonal
 w_diag <- 1 / sqrt(diag(Sigma))
 w_diag <- w_diag/sum(w_diag)
+# Vinicius: let's write a function for the diagonal case to be used like this:
+# res_diag <- riskParityPortfolioDiagSigma(diag(Sigma))
+# in the function description we need to say that it is for sum(w)=1 and w>=0.
+# Oh, to be consistent, it should return a list with the elements w and risk_contribution
 ```
 
 ## Single-index case
@@ -107,6 +96,7 @@ res_qp <- riskParityPortfolioSCA(Sigma, formulation = "single-index")
 w_all <- cbind(res_gen$w, res_qp$w, w_diag)
 colnames(w_all) <- c("risk-parity-gen-solver", "risk-parity-sca", "risk-parity-diag")
 rownames(w_all) <- stocks_index
+# Vinicius, if Sigma contains rownames or colnames, we should name w with those names, so the line above would be unnecessary (we should also name risk_contribution and so)
 round(w_all, digits = 2)
 barplot(t(w_all),
         main = "Portfolio allocation", xlab = "stocks", ylab = "dollars", beside = TRUE,
