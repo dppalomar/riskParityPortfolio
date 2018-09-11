@@ -1,10 +1,20 @@
+#' Implements the risk parity portfolio for the case of diagonal Sigma
+#' that satisfies the constraints sum(w) = 1 and w >= 0.
+#'
+#' @export
+riskParityPortfolioDiagSigma <- function(Sigma) {
+  w <- 1 / sqrt(diag(Sigma))
+  w <- w / sum(w)
+  return (list(w = w, r = w * (Sigma %*% w)))
+}
+
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
 riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
                                    shortselling = FALSE,
                                    formulation = "double-index", gamma = .9,
                                    zeta = 1e-7, tau = NA, maxiter = 500,
-                                   ftol = 1e-9, wtol = 1e-9) {
+                                   ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
     wk <- 1 / sqrt(diag(Sigma))
@@ -34,7 +44,7 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     # define the risk function for a double-index formulation
     fn <- function(w, Sigma, N) {
       wSw <- w * (Sigma %*% w)
-      return(2 * (N * sum(wSw^2) - sum(wSw)^2))
+      return (2 * (N * sum(wSw^2) - sum(wSw)^2))
     }
     g <- function(w, Sigma, N) {
       wSw <-  w * (Sigma %*% w)
@@ -90,7 +100,7 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(list(w = w_next, risk_contributions = w_next * (Sigma %*% w_next),
+  return(list(w = w_next, r = w_next * (Sigma %*% w_next),
               obj_fun = fun_seq, elapsed_time = time_seq))
 }
 
@@ -99,14 +109,12 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          shortselling = FALSE, use_gradient = TRUE,
-                                         formulation = "double-index", maxiter = 500,
-                                         ftol = 1e-9, wtol = 1e-9) {
+                                         formulation = "double-index", method = "slsqp",
+                                         maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
-    wk <- 1 / sqrt(diag(Sigma))
-    wk <- wk / sum(wk)
-  } else {
-    wk <- w0
+    w0 <- 1 / sqrt(diag(Sigma))
+    w0 <- w0 / sum(w0)
   }
 
   if (budget) {
@@ -176,36 +184,30 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     stop("formulation ", formulation, " is not included.")
   }
 
-  fun_k <- Inf
-  fun_seq <- c(fn(wk, Sigma, N))
+  fun_seq <- c(fn(w0, Sigma, N))
   time_seq <- c(0)
-  start_time <- Sys.time()
-  for (i in 1:maxiter) {
-    res <- alabama::constrOptim.nl(wk, fn, fn_grad, hin = shortselling,
+  if (method == "alabama") {
+    start_time <- Sys.time()
+    res <- alabama::constrOptim.nl(w0, fn, fn_grad, hin = shortselling,
                                    hin.jac = shortselling.jac,
                                    heq = budget, heq.jac = budget.jac,
                                    Sigma = Sigma, N = N,
-                                   control.outer = list(trace = FALSE, itmax = 1))
-    # save objective value and elapsed time
+                                   control.outer = list(trace = FALSE,
+                                                        itmax = maxiter))
     end_time <- Sys.time()
-    time_seq <- c(time_seq, end_time - start_time)
-    fun_next <- res$value
-    fun_seq <- c(fun_seq, fun_next)
-    # check convergence on parameters
-    w_next <- res$par
-    werr <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
-    if (werr < wtol) {
-      break
-    }
-    # check convergence on objective function
-    ferr <- abs(fun_next - fun_k) / max(1., abs(fun_next))
-    if (ferr < ftol) {
-      break
-    }
-    # update variables
-    wk <- w_next
-    fun_k <- fun_next
+  } else if (method == "slsqp") {
+    start_time <- Sys.time()
+    res <- nloptr::slsqp(w0, fn, fn_grad, hin = shortselling,
+                         hinjac = shortselling.jac,
+                         heq = budget, heqjac = budget.jac,
+                         Sigma = Sigma, N = N, control = list(xtol_rel = wtol,
+                                                              ftol_rel = ftol))
+    end_time <- Sys.time()
   }
-  return(list(w = w_next, risk_contributions = w_next * (Sigma %*% w_next),
+  # save objective value and elapsed time
+  time_seq <- c(time_seq, end_time - start_time)
+  fun_seq <- c(fun_seq, res$value)
+  w <- res$par
+  return(list(w = w, r = w * (Sigma %*% w),
               obj_fun = fun_seq, elapsed_time = time_seq))
 }
