@@ -100,7 +100,7 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(list(w = w_next, risk_contributions = w_next * (Sigma %*% w_next),
+  return(list(w = w_next, r = w_next * (Sigma %*% w_next),
               obj_fun = fun_seq, elapsed_time = time_seq))
 }
 
