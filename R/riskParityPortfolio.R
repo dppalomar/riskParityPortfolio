@@ -5,7 +5,7 @@
 riskParityPortfolioDiagSigma <- function(Sigma) {
   w <- 1 / sqrt(diag(Sigma))
   w <- w / sum(w)
-  return (list(w = w, r = w * (Sigma %*% w)))
+  return (list(w = w, risk_contribution = w * (Sigma %*% w)))
 }
 
 #' Implements the risk parity portfolio using SCA and QP solver
@@ -43,24 +43,24 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
   if (formulation == "double-index") {
     # define the risk function for a double-index formulation
     fn <- function(w, Sigma, N) {
-      wSw <- w * (Sigma %*% w)
-      return (2 * (N * sum(wSw^2) - sum(wSw)^2))
+      r <- w * (Sigma %*% w)
+      return (2 * (N * sum(r^2) - sum(r)^2))
     }
     g <- function(w, Sigma, N) {
-      wSw <-  w * (Sigma %*% w)
-      return (rep(wSw, times = N) - rep(wSw, each = N))
+      r <-  w * (Sigma %*% w)
+      return (rep(r, times = N) - rep(r, each = N))
     }
     computeA <- compute_A_double_index
   } else if (formulation == "single-index") {
     # define the risk function for a single-index formulation
     fn <- function(w, Sigma, N) {
-      wSw <- w * (Sigma %*% w)
-      # return (sum((wSw / sum(wSw) - 1 / N) ^ 2))
-      return (sum(wSw ^ 2) / (sum(wSw) ^ 2) - 1 / N)
+      r <- w * (Sigma %*% w)
+      # return (sum((r / sum(r) - 1 / N) ^ 2))
+      return (sum(r ^ 2) / (sum(r) ^ 2) - 1 / N)
     }
     g <- function(w, Sigma, N) {
-      wSw <- w * (Sigma %*% w)
-      return (wSw / sum(wSw) - 1 / N)
+      r <- w * (Sigma %*% w)
+      return (r / sum(r) - 1 / N)
     }
     computeA <- compute_A_single_index_R
   }
@@ -100,8 +100,9 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(list(w = w_next, r = w_next * (Sigma %*% w_next),
-              obj_fun = fun_seq, elapsed_time = time_seq))
+  return(list(w = w_next, risk_contribution = w_next * (Sigma %*% w_next),
+              obj_fun = fun_seq, elapsed_time = time_seq,
+              convergence = sum(!(k == maxiter))))
 }
 
 #' Implements the risk parity portfolio using a general constrained
@@ -144,15 +145,15 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   if (formulation == "double-index") {
     # define the risk for a double-index formulation
     fn <- function(w, Sigma, N) {
-      wSw <- w * (Sigma %*% w)
-      return (2 * (N * sum(wSw^2) - sum(wSw)^2))
+      r <- w * (Sigma %*% w)
+      return (2 * (N * sum(r ^ 2) - sum(r) ^ 2))
     }
 
     if (use_gradient) {
       # define the gradient of the risk for a double-index formulation
       fn_grad <- function(w, Sigma, N) {
-        wSw <- w * (Sigma %*% w)
-        v <- N * wSw - sum(wSw)
+        r <- w * (Sigma %*% w)
+        v <- N * r - sum(r)
         risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
         return (risk_grad)
       }
@@ -162,19 +163,19 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   } else if (formulation == "single-index") {
     # define the risk for a single-index formulation
     fn <- function(w, Sigma, N) {
-      wSw <- w * (Sigma %*% w)
-      # return (sum((wSw / sum(wSw) - 1 / N) ^ 2))
-      return (sum(wSw ^ 2) / (sum(wSw) ^ 2) - 1 / N)
+      r <- w * (Sigma %*% w)
+      # return (sum((r / sum(r) - 1 / N) ^ 2))
+      return (sum(r ^ 2) / (sum(r) ^ 2) - 1 / N)
     }
 
     if (use_gradient) {
       # define the gradient of the risk for a single-index formulation
       fn_grad <- function(w, Sigma, N) {
-        wSw <- w * (Sigma %*% w)
-        sum_wSw <- sum(wSw)
-        wSw_b <- wSw / sum_wSw - 1 / N
-        v <- wSw_b - sum(wSw_b * wSw) / (sum_wSw ^ 2)
-        risk_grad <- (2 / sum_wSw) * (Sigma %*% (w * v) + (Sigma %*% w) * v)
+        r <- w * (Sigma %*% w)
+        sum_r <- sum(r)
+        r_b <- r / sum_r - 1 / N
+        v <- r_b - sum(r_b * r) / (sum_r ^ 2)
+        risk_grad <- (2 / sum_r) * (Sigma %*% (w * v) + (Sigma %*% w) * v)
         return (risk_grad)
       }
     } else {
@@ -208,6 +209,7 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
-  return(list(w = w, r = w * (Sigma %*% w),
-              obj_fun = fun_seq, elapsed_time = time_seq))
+  return(list(w = w, risk_contribution = w * (Sigma %*% w),
+              obj_fun = fun_seq, elapsed_time = time_seq,
+              convergence = res$convergence))
 }

@@ -91,20 +91,19 @@ $$w_i = \frac{\sqrt{b_i}/\sqrt{\Sigma_{ii}}}{\sum_{k=1}^N\sqrt{b_k}/\sqrt{\Sigma
 In general, exact parity cannot be achieved and one needs to define a risk term to be minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$. A double-index summation can also be used:
 $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$.
 
-
-
 We condiser the following formulations (equation numbers from the paper):
-(16): rc double-index
-(17): rc vs theta
-(22): rc-over-b vs theta
-(18): norm-rc vs b
-(19): rc-over-b double-index
-(20): rc vs b-times-var
-(21): rc-over-sd vs b-times-sd
-(24): norm-rs
-(26): group-rc-over-sd vs b-times-sd
-(31): factor-rc-over-sd vs b-times-sd
-(32): CVaR-rc-over-sd vs b-times-sd
+
+- (16): rc double-index
+- (17): rc vs theta
+- (22): rc-over-b vs theta
+- (18): norm-rc vs b
+- (19): rc-over-b double-index
+- (20): rc vs b-times-var
+- (21): rc-over-sd vs b-times-sd
+- (24): norm-rs
+- (26): group-rc-over-sd vs b-times-sd
+- (31): factor-rc-over-sd vs b-times-sd
+- (32): CVaR-rc-over-sd vs b-times-sd
 
 And here give then one by one...
 
