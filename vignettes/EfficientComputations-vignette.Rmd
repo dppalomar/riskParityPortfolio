@@ -98,7 +98,7 @@ Let's compute now the gradient of $R(\mathbf{w})$:
 - chain rule: using Jacobians is $\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{x}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$, using gradients is $(\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{x}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{x}$ or, more conveniently, $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{x})^T \cdot \nabla_{\mathbf{x}}R$:
 $$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{x}-(\mathbf{1}^T\mathbf{x})\mathbf{1}),$$
 which can be coded as `risk_grad <- 4*(Sigma*w + diag(Sigma %*% w)) %*% (N*x-sum(x)*rep(1, N))`. Another way to code it is:  
-`v <- (N*x-sum(x)*rep(1, N))`
+`v <- (N*x-sum(x))`
 `risk_grad <- 4*(Sigma %*% (w*v) + (Sigma %*% w)*v)`
 
 
@@ -162,7 +162,7 @@ which can be coded as
 ```{r, eval=FALSE}
 sum_x <- sum(x)
 x_b <- x/sum_x - b
-v <- x_b - rep(1, N) * (t(x_b) %*% x)/(sum_x^2)
+v <- x_b - (t(x_b) %*% x)/(sum_x^2)
 risk_grad <- (2/sum_x) * (Sigma %*% (w*v) + (Sigma %*% w)*v)
 ```
 
@@ -192,6 +192,7 @@ A <- (1/sum_x) * (Mat - (1/sum_x)*matrix((t(x) %*% Mat), N, N, byrow = TRUE)
 
 
 
+Daniel: check the package https://cran.r-project.org/web/packages/Deriv/Deriv.pdf
 
 # References {-}
 \setlength{\parindent}{-0.2in}
