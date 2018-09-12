@@ -309,11 +309,18 @@ which can be coded as</p>
 g_i(\mathbf{w}) = \dfrac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - \dfrac{\sqrt{\mathbf{1}^{T}\mathbf{r}}}{N}
 \end{equation}
 \]</span></p>
-<p>Its gradient w.r.t. <span class="math inline">\(\mathbf{w}\)</span> can be expressed as
+<p>Its derivative w.r.t. <span class="math inline">\(r_j\)</span> can be expressed as
 <span class="math display">\[
 \begin{equation}
 \dfrac{\partial g_{i}(\mathbf{w})}{\partial r_j} = \dfrac{\delta_{ij}}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} -
-\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}
+\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}.
+\end{equation}
+\]</span></p>
+<p>Hence, its gradient with respect to <span class="math inline">\(\mathbf{r}\)</span> is
+<span class="math display">\[
+\begin{equation}
+\nabla_{\mathbf{r}}g_{i}(\mathbf{w}) = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{e}_{i}
+- \dfrac{1}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
 \end{equation}
 \]</span></p>
 </div>

@@ -255,13 +255,22 @@ g_i(\mathbf{w}) = \dfrac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - \dfrac{\sqrt{\m
 \end{equation}
 $$
 
-Its gradient w.r.t. $\mathbf{w}$ can be expressed as
+Its derivative w.r.t. $r_j$ can be expressed as
 $$
 \begin{equation}
 \dfrac{\partial g_{i}(\mathbf{w})}{\partial r_j} = \dfrac{\delta_{ij}}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} -
-\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}
+\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}.
 \end{equation}
 $$
+
+Hence, its gradient with respect to $\mathbf{r}$ is
+$$
+\begin{equation}
+\nabla_{\mathbf{r}}g_{i}(\mathbf{w}) = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{e}_{i}
+- \dfrac{1}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+\end{equation}
+$$
+
 
 # References {-}
 \setlength{\parindent}{-0.2in}
