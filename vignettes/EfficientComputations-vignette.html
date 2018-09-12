@@ -320,8 +320,22 @@ g_i(\mathbf{w}) = \dfrac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - \dfrac{\sqrt{\m
 <span class="math display">\[
 \begin{equation}
 \nabla_{\mathbf{r}}g_{i}(\mathbf{w}) = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{e}_{i}
-- \dfrac{1}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+- \dfrac{\mathbf{1}}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
 \end{equation}
+\]</span></p>
+<p>Its Jacobian can then be written as
+<span class="math display">\[
+\begin{equation}
+\textsf{J}_{\mathbf{r}}\mathbf{g} = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I}
+- \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+\end{equation}
+\]</span></p>
+<p>Finally, the matrix <span class="math inline">\(\mathbf{A} \triangleq \textsf{J}_\mathbf{w}\mathbf{g}\)</span> can be written as
+<span class="math display">\[
+\begin{align}
+\mathbf{A} = \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} +
+\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right) \cdot \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I} - \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right)
+\end{align}
 \]</span></p>
 </div>
 <div id="references" class="section level1 unnumbered">
