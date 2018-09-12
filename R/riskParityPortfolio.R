@@ -93,6 +93,10 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
 
 #' Implements the risk parity portfolio using a general constrained
 #' solver from the alabama package
+#'
+#' @param formulation a string indicating the formulation to use for the risk
+#'        parity optimization problem. It must be one of c("rc-double-index",
+#'        "rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          shortselling = FALSE, use_gradient = TRUE,
@@ -128,19 +132,21 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     shortselling.jac <- NULL
   }
 
+  R_grad <- NULL
   if (formulation == "rc-double-index") {
     R <- R_rc_double_index
     if (use_gradient) {
       R_grad <- R_grad_rc_double_index
-    } else {
-      R_grad <- NULL
     }
   } else if (formulation == "rc-over-var-vs-b") {
     R <- R_rc_over_var_vs_b
     if (use_gradient) {
       R_grad <- R_grad_rc_over_var_vs_b
-    } else {
-      R_grad <- NULL
+    }
+  } else if (formulation == "rc-over-sd-vs-b-times-sd") {
+    R <- R_rc_over_sd_vs_b_times_sd
+    if (use_gradient) {
+      R_grad <- R_grad_rc_over_sd_vs_b_times_sd
     }
   } else {
     stop("formulation ", formulation, " is not included.")
