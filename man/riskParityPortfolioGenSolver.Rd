@@ -10,6 +10,11 @@ riskParityPortfolioGenSolver(Sigma, w0 = NA, budget = TRUE,
   formulation = "rc-over-var-vs-b", method = "slsqp", maxiter = 500,
   ftol = 1e-09, wtol = 1e-06)
 }
+\arguments{
+\item{formulation}{a string indicating the formulation to use for the risk
+parity optimization problem. It must be one of c("rc-double-index",
+"rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")}
+}
 \description{
 Implements the risk parity portfolio using a general constrained
 solver from the alabama package

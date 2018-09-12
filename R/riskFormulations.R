@@ -32,7 +32,7 @@ g_rc_over_var_vs_b <- function(w, Sigma, N, ...) {
 
 R_rc_over_var_vs_b <- function(w, Sigma, N) {
   r <- w * (Sigma %*% w)
-  return (sum((r / sum(r) - 1 / N) ^ 2))
+  return (sum((g_rc_over_var_vs_b(w, Sigma, N, r = r)) ^ 2))
 }
 
 R_grad_rc_over_var_vs_b <- function(w, Sigma, N) {
@@ -57,10 +57,16 @@ A_rc_over_var_vs_b <- function(w, Sigma, N, ...) {
 ######################################################################
 # Compute g, R, and A for the formulation "rc-over-sd vs b-times-sd" #
 ######################################################################
+g_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, ...) {
+  kwargs <- list(...)
+  r <- kwargs$r
+  sqrt_sum_r <- sqrt(sum(r))
+  return (r / sqrt_sum_r - sqrt_sum_r / N)
+}
+
 R_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N) {
   r <- w * (Sigma %*% w)
-  sqrt_sum_r <- sqrt(sum(r))
-  return(sum((r / sqrt_sum_r - sqrt_sum_r / N) ^ 2))
+  return(sum((g_rc_over_sd_vs_b_times_sd(w, Sigma, N, r = r)) ^ 2))
 }
 
 R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N) {

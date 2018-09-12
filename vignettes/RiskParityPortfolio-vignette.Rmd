@@ -128,27 +128,28 @@ N <- 100
 V <- 2.5 * matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
-res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var-vs-b",
-                                        method = "slsqp")
+res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-sd-vs-b-times-sd",
+                                          method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-sd-vs-b-times-sd",
                                                  method = "slsqp",
                                                  use_gradient = FALSE)
-res_alabama <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var-vs-b",
-                                        method = "alabama")
+res_alabama <- riskParityPortfolioGenSolver(Sigma,
+                                            formulation = "rc-over-sd-vs-b-times-sd",
+                                            method = "alabama")
 res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-sd-vs-b-times-sd",
                                                  method = "alabama",
                                                  use_gradient = FALSE)
 res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var-vs-b")
 
-plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=19, cex=.6,
-     col = "purple", xlab = "Elapsed time (seconds)",
+plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
+     pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
      ylab = "Objective function", main = "Convergence trend versus CPU time")
 lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
       col = "red")
-lines(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b", pch=17, cex=.8,
-      col = "blue")
+lines(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b", pch=17,
+      cex=.8, col = "blue")
 lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
       col = "green")
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
@@ -167,30 +168,30 @@ legend("topright", legend=c("alabama-solver-nograd",
 library(sparseIndexTracking)
 library(xts)
 data(INDEX_2010)
-
 Sigma <- cov(100 * INDEX_2010$X)
 
-res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var-vs-b",
+res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-sd-vs-b-times-sd",
                                           method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-sd-vs-b-times-sd",
                                                  method = "slsqp",
                                                  use_gradient = FALSE)
-res_alabama <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var-vs-b",
-                                        method = "alabama")
+res_alabama <- riskParityPortfolioGenSolver(Sigma,
+                                            formulation = "rc-over-sd-vs-b-times-sd",
+                                             method = "alabama")
 res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-sd-vs-b-times-sd",
                                                  method = "alabama",
                                                  use_gradient = FALSE)
 res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var-vs-b")
 
-plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=19, cex=.6,
-     col = "purple", xlab = "Elapsed time (seconds)",
+plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
+     pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
      ylab = "Objective function", main = "Convergence trend versus CPU time")
 lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
       col = "red")
-lines(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b", pch=17, cex=.8,
-      col = "blue")
+lines(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b", pch=17,
+      cex=.8, col = "blue")
 lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
       col = "green")
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
