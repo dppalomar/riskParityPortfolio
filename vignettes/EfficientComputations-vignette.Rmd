@@ -250,9 +250,6 @@ risk_grad <- Sigma %*% (w*v) + Sigma_w*v
 
 
 
-# To check:
-Daniel: check the package https://cran.r-project.org/web/packages/Deriv/Deriv.pdf
-
 # References {-}
 \setlength{\parindent}{-0.2in}
 \setlength{\leftskip}{0.2in}
