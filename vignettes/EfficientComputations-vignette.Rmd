@@ -100,7 +100,8 @@ Let's compute now the gradient of $R(\mathbf{w})$:
 - $\frac{\partial r_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i$ $\Longrightarrow$ $\textsf{J}_{\mathbf{w}}\mathbf{r} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$
 - chain rule: using Jacobians is $\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{r}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{r}$, using gradients is $(\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{r}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{r}$ or, more conveniently, $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{r})^T \cdot \nabla_{\mathbf{r}}R$:
 $$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{r}-(\mathbf{1}^T\mathbf{r})\mathbf{1}),$$
-which can be coded as `risk_grad <- 4*(t(Sigma*w) + diag(Sigma %*% w)) %*% (N*r-sum(r))`. An better way to code it is:  
+which can be coded as `risk_grad <- 4*(t(Sigma*w) + diag(Sigma %*% w)) %*% (N*r-sum(r))`. An better way to code it is:
+
 ```{r, eval=FALSE}
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 v <- (N*r-sum(r))
@@ -238,7 +239,7 @@ $$\nabla_{\mathbf{r}}R = 2\left(\frac{\mathbf{r}}{\mathbf{1}^T\mathbf{r}}-\mathb
 $$\nabla_{\mathbf{w}}R = (\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}))
 \left(2\left(\frac{\mathbf{r}}{\mathbf{1}^T\mathbf{r}}-\mathbf{b}\right)
  - \mathbf{1}\cdot\left(\frac{\mathbf{r}}{\mathbf{1}^T\mathbf{r}}-\mathbf{b}\right)^T\left(\frac{\mathbf{r}}{\mathbf{1}^T\mathbf{r}}-\mathbf{b}\right)\right),$$
-which can be coded as  
+which can be coded as
 ```{r, eval=FALSE}
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 sum_r <- sum(r)
@@ -246,6 +247,45 @@ r_b <- r/sum_r - b
 v <- 2*r_b - sum(r_b^2)
 risk_grad <- Sigma %*% (w*v) + Sigma_w*v
 ```
+
+For the SCA method, the risk deviation of the $i$-th asset is
+$$
+\begin{equation}
+g_i(\mathbf{w}) = \dfrac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - \dfrac{\sqrt{\mathbf{1}^{T}\mathbf{r}}}{N}
+\end{equation}
+$$
+
+Its derivative w.r.t. $r_j$ can be expressed as
+$$
+\begin{equation}
+\dfrac{\partial g_{i}(\mathbf{w})}{\partial r_j} = \dfrac{\delta_{ij}}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} -
+\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}.
+\end{equation}
+$$
+
+Hence, its gradient with respect to $\mathbf{r}$ is
+$$
+\begin{equation}
+\nabla_{\mathbf{r}}g_{i}(\mathbf{w}) = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{e}_{i}
+- \dfrac{\mathbf{1}}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+\end{equation}
+$$
+
+Its Jacobian can then be written as
+$$
+\begin{equation}
+\textsf{J}_{\mathbf{r}}\mathbf{g} = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I}
+- \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+\end{equation}
+$$
+
+Finally, the matrix $\mathbf{A} \triangleq \textsf{J}_\mathbf{w}\mathbf{g}$ can be written as
+$$
+\begin{align}
+\mathbf{A} = \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} +
+\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right) \cdot \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I} - \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right)
+\end{align}
+$$
 
 
 

@@ -13,7 +13,8 @@ compute_A_dan_version <- function(w, Sigma, N) {
   return (A)
 }
 
-#' Computes the A matrix for the double-index formulation
+#' Computes the A matrix for the formulation "rc-over-var vs b"
+#' Also for sanity-check / unit testing
 #' @export
 compute_A_double_index_R <- function(w, Sigma, N) {
   A <- Matrix::Matrix(0, N ^ 2, N, sparse = TRUE)
@@ -27,16 +28,5 @@ compute_A_double_index_R <- function(w, Sigma, N) {
       A[j + (i - 1) * N, ] <- - A[i + (j - 1) * N, ]
     }
   }
-  return (A)
-}
-
-#' Computes the A matrix for the single-index formulation
-#' @export
-compute_A_single_index_R <- function(w, Sigma, N) {
-  wSw <- w * (Sigma %*% w)
-  sum_wSw <- sum(wSw)
-  Mat <- t(Sigma * w) + diag(as.vector(Sigma %*% w))
-  inv_sum_wSw <- 1 / sum_wSw
-  A <- inv_sum_wSw * (Mat - inv_sum_wSw) * matrix(t(wSw) %*% Mat, N, N, byrow = TRUE)
   return (A)
 }

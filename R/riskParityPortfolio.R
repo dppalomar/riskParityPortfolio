@@ -12,13 +12,12 @@ riskParityPortfolioDiagSigma <- function(Sigma) {
 #' @export
 riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
                                    shortselling = FALSE,
-                                   formulation = "double-index", gamma = .9,
+                                   formulation = "rc-over-var-vs-b", gamma = .9,
                                    zeta = 1e-7, tau = NA, maxiter = 500,
                                    ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
-    wk <- 1 / sqrt(diag(Sigma))
-    wk <- wk / sum(wk)
+    wk <- riskParityPortfolioDiagSigma(Sigma)$w
   } else {
     wk <- w0
   }
@@ -40,39 +39,27 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
     meq <- 0
   }
 
-  if (formulation == "double-index") {
-    # define the risk function for a double-index formulation
-    fn <- function(w, Sigma, N) {
-      r <- w * (Sigma %*% w)
-      return (2 * (N * sum(r^2) - sum(r)^2))
-    }
-    g <- function(w, Sigma, N) {
-      r <-  w * (Sigma %*% w)
-      return (rep(r, times = N) - rep(r, each = N))
-    }
-    computeA <- compute_A_double_index
-  } else if (formulation == "single-index") {
-    # define the risk function for a single-index formulation
-    fn <- function(w, Sigma, N) {
-      r <- w * (Sigma %*% w)
-      # return (sum((r / sum(r) - 1 / N) ^ 2))
-      return (sum(r ^ 2) / (sum(r) ^ 2) - 1 / N)
-    }
-    g <- function(w, Sigma, N) {
-      r <- w * (Sigma %*% w)
-      return (r / sum(r) - 1 / N)
-    }
-    computeA <- compute_A_single_index_R
+  if (formulation == "rc-double-index") {
+    R <- R_rc_double_index
+    g <- g_rc_double_index
+    A <- A_rc_double_index
+  } else if (formulation == "rc-over-var-vs-b") {
+    R <- R_rc_over_var_vs_b
+    g <- g_rc_over_var_vs_b
+    A <- A_rc_over_var_vs_b
+  } else {
+    stop("formulation ", formulation, " is not included.")
   }
   # compute and store objective function at the initial value
-  fun_k <- fn(wk, Sigma, N)
+  fun_k <- R(wk, Sigma, N)
   fun_seq <- c(fun_k)
   time_seq <- c(0)
-  start_time <- Sys.time()
+  start_time <- proc.time()[3]
   for (k in 1:maxiter) {
     # auxiliary quantities
-    Ak <- computeA(wk, Sigma, N)
-    g_wk <- g(wk, Sigma, N)
+    rk <- wk * (Sigma %*% wk)
+    Ak <- A(wk, Sigma, N, r = rk)
+    g_wk <- g(wk, Sigma, N, r = rk)
     Qk <- 2 * crossprod(Ak) + tau * diag(N)
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
@@ -80,9 +67,8 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
                                 bvec = bvec, meq = meq)$solution
     w_next <- wk + gamma * (w_hat - wk)
     # save objective function values and elapsed time
-    end_time <- Sys.time()
-    time_seq <- c(time_seq, end_time - start_time)
-    fun_next <- fn(w_next, Sigma, N)
+    time_seq <- c(time_seq, proc.time()[3] - start_time)
+    fun_next <- R(w_next, Sigma, N)
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters
     werr <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
@@ -107,10 +93,14 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
 
 #' Implements the risk parity portfolio using a general constrained
 #' solver from the alabama package
+#'
+#' @param formulation a string indicating the formulation to use for the risk
+#'        parity optimization problem. It must be one of c("rc-double-index",
+#'        "rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
                                          shortselling = FALSE, use_gradient = TRUE,
-                                         formulation = "double-index", method = "slsqp",
+                                         formulation = "rc-over-var-vs-b", method = "slsqp",
                                          maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
@@ -142,68 +132,45 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
     shortselling.jac <- NULL
   }
 
-  if (formulation == "double-index") {
-    # define the risk for a double-index formulation
-    fn <- function(w, Sigma, N) {
-      r <- w * (Sigma %*% w)
-      return (2 * (N * sum(r ^ 2) - sum(r) ^ 2))
-    }
-
+  R_grad <- NULL
+  if (formulation == "rc-double-index") {
+    R <- R_rc_double_index
     if (use_gradient) {
-      # define the gradient of the risk for a double-index formulation
-      fn_grad <- function(w, Sigma, N) {
-        r <- w * (Sigma %*% w)
-        v <- N * r - sum(r)
-        risk_grad <- 4 * (Sigma %*% (w * v) + (Sigma %*% w) * v)
-        return (risk_grad)
-      }
-    } else {
-      fn_grad <- NULL
+      R_grad <- R_grad_rc_double_index
     }
-  } else if (formulation == "single-index") {
-    # define the risk for a single-index formulation
-    fn <- function(w, Sigma, N) {
-      r <- w * (Sigma %*% w)
-      # return (sum((r / sum(r) - 1 / N) ^ 2))
-      return (sum(r ^ 2) / (sum(r) ^ 2) - 1 / N)
-    }
-
+  } else if (formulation == "rc-over-var-vs-b") {
+    R <- R_rc_over_var_vs_b
     if (use_gradient) {
-      # define the gradient of the risk for a single-index formulation
-      fn_grad <- function(w, Sigma, N) {
-        r <- w * (Sigma %*% w)
-        sum_r <- sum(r)
-        r_b <- r / sum_r - 1 / N
-        v <- r_b - sum(r_b * r) / (sum_r ^ 2)
-        risk_grad <- (2 / sum_r) * (Sigma %*% (w * v) + (Sigma %*% w) * v)
-        return (risk_grad)
-      }
-    } else {
-      fn_grad <- NULL
+      R_grad <- R_grad_rc_over_var_vs_b
+    }
+  } else if (formulation == "rc-over-sd-vs-b-times-sd") {
+    R <- R_rc_over_sd_vs_b_times_sd
+    if (use_gradient) {
+      R_grad <- R_grad_rc_over_sd_vs_b_times_sd
     }
   } else {
     stop("formulation ", formulation, " is not included.")
   }
 
-  fun_seq <- c(fn(w0, Sigma, N))
+  fun_seq <- c(R(w0, Sigma, N))
   time_seq <- c(0)
   if (method == "alabama") {
-    start_time <- Sys.time()
-    res <- alabama::constrOptim.nl(w0, fn, fn_grad, hin = shortselling,
+    start_time <- proc.time()[3]
+    res <- alabama::constrOptim.nl(w0, R, R_grad, hin = shortselling,
                                    hin.jac = shortselling.jac,
                                    heq = budget, heq.jac = budget.jac,
                                    Sigma = Sigma, N = N,
                                    control.outer = list(trace = FALSE,
                                                         itmax = maxiter))
-    end_time <- Sys.time()
+    end_time <- proc.time()[3]
   } else if (method == "slsqp") {
-    start_time <- Sys.time()
-    res <- nloptr::slsqp(w0, fn, fn_grad, hin = shortselling,
+    start_time <- proc.time()[3]
+    res <- nloptr::slsqp(w0, R, R_grad, hin = shortselling,
                          hinjac = shortselling.jac,
                          heq = budget, heqjac = budget.jac,
                          Sigma = Sigma, N = N, control = list(xtol_rel = wtol,
                                                               ftol_rel = ftol))
-    end_time <- Sys.time()
+    end_time <- proc.time()[3]
   }
   # save objective value and elapsed time
   time_seq <- c(time_seq, end_time - start_time)

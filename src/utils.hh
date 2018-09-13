@@ -6,5 +6,5 @@
 
 using namespace Eigen;
 
-MatrixXd compute_A_double_index(const VectorXd&, const MatrixXd&, const int);
+MatrixXd A_rc_double_index(const VectorXd&, const MatrixXd&, const int);
 #endif
