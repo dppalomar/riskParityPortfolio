@@ -143,13 +143,14 @@ res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
                                                  use_gradient = FALSE)
 res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var-vs-b")
 
-plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
-     pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
-     ylab = "Objective function", main = "Convergence trend versus CPU time")
+plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
+     pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
+     ylab = "Objective function", main = "Convergence trend versus CPU time",
+     ylim = c(0, 0.01))
 lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
       col = "red")
-lines(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b", pch=17,
-      cex=.8, col = "blue")
+lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
+      cex=.8, col = "purple")
 lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
       col = "green")
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
