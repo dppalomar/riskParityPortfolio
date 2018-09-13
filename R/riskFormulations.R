@@ -50,8 +50,7 @@ A_rc_over_var_vs_b <- function(w, Sigma, N, ...) {
   sum_r <- sum(r)
   Mat <- t(Sigma * w) + diag(as.vector(Sigma %*% w))
   inv_sum_r <- 1 / sum_r
-  return (inv_sum_r * (Mat - inv_sum_r) *
-          matrix(t(r) %*% Mat, N, N, byrow = TRUE))
+  return (inv_sum_r * (Mat - inv_sum_r * matrix(t(r) %*% Mat, N, N, byrow = TRUE)))
 }
 
 ######################################################################
@@ -76,4 +75,14 @@ R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N) {
   r_b <- r / sum_r - 1 / N
   v <- 2 * r_b - sum(r_b ^ 2)
   return (Sigma %*% (w * v) + Sigma_w * v)
+}
+
+A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, ...) {
+  kwargs <- list(...)
+  r <- kwargs$r
+  sum_r <- sum(r)
+  inv_sum_r <- 1 / sum_r
+  Mat <- t(Sigma * w) + diag(as.vector(Sigma %*% w))
+  return(sqrt(inv_sum_r) * (Mat %*% (diag(N) - .5 * (matrix(1, N, N) / N))
+                          - .5 * matrix(t(r) %*% Mat, N, N, byrow = TRUE) / sum_r))
 }
