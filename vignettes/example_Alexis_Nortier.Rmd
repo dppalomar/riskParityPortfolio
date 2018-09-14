@@ -84,8 +84,15 @@ $$\mathbf{w}^\star = \left[
  0.0877 \\
  0.6324 
 \end{array}
-\right].$$
-
+\right],$$
+but the Matlab implementation seems to converge to
+$$\mathbf{w}^\star = \left[
+\begin{array}{c}
+ 0.3106 \\
+ 0.0000 \\
+ 0.6895 
+\end{array}
+\right],$$
 
 # Formulation "rc double-index"
 Consider the risk expression:
