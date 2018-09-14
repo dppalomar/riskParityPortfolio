@@ -5,9 +5,8 @@
 \title{Implements the risk parity portfolio using SCA and QP solver}
 \usage{
 riskParityPortfolioSCA(Sigma, w0 = NA, budget = TRUE,
-  shortselling = FALSE, formulation = "rc-over-var-vs-b",
-  gamma = 0.9, zeta = 1e-07, tau = NA, maxiter = 500,
-  ftol = 1e-09, wtol = 1e-06)
+  shortselling = FALSE, formulation = "rc-over-var-vs-b", gamma = 0.9,
+  zeta = 1e-07, tau = NA, maxiter = 500, ftol = 1e-09, wtol = 1e-06)
 }
 \description{
 Implements the risk parity portfolio using SCA and QP solver

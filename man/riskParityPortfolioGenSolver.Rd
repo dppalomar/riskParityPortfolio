@@ -6,9 +6,9 @@
 solver from the alabama package}
 \usage{
 riskParityPortfolioGenSolver(Sigma, w0 = NA, budget = TRUE,
-  shortselling = FALSE, use_gradient = TRUE,
-  formulation = "rc-over-var-vs-b", method = "slsqp", maxiter = 500,
-  ftol = 1e-09, wtol = 1e-06)
+  shortselling = FALSE, formulation = "rc-over-var-vs-b",
+  method = "slsqp", use_gradient = TRUE, maxiter = 500, ftol = 1e-09,
+  wtol = 1e-06)
 }
 \arguments{
 \item{formulation}{a string indicating the formulation to use for the risk
