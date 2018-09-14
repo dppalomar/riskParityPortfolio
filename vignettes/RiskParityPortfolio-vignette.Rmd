@@ -1,6 +1,8 @@
 ---
 title: "Design of Risk Parity Portfolios"
-author: "Convex Group - HKUST"
+author: 
+- name: "Vinicius Ze and Daniel P. Palomar"
+  affiliation: "Hong Kong University of Science and Technology (HKUST)"
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
@@ -40,10 +42,10 @@ opts_chunk$set(
 )
 knit_hooks$set(pngquant = hook_pngquant)
 #Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "all")
-#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "bookdown::html_document2")
-#rmarkdown::render("vignettes/SparseIndexTracking-vignette.Rmd", "bookdown::pdf_document2")
-#tools::compactPDF("vignettes/SparseIndexTracking-vignette.pdf", gs_quality = "ebook")
+#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "all")
+#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "bookdown::html_document2")
+#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "bookdown::pdf_document2")
+#tools::compactPDF("vignettes/RiskParityPortfolio-vignette.pdf", gs_quality = "ebook")
 ```
 
 -----------

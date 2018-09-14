@@ -1,6 +1,8 @@
 ---
 title: "Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio"
-author: "Convex Group - HKUST"
+author: 
+- name: "Daniel P. Palomar and Vinicius Ze"
+  affiliation: "Hong Kong University of Science and Technology (HKUST)"
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
