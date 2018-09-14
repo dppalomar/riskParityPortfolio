@@ -10,10 +10,10 @@ riskParityPortfolioDiagSigma <- function(Sigma) {
 
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
-riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
-                                   shortselling = FALSE,
-                                   formulation = "rc-over-var-vs-b", gamma = .9,
-                                   zeta = 1e-7, tau = NA, maxiter = 500,
+riskParityPortfolioSCA <- function(Sigma, w0 = NA, 
+                                   budget = TRUE, shortselling = FALSE,
+                                   formulation = "rc-over-var-vs-b", 
+                                   gamma = .9, zeta = 1e-7, tau = NA, maxiter = 500,
                                    ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
@@ -98,9 +98,9 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, budget = TRUE,
 #'        parity optimization problem. It must be one of c("rc-double-index",
 #'        "rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")
 #' @export
-riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, budget = TRUE,
-                                         shortselling = FALSE, use_gradient = TRUE,
-                                         formulation = "rc-over-var-vs-b", method = "slsqp",
+riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, 
+                                         budget = TRUE, shortselling = FALSE, 
+                                         formulation = "rc-over-var-vs-b", method = "slsqp", use_gradient = TRUE,
                                          maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (any(is.na(w0))) {
