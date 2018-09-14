@@ -10,9 +10,9 @@ riskParityPortfolioDiagSigma <- function(Sigma) {
 
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
-riskParityPortfolioSCA <- function(Sigma, w0 = NA, 
+riskParityPortfolioSCA <- function(Sigma, w0 = NA, b = NA,
                                    budget = TRUE, shortselling = FALSE,
-                                   formulation = "rc-over-var-vs-b", 
+                                   formulation = "rc-over-var-vs-b",
                                    gamma = .9, zeta = 1e-7, tau = NA, maxiter = 500,
                                    ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
@@ -21,8 +21,13 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA,
   } else {
     wk <- w0
   }
+
   if (is.na(tau)) {
     tau <- .05 * sum(diag(Sigma)) / (2 * N)
+  }
+
+  if (any(is.na(b))) {
+    b <- rep(1 / N, N)
   }
 
   if (budget & (!shortselling)) {
@@ -42,11 +47,21 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA,
   if (formulation == "rc-double-index") {
     R <- R_rc_double_index
     g <- g_rc_double_index
-    A <- A_rc_double_index
+    A <- function(w, Sigma, N, r) {
+      return(A_rc_double_index(w, Sigma, N))
+    }
   } else if (formulation == "rc-over-var-vs-b") {
-    R <- R_rc_over_var_vs_b
-    g <- g_rc_over_var_vs_b
+    R <- function(w, Sigma, N, b. = b) {
+      return(R_rc_over_var_vs_b(w, Sigma, N, b.))
+    }
+    g <- function(w, Sigma, N, r, b. = b) {
+      return(g_rc_over_var_vs_b(w, Sigma, r, b.))
+    }
     A <- A_rc_over_var_vs_b
+  } else if (formulation == "rc-over-sd-vs-b-times-sd") {
+    R <- R_rc_over_sd_vs_b_times_sd
+    g <- g_rc_over_sd_vs_b_times_sd
+    A <- A_rc_over_sd_vs_b_times_sd
   } else {
     stop("formulation ", formulation, " is not included.")
   }
@@ -58,8 +73,8 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA,
   for (k in 1:maxiter) {
     # auxiliary quantities
     rk <- wk * (Sigma %*% wk)
-    Ak <- A(wk, Sigma, N, r = rk)
-    g_wk <- g(wk, Sigma, N, r = rk)
+    Ak <- A(wk, Sigma, N, rk)
+    g_wk <- g(wk, Sigma, N, rk)
     Qk <- 2 * crossprod(Ak) + tau * diag(N)
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
@@ -98,8 +113,8 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA,
 #'        parity optimization problem. It must be one of c("rc-double-index",
 #'        "rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")
 #' @export
-riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, 
-                                         budget = TRUE, shortselling = FALSE, 
+riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, b = NA,
+                                         budget = TRUE, shortselling = FALSE,
                                          formulation = "rc-over-var-vs-b", method = "slsqp", use_gradient = TRUE,
                                          maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
@@ -108,12 +123,16 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA,
     w0 <- w0 / sum(w0)
   }
 
+  if (any(is.na(b))) {
+    b <- rep(1 / N, N)
+  }
+
   if (budget) {
     budget <- function(w, ...) {
-      return (sum(w) - 1)
+      return(sum(w) - 1)
     }
     budget.jac <- function(w, ...) {
-      return (matrix(1, 1, N))
+      return(matrix(1, 1, N))
     }
   } else {
     budget <- NULL
@@ -122,10 +141,10 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA,
 
   if (!shortselling) {
     shortselling <- function(w, ...) {
-      return (w)
+      return(w)
     }
     shortselling.jac <- function(w, ...) {
-      return (diag(N))
+      return(diag(N))
     }
   } else {
     shortselling <- NULL
@@ -139,9 +158,13 @@ riskParityPortfolioGenSolver <- function(Sigma, w0 = NA,
       R_grad <- R_grad_rc_double_index
     }
   } else if (formulation == "rc-over-var-vs-b") {
-    R <- R_rc_over_var_vs_b
+    R <- function(w, Sigma, N, b. = b) {
+      return(R_rc_over_var_vs_b(w, Sigma, N, b.))
+    }
     if (use_gradient) {
-      R_grad <- R_grad_rc_over_var_vs_b
+      R_grad <- function(w, Sigma, N, b. = b) {
+        return(R_grad_rc_over_var_vs_b(w, Sigma, N, b.))
+      }
     }
   } else if (formulation == "rc-over-sd-vs-b-times-sd") {
     R <- R_rc_over_sd_vs_b_times_sd

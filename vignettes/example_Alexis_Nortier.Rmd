@@ -83,7 +83,7 @@ $$\mathbf{w}^\star = \left[
 \begin{array}{c}
  0.2799 \\
  0.0877 \\
- 0.6324 
+ 0.6324
 \end{array}
 \right],$$
 but the Matlab implementation seems to converge to
@@ -91,7 +91,7 @@ $$\mathbf{w} = \left[
 \begin{array}{c}
  0.3106 \\
  0.0000 \\
- 0.6895 
+ 0.6895
 \end{array}
 \right],$$
 
@@ -120,18 +120,26 @@ res2 <- riskParityPortfolioGenSolver(Sigma, b = rep(1/3, 3), formulation = "rc-o
 res2$w
 res2 <- riskParityPortfolioGenSolver(Sigma, b = w0, formulation = "rc-over-var-vs-b")
 res2$w
+res_sca2 <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var-vs-b")
+res_sca2$w
+res_sca2 <- riskParityPortfolioSCA(Sigma, b = rep(1/3, 3), formulation = "rc-over-var-vs-b")
+res_sca2$w
+res_sca2 <- riskParityPortfolioSCA(Sigma, b = w0, formulation = "rc-over-var-vs-b")
+res_sca2$w
 ```
 
 # Formulation "rc-over-sd vs b-times-sd"
 Consider the risk expression:
-$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\sqrt{\mathbf{1}^T\mathbf{r}}}-b_i\sqrt{\mathbf{1}^T\mathbf{r}}\right)^{2}.$$
+ $$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\sqrt{\mathbf{1}^T\mathbf{r}}}-b_i\sqrt{\mathbf{1}^T\mathbf{r}}\right)^{2}.$$
+
+Prof Dan, I'm commenting this part for now until I finish checking the formulation.
 ```{r, message=FALSE}
-res3 <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-sd-vs-b-times-sd")
-res3$w
-res3 <- riskParityPortfolioGenSolver(Sigma, b = rep(1/3, 3), formulation = "rc-over-sd-vs-b-times-sd")
-res3$w
-res3 <- riskParityPortfolioGenSolver(Sigma, b = w0, formulation = "rc-over-sd-vs-b-times-sd")
-res3$w
+#res3 <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-sd-vs-b-times-sd")
+#res3$w
+#res3 <- riskParityPortfolioGenSolver(Sigma, b = rep(1/3, 3), formulation = "rc-over-sd-vs-b-times-sd")
+#res3$w
+#res3 <- riskParityPortfolioGenSolver(Sigma, b = w0, formulation = "rc-over-sd-vs-b-times-sd")
+#res3$w
 ```
 
 
