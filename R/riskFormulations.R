@@ -13,10 +13,9 @@
 #   - functions starting with the letter A are assumed to compute the Jacobian
 #     of the risk concentration vector wrt the portfolio weights.
 
-#########################################################
-# Compute g and R for the formulation "rc-double-index" #
-# The matrix A is computed in C++                       #
-#########################################################
+#############################################################
+# Compute g, R, and A for the formulation "rc-double-index" #
+#############################################################
 
 #' Risk concentration vector for the formulation rc-double-index
 #'
@@ -53,6 +52,20 @@ R_grad_rc_double_index <- function(w, Sigma, N) {
   v <- N * r - sum(r)
   return (4 * (Sigma %*% (w * v) + Sigma_w * v))
 }
+
+#' Jacobian of the risk concentration vector wrt the portfolio weights for the
+#' formulation "rc-double-index"
+#'
+#' @param w portfolio weights
+#' @param Sigma covariance or correlation matrix
+#' @param N number of stocks (length of w)
+#' @return Jg the jacobian of the risk concentration vector wrt to w
+A_rc_double_index <- function(w, Sigma, N, r, Sigma_w) {
+  Ut <- diag(Sigma_w) + Sigma * w
+  return(matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) -
+         matrix(rep(Ut, each = N), ncol = N))
+}
+
 
 ##############################################################
 # Compute g, R, and A for the formulation "rc-over-var-vs-b" #
@@ -107,11 +120,10 @@ R_grad_rc_over_var_vs_b <- function(w, Sigma, N, b) {
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
 #' @return Jg the jacobian of the risk concentration vector wrt to w
-A_rc_over_var_vs_b <- function(w, Sigma, N, r) {
+A_rc_over_var_vs_b <- function(w, Sigma, N, r, Sigma_w) {
   sum_r <- sum(r)
-  Mat <- t(Sigma * w) + diag(as.vector(Sigma %*% w))
-  inv_sum_r <- 1 / sum_r
-  return (inv_sum_r * (Mat - inv_sum_r * matrix(t(r) %*% Mat, N, N, byrow = TRUE)))
+  Ut <- diag(Sigma_w) + Sigma * w
+  retun(Ut / sum_r - 2 / (sum_r^2) * r %o% Sigma_w)
 }
 
 ######################################################################
@@ -169,10 +181,8 @@ R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
 #' @param r the quantity w * (Sigma %*% w)
 #' @param b budget vector
 #' @return Jg the jacobian of the risk concentration vector wrt to w
-A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, r, b) {
+A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, r, Sigma_w, b) {
   sum_r <- sum(r)
-  inv_sum_r <- 1 / sum_r
-  Mat <- t(Sigma * w) + diag(as.vector(Sigma %*% w))
-  return(sqrt(inv_sum_r) * (Mat - .5 * matrix(t(r / inv_sum_r + b) %*% Mat,
-                                              N, N, byrow = TRUE)))
+  Ut <- diag(Sigma_w) + Sigma * w
+  A <- ((Ut - (r / sum_r + b)) / sqrt(sum_r)) %o% Sigma_w
 }

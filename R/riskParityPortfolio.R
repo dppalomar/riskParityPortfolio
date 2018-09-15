@@ -59,9 +59,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   if (formulation == "rc-double-index") {
     R <- R_rc_double_index
     g <- g_rc_double_index
-    A <- function(w, Sigma, N, r) {
-      return(A_rc_double_index(w, Sigma, N))
-    }
+    A <- A_rc_double_index
   } else if (formulation == "rc-over-var-vs-b") {
     R <- function(w, Sigma, N, b. = b) {
       return(R_rc_over_var_vs_b(w, Sigma, N, b.))
@@ -77,8 +75,8 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     g <- function(w, Sigma, N, r, b. = b) {
       return(g_rc_over_sd_vs_b_times_sd(w, Sigma, r, b.))
     }
-    A <- function(w, Sigma, N, r, b. = b) {
-      return(A_rc_over_sd_vs_b_times_sd(w, Sigma, N, r, b.))
+    A <- function(w, Sigma, N, r, Sigma_w, b. = b) {
+      return(A_rc_over_sd_vs_b_times_sd(w, Sigma, N, r, Sigma_w, b.))
     }
   } else {
     stop("formulation ", formulation, " is not included.")
@@ -90,8 +88,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   start_time <- proc.time()[3]
   for (k in 1:maxiter) {
     # auxiliary quantities
-    rk <- wk * (Sigma %*% wk)
-    Ak <- A(wk, Sigma, N, rk)
+    Sigma_wk <- Sigma %*% wk
+    rk <- wk * Sigma_w
+    Ak <- A(wk, Sigma, N, rk, Sigma_wk)
     g_wk <- g(wk, Sigma, N, rk)
     Qk <- 2 * crossprod(Ak) + tau * diag(N)
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
