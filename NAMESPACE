@@ -1,7 +1,3 @@
-export(A_rc_double_index)
-export(riskParityPortfolioCVX)
 export(riskParityPortfolioGenSolver)
 export(riskParityPortfolioSCA)
 export(riskParityPortfolioDiagSigma)
-useDynLib(riskParityPortfolio)
-importFrom(Rcpp, sourceCpp)
