@@ -63,7 +63,8 @@ This problem can be solved directly with some nonlinear solver (for which we nee
 $$
 \begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} & \tilde{U}\left(\mathbf{w},\mathbf{w}^{k}\right)=\frac{1}{2}\mathbf{w}^T\mathbf{Q}^{k}\mathbf{w}+\mathbf{w}^T\mathbf{q}^{k}+\lambda F\left(\mathbf{w}\right)\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1\\
+ & \mathbf{w}\ge\mathbf{0},
 \end{array}
 $$
 where
@@ -104,8 +105,8 @@ which can be coded as `risk_grad <- 4*(t(Sigma*w) + diag(Sigma %*% w)) %*% (N*r-
 
 ```{r, eval=FALSE}
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
-v <- (N*r-sum(r))
-risk_grad <- 4*(Sigma %*% (w*v) + Sigma_w*v)
+v <- N*r-sum(r)
+risk_grad <- as.vector(4*(Sigma %*% (w*v) + Sigma_w*v))
 ```
 
 **For SCA:**  
@@ -130,8 +131,7 @@ which can be compactly coded as
 ```{r, eval=FALSE}
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 Ut <- diag(Sigma_w) + Sigma*w
-A <- matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) 
-      - matrix(rep(Ut, each = N), ncol = N)
+A <- matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) - matrix(rep(Ut, each = N), ncol = N)
 ```
 
 
@@ -171,8 +171,8 @@ which can be coded as
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 sum_r <- sum(r)
 r_b <- r/sum_r - b
-v <- r_b - t(r_b) %*% r/sum_r
-risk_grad <- (2/sum_r) * (Sigma %*% (w*v) + Sigma_w*v)
+v <- r_b - as.numeric(r_b %*% r)/sum_r
+risk_grad <- (2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 
@@ -200,7 +200,7 @@ A <- Ut/sum_r - 2/(sum_r^2) * r %o% Sigma_w
 
 
 
-**My old derivation**:
+**[This is wrong!!!] My old derivation**:
 Matrix $\mathbf{A}=\left[\nabla g_1,\dots,\nabla g_N\right]^T$ is more involved to compute (we will avoid the M-notation as it gets too involved). The partial derivative is
 $$\frac{\partial g_i}{\partial x_j} = \frac{\delta_{ij}}{\mathbf{1}^T\mathbf{x}} - \frac{x_i}{(\mathbf{1}^T\mathbf{x})^2}$$
 and the gradient is 
@@ -255,8 +255,8 @@ which can be coded as
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 sum_r <- sum(r)
 r_b <- r/sum_r - b
-v <- 2*r_b - sum(r_b^2)
-risk_grad <- Sigma %*% (w*v) + Sigma_w*v
+v <- r_b - as.numeric(r_b %*% r)/sum_r
+risk_grad <- as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 **For SCA:**  
@@ -290,41 +290,6 @@ Ut <- diag(Sigma_w) + Sigma*w
 A <- Ut/sqrt(sum_r) - (r/(sum_r^(3/2)) + b/sqrt(sum_r)) %o% Sigma_w
 ```
 
-
-
-
-**My old derivation (only for $b_i=1/N$)**:  
-Its derivative w.r.t. $r_j$ can be expressed as
-$$
-\begin{equation}
-\dfrac{\partial g_{i}(\mathbf{w})}{\partial r_j} = \dfrac{\delta_{ij}}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} -
-\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}.
-\end{equation}
-$$
-
-Hence, its gradient with respect to $\mathbf{r}$ is
-$$
-\begin{equation}
-\nabla_{\mathbf{r}}g_{i}(\mathbf{w}) = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{e}_{i}
-- \dfrac{\mathbf{1}}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
-\end{equation}
-$$
-
-Its Jacobian can then be written as
-$$
-\begin{equation}
-\textsf{J}_{\mathbf{r}}\mathbf{g} = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I}
-- \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
-\end{equation}
-$$
-
-Finally, the matrix $\mathbf{A} \triangleq \textsf{J}_\mathbf{w}\mathbf{g}$ can be written as
-$$
-\begin{align}
-\mathbf{A} = \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} +
-\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right) \cdot \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I} - \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right)
-\end{align}
-$$
 
 
 
