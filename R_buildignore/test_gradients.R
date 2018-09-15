@@ -1,5 +1,5 @@
 library(numDeriv)  #install.packages("numDeriv")
-set.seed(123)
+#set.seed(123)
 
 
 # generate a random Sigma and w
@@ -62,8 +62,8 @@ g_jac <- Ut/sum_r - 2/(sum_r^2) * r %o% Sigma_w
 g_jac_num <- jacobian(g, w)
 norm(g_jac - g_jac_num, "F")
 
-U <- t(Ut)
-g_jac_bis <- (1/sum_r) * (U - (1/sum_r)*matrix((t(r) %*% U), N, N, byrow = TRUE))
+v <- colSums(Ut)
+g_jac_bis <- Ut/sum_r - 1/(sum_r^2) * r %o% v
 norm(g_jac_bis - g_jac_num, "F")
 
 
@@ -94,5 +94,17 @@ norm(g_jac - g_jac_num, "F")
 
 
 
+g <- function(r) r/sum(r)
+jacobian(g, r)
+(1/sum_r) * (diag(N) - (1/sum_r)*matrix(t(r), N, N, byrow = TRUE))
+
+g1 <- function(r) r[1]/sum(r)
+grad(g1, r)
+(1/sum_r) * (c(1, 0, 0, 0, 0) - r/sum_r)
 
 
+
+x <- c(1, 2)
+f <- function(x) x/sum(x)
+jacobian(f, x)
+(1/sum(x)) * (diag(2) - (1/sum(x))*matrix(x, 2, 2))

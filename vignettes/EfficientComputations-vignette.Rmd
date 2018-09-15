@@ -191,32 +191,13 @@ and
 $$\mathbf{A} = \frac{\mathbf{U}^T}{\mathbf{1}^T\mathbf{r}} - \frac{2}{(\mathbf{1}^T\mathbf{r})^2}\mathbf{r}\mathbf{w}^T\boldsymbol{\Sigma}$$
 which can be compactly coded as
 ```{r, eval=FALSE}
-sum_r <- sum(r)
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
+sum_r <- sum(r)
 Ut <- diag(Sigma_w) + Sigma*w
 A <- Ut/sum_r - 2/(sum_r^2) * r %o% Sigma_w
 ```
 
 
-
-
-**[This is wrong!!!] My old derivation**:
-Matrix $\mathbf{A}=\left[\nabla g_1,\dots,\nabla g_N\right]^T$ is more involved to compute (we will avoid the M-notation as it gets too involved). The partial derivative is
-$$\frac{\partial g_i}{\partial x_j} = \frac{\delta_{ij}}{\mathbf{1}^T\mathbf{x}} - \frac{x_i}{(\mathbf{1}^T\mathbf{x})^2}$$
-and the gradient is 
-$$\nabla_\mathbf{x} g_i = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{e}_i-\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}\right)$$
-where $\mathbf{e}_i$ is the $i$-canonical vector (all-zero except a 1 at the $i$-th position). We can then write the Jacobian as
-$$\textsf{J}_{\mathbf{x}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right),$$ where $\otimes$ denotes Kronecker product.
-Finally we can use the Jacobian chain rule (recall that $\textsf{J}_{\mathbf{w}}\mathbf{x} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$):
-$$\mathbf{A} \triangleq \textsf{J}_{\mathbf{w}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right) \cdot \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right),$$
-which can be more efficiently expressed as
-$$\mathbf{A} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right)-\frac{1}{\mathbf{1}^T\mathbf{x}}\mathbf{1}\otimes\left(\mathbf{x}^T\left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right)\right)\right).$$
-This can be efficiently coded as
-```{r, eval=FALSE}
-sum_r <- sum(r)
-U <- t(Sigma*w) + diag(Sigma_w)
-A <- (1/sum_r) * (U - (1/sum_r)*matrix((t(x) %*% U), N, N, byrow = TRUE)
-```
 
 
 # Formulation "rc-over-sd vs b-times-sd"
@@ -268,7 +249,8 @@ g_i(\mathbf{w}) = \frac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - b_i \sqrt{\mathb
 $$
 which can be efficiently coded as `g <- r/sum(r) - b`.
 ```{r, eval=FALSE}
-sqrt_sum_r <- sqrt(sum(r))
+sum_r <- sum(r)
+sqrt_sum_r <- sqrt(sum_r)
 g <- r/sqrt_sum_r - b*sqrt_sum_r
 ```
 
@@ -284,7 +266,6 @@ and
 $$\mathbf{A} = \frac{\mathbf{U}^T}{\sqrt{\mathbf{1}^T\mathbf{r}}} - \left(\frac{\mathbf{r}}{(\mathbf{1}^T\mathbf{r})^{3/2}}+\frac{\mathbf{b}}{\sqrt{\mathbf{1}^T\mathbf{r}}}\right)\mathbf{w}^T\boldsymbol{\Sigma}$$
 which can be compactly coded as
 ```{r, eval=FALSE}
-sum_r <- sum(r)
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 Ut <- diag(Sigma_w) + Sigma*w
 A <- Ut/sqrt(sum_r) - (r/(sum_r^(3/2)) + b/sqrt(sum_r)) %o% Sigma_w
