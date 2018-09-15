@@ -119,10 +119,16 @@ last(res_gen_solver2$obj_fun)
 res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-var-vs-b")
 res_gen_solver2$w
 last(res_gen_solver2$obj_fun)
+res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-var-vs-b")
+res_gen_solver2$w
+last(res_gen_solver2$obj_fun)
 res_sca2 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-var-vs-b")
 res_sca2$w
 last(res_sca2$obj_fun)
 res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-var-vs-b")
+res_sca2$w
+last(res_sca2$obj_fun)
+res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-var-vs-b")
 res_sca2$w
 last(res_sca2$obj_fun)
 ```
