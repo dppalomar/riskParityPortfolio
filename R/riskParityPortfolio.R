@@ -2,32 +2,28 @@
 #' that satisfies the constraints sum(w) = 1 and w >= 0.
 #'
 #' @export
-riskParityPortfolioDiagSigma <- function(Sigma) {
-  w <- 1 / sqrt(diag(Sigma))
+riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
+  w <- sqrt(b) / sqrt(diag(Sigma))
   w <- w / sum(w)
   return (list(w = w, risk_contribution = w * (Sigma %*% w)))
 }
 
 #' Implements the risk parity portfolio using SCA and QP solver
 #' @export
-riskParityPortfolioSCA <- function(Sigma, w0 = NA, b = NA,
+riskParityPortfolioSCA <- function(Sigma, w0 = NA, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    budget = TRUE, shortselling = FALSE,
                                    formulation = "rc-over-var-vs-b",
                                    gamma = .9, zeta = 1e-7, tau = NA, maxiter = 500,
                                    ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (any(is.na(w0))) {
-    wk <- riskParityPortfolioDiagSigma(Sigma)$w
-  } else {
+  
+  if (is.na(w0))
+    wk <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  else
     wk <- w0
-  }
 
   if (is.na(tau)) {
     tau <- .05 * sum(diag(Sigma)) / (2 * N)
-  }
-
-  if (any(is.na(b))) {
-    b <- rep(1 / N, N)
   }
 
   if (budget & (!shortselling)) {
@@ -113,20 +109,15 @@ riskParityPortfolioSCA <- function(Sigma, w0 = NA, b = NA,
 #'        parity optimization problem. It must be one of c("rc-double-index",
 #'        "rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")
 #' @export
-riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, b = NA,
+riskParityPortfolioGenSolver <- function(Sigma, w0 = NA, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                          budget = TRUE, shortselling = FALSE,
                                          formulation = "rc-over-var-vs-b", method = "slsqp", use_gradient = TRUE,
                                          maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (any(is.na(w0))) {
-    w0 <- 1 / sqrt(diag(Sigma))
-    w0 <- w0 / sum(w0)
-  }
-
-  if (any(is.na(b))) {
-    b <- rep(1 / N, N)
-  }
-
+  
+  if (is.na(w0))
+  w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  
   if (budget) {
     budget <- function(w, ...) {
       return(sum(w) - 1)
