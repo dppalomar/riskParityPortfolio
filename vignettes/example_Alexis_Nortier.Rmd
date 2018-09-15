@@ -74,8 +74,7 @@ and the corresponding code:
 Sigma <- rbind(c(1.0000, 0.0015, -0.0119),
                c(0.0015, 1.0000, -0.0308),
                c(-0.0119, -0.0308, 1.0000))
-b <- c(0.1594, 0.0126, 0.8280 )
-w0 <- b
+b <- c(0.1594, 0.0126, 0.8280)
 ```
 
 The optimal solution is known to be
@@ -116,12 +115,14 @@ $$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathb
 ```{r, message=FALSE}
 res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, formulation = "rc-over-var-vs-b")
 res_gen_solver2$w
-res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = w0, formulation = "rc-over-var-vs-b")
+res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-var-vs-b")
 res_gen_solver2$w
 res_sca2 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-var-vs-b")
 res_sca2$w
-res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = w0, formulation = "rc-over-var-vs-b")
+last(res_sca2$obj_fun)
+res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-var-vs-b")
 res_sca2$w
+last(res_sca2$obj_fun)
 ```
 
 # Formulation "rc-over-sd vs b-times-sd"
