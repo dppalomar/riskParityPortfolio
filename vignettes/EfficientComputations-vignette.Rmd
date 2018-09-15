@@ -85,7 +85,7 @@ To effectively implement the SCA method we need efficient computation of the ris
 - Jacobian of $\mathbf{w}$: $\textsf{J}_\mathbf{w}\mathbf{x} = \frac{\partial \mathbf{x}}{\partial \mathbf{w}^T}$ (note that the Jacobian of a scalar function is the traspose of the gradient)
 - For the single index case: $\mathbf{g}(\mathbf{w}) = \left[g_1(\mathbf{w}), \ldots, g_N(\mathbf{w}) \right]^T$
 - For the double index case: $\mathbf{G}(\mathbf{w}) = (g_{ij}(\mathbf{w}))$ and $\mathbf{g}(\mathbf{w})=\textsf{vec}(\mathbf{G}(\mathbf{w}))$
-- M-notation [@FengPal2015riskparity]: for unification purposes, one can express the risk contributions and risk term in terms of the matrix $\mathbf{M}_i$, whose $i$-th row is equal to that of $\boldsymbol{\Sigma}$ and is zero elsewhere. Then it follows that $r_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i=\mathbf{w}^T\mathbf{M}_i\mathbf{w}$ (although for computational purposes it is far more efficient to use former expression of $r_i$ than the latter).
+- M-notation [@FengPal2015riskparity]: for unification purposes, one can express the risk contributions in terms of the matrix $\mathbf{M}_i$, whose $i$-th row is equal to that of $\boldsymbol{\Sigma}$ and is zero elsewhere. Then it follows that $r_i = w_i(\boldsymbol{\Sigma}\mathbf{w})_i=\mathbf{w}^T\mathbf{M}_i\mathbf{w}$ (although for computational purposes it is far more efficient to use former expression of $r_i$ than the latter).
 
 
 # Formulation "rc double-index"
@@ -102,7 +102,7 @@ Let's compute now the gradient of $R(\mathbf{w})$:
 - $\frac{\partial r_i}{\partial w_j}=w_i\boldsymbol{\Sigma}_{ij}+\delta_{ij}(\boldsymbol{\Sigma}\mathbf{w})_i$ $\Longrightarrow$ $\textsf{J}_{\mathbf{w}}\mathbf{r} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$
 - chain rule: using Jacobians is $\textsf{J}_{\mathbf{w}} R = \textsf{J}_{\mathbf{r}}R \cdot \textsf{J}_{\mathbf{w}}\mathbf{r}$, using gradients is $(\nabla_{\mathbf{w}} R)^T = (\nabla_{\mathbf{r}}R)^T \cdot \textsf{J}_{\mathbf{w}}\mathbf{r}$ or, more conveniently, $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{r})^T \cdot \nabla_{\mathbf{r}}R$:
 $$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{r}-(\mathbf{1}^T\mathbf{r})\mathbf{1}),$$
-which can be coded as `risk_grad <- 4*(t(Sigma*w) + diag(Sigma %*% w)) %*% (N*r-sum(r))`. An better way to code it is:
+which can be coded as `risk_grad <- 4*(t(Sigma*w) + diag(Sigma %*% w)) %*% (N*r-sum(r))`. A better way to code it is:
 
 ```{r, eval=FALSE}
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
@@ -110,35 +110,33 @@ v <- (N*r-sum(r))
 risk_grad <- 4*(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
-**For SCA:**
-[This is to be updated]
-However, if we are interested in implenting the SCA method, this is not enough. Then we need an expression for the risk contributions contained in $\mathbf{g}$ as well as its Jacobian matrix $\mathbf{A}$.
+**For SCA:**  
+However, if we are interested in implenting the SCA method, this is not enough. Then we need an expression for the risk contributions contained in $\mathbf{g}$ as well as its Jacobian matrix $\mathbf{A} = \left[\nabla g_{11},\dots,\nabla g_{NN}\right]^T$.
 
 The risk deviations are
-$$g_{ij}(\mathbf{w})=w_i(\boldsymbol{\Sigma}\mathbf{w})_{i}-w_j(\boldsymbol{\Sigma}\mathbf{w})_j = x_i - x_j,$$
-which can be efficiently coded as `g <- rep(x, times = N) - rep(x, each = N)`. So another way to compute $R(\mathbf{w})$ is with `sum(g^2)`, but it's not as efficient as the previous computation since $\mathbf{g}$ has $N^2$ elements.
+$$g_{ij}(\mathbf{w})=w_i(\boldsymbol{\Sigma}\mathbf{w})_{i}-w_j(\boldsymbol{\Sigma}\mathbf{w})_j = r_i - r_j,$$
+which can be efficiently coded as `g <- rep(r, times = N) - rep(r, each = N)`. So another way to compute $R(\mathbf{w})$ is with `sum(g^2)`, but it's not as efficient as the previous computation since $\mathbf{g}$ has $N^2$ elements.
 
-Matrix $\mathbf{A}$ is more involved to compute. Using the M-notation: $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ (recall that $\mathbf{A} = \left[\nabla g_{11},\dots,\nabla g_{NN}\right]^T$). But we need an efficient way to compute this...
+Matrix $\mathbf{A}$ is more involved to compute. Using the M-notation [@FengPal2015riskparity]: $$\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}.$$ We can compute efficiently the vectors $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ for all $i=1,\ldots,N$ at once:
+$$\begin{aligned}
+\left[\mathbf{M}_1\mathbf{w}, \ldots, \mathbf{M}_N\mathbf{w}\right] & = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\\
+\left[\mathbf{M}_1^T\mathbf{w}, \ldots, \mathbf{M}^T_N\mathbf{w}\right] & = \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}),
+\end{aligned}$$
+so that $\nabla g_{ij} = \mathbf{u}_i + \mathbf{u}_j$, where $\mathbf{u}_i$ is the $i$-th column of the $N\times N$ matrix
+$$\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}).$$
+Finally, to compute efficiently the Jacobian $\mathbf{A}$ without using loops we can write it as
+$$\mathbf{A} = \mathbf{1}_N \otimes \mathbf{U}^T + \mathbf{U}^T \otimes \mathbf{1}_N$$
+which can be compactly coded as
+```{r, eval=FALSE}
+Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
+Ut <- diag(Sigma_w) + Sigma*w
+A <- matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) 
+      + matrix(rep(Ut, each = N), ncol = N)
+```
 
-**This derivation is in the making:**
 
-Observations:
 
-1. each terms $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ is symmetric, i.e., $\nabla g_{ij} = \nabla g_{ji}$
-2. we need $\mathbf{A}$ only through the terms $\mathbf{A}^T\mathbf{A}$ (which are symmetric) and $\mathbf{A}^T\mathbf{g}$, which can simplify things a lot
-3. can we compute efficiently $(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ for all $i=1,\ldots,N$ at once?. Yes!!:
-$$\left[\mathbf{M}_1\mathbf{w}, \ldots, \mathbf{M}_N\mathbf{w}\right] = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$$
-and
-$$\left[\mathbf{M}_1^T\mathbf{w}, \ldots, \mathbf{M}^T_N\mathbf{w}\right] = \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$$
-So that $$(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i}$$
-and 
-$$\nabla g_{ij} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i} + \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,j}$$
-$$[\nabla g_{ij}]_k = \delta_{ki}(\boldsymbol{\Sigma}\mathbf{w})_i + \boldsymbol{\Sigma}_{k,i}w_i + \delta_{kj}(\boldsymbol{\Sigma}\mathbf{w})_j + \boldsymbol{\Sigma}_{k,j}w_j$$
 
-4. TBD:
-$$[\mathbf{A}^T\mathbf{A}]_{kl} = \sum_{i,j} [\nabla g_{ij}]_k[\nabla g_{ij}]_l$$
-Consider one of the cross terms after the multiplication:
-$$\sum_{i,j} \boldsymbol{\Sigma}_{k,i}w_i \cdot \boldsymbol{\Sigma}_{l,j}w_j = $$
 
 
 # Formulation "rc-over-var vs b"

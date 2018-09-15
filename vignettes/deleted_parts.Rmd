@@ -1,0 +1,17 @@
+**This derivation is in the making:**
+  
+  Observations:
+  
+  1. each terms $\nabla g_{ij} = (\mathbf{M}_i + \mathbf{M}_i^T + \mathbf{M}_j + \mathbf{M}_j^T)\mathbf{w}$ is symmetric, i.e., $\nabla g_{ij} = \nabla g_{ji}$
+    2. we need $\mathbf{A}$ only through the terms $\mathbf{A}^T\mathbf{A}$ (which are symmetric) and $\mathbf{A}^T\mathbf{g}$, which can simplify things a lot
+  
+  
+  
+  and 
+  $$\nabla g_{ij} = \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,i} + \left[\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\right]_{:,j}$$
+    $$[\nabla g_{ij}]_k = \delta_{ki}(\boldsymbol{\Sigma}\mathbf{w})_i + \boldsymbol{\Sigma}_{k,i}w_i + \delta_{kj}(\boldsymbol{\Sigma}\mathbf{w})_j + \boldsymbol{\Sigma}_{k,j}w_j$$
+    
+    4. TBD:
+    $$[\mathbf{A}^T\mathbf{A}]_{kl} = \sum_{i,j} [\nabla g_{ij}]_k[\nabla g_{ij}]_l$$
+    Consider one of the cross terms after the multiplication:
+    $$\sum_{i,j} \boldsymbol{\Sigma}_{k,i}w_i \cdot \boldsymbol{\Sigma}_{l,j}w_j = $$
