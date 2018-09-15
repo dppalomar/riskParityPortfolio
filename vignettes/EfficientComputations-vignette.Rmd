@@ -253,7 +253,7 @@ risk_grad <- Sigma %*% (w*v) + Sigma_w*v
 For the SCA method, the risk deviation of the $i$-th asset is
 $$
 \begin{equation}
-g_i(\mathbf{w}) = \dfrac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - \dfrac{\sqrt{\mathbf{1}^{T}\mathbf{r}}}{N}
+g_i(\mathbf{w}) = \dfrac{r_i}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} - b_i\sqrt{\mathbf{1}^{T}\mathbf{r}}
 \end{equation}
 $$
 
@@ -261,7 +261,7 @@ Its derivative w.r.t. $r_j$ can be expressed as
 $$
 \begin{equation}
 \dfrac{\partial g_{i}(\mathbf{w})}{\partial r_j} = \dfrac{\delta_{ij}}{\sqrt{\mathbf{1}^{T}\mathbf{r}}} -
-\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{1}{2N\sqrt{\mathbf{1}^{T}\mathbf{r}}}.
+\dfrac{r_i}{2 (\mathbf{1}^{T}\mathbf{r})^{3/2}} - \dfrac{b_i}{2\sqrt{\mathbf{1}^{T}\mathbf{r}}}.
 \end{equation}
 $$
 
@@ -269,7 +269,7 @@ Hence, its gradient with respect to $\mathbf{r}$ is
 $$
 \begin{equation}
 \nabla_{\mathbf{r}}g_{i}(\mathbf{w}) = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{e}_{i}
-- \dfrac{\mathbf{1}}{2N} - \dfrac{\mathbf{r}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+- \dfrac{1}{2}\left(\dfrac{\mathbf{r}}{\mathbf{1}^{T}\mathbf{r}} + \mathbf{b} \right)\right).
 \end{equation}
 $$
 
@@ -277,26 +277,20 @@ Its Jacobian can then be written as
 $$
 \begin{equation}
 \textsf{J}_{\mathbf{r}}\mathbf{g} = \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I}
-- \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right).
+- \dfrac{1}{2}\left(\dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{\mathbf{1}^{T}\mathbf{r}} + \mathbf{1}\otimes\mathbf{b}^{T} \right)\right)
 \end{equation}
 $$
 
 Finally, the matrix $\mathbf{A} \triangleq \textsf{J}_\mathbf{w}\mathbf{g}$ can be written as
 $$
-\begin{align}
+\begin{equation}
 \mathbf{A} = \left(\textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} +
-\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right) \cdot \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I} - \dfrac{\mathbf{1}\mathbf{1}^{T}}{2N} - \dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{2 \mathbf{1}^{T}\mathbf{r}}\right)
-\end{align}
+\textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\right) \cdot \dfrac{1}{{\sqrt{\mathbf{1}^{T}\mathbf{r}}}} \left(\mathbf{I} - \dfrac{1}{2}\left(\dfrac{\mathbf{1}\otimes\mathbf{r}^{T}}{\mathbf{1}^{T}\mathbf{r}} + \mathbf{1}\otimes\mathbf{b}^{T} \right)\right)
+\end{equation}
 $$
-
-
-
 
 # References {-}
 \setlength{\parindent}{-0.2in}
 \setlength{\leftskip}{0.2in}
 \setlength{\parskip}{8pt}
 \noindent
-
-
-
