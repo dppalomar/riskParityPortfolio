@@ -5,10 +5,11 @@
 \title{Implements the risk parity portfolio using a general constrained
 solver from the alabama package}
 \usage{
-riskParityPortfolioGenSolver(Sigma, w0 = NA, b = NA, budget = TRUE,
-  shortselling = FALSE, formulation = "rc-over-var-vs-b",
-  method = "slsqp", use_gradient = TRUE, maxiter = 500,
-  ftol = 1e-09, wtol = 1e-06)
+riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+  budget = TRUE, shortselling = FALSE,
+  formulation = "rc-over-var-vs-b", method = "slsqp",
+  use_gradient = TRUE, w0 = NA, maxiter = 500, ftol = 1e-09,
+  wtol = 1e-06)
 }
 \arguments{
 \item{formulation}{a string indicating the formulation to use for the risk

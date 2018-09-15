@@ -5,7 +5,7 @@
 \title{Implements the risk parity portfolio for the case of diagonal Sigma
 that satisfies the constraints sum(w) = 1 and w >= 0.}
 \usage{
-riskParityPortfolioDiagSigma(Sigma)
+riskParityPortfolioDiagSigma(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)))
 }
 \description{
 Implements the risk parity portfolio for the case of diagonal Sigma

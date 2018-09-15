@@ -137,14 +137,14 @@ last(res_sca2$obj_fun)
 Consider the risk expression:
  $$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\sqrt{\mathbf{1}^T\mathbf{r}}}-b_i\sqrt{\mathbf{1}^T\mathbf{r}}\right)^{2}.$$
 
-```{r, eval=FALSE}
+```{r}
 res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, formulation = "rc-over-sd-vs-b-times-sd")
 res_gen_solver3$w
-res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, w0 = w0, formulation = "rc-over-sd-vs-b-times-sd")
+res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-sd-vs-b-times-sd")
 res_gen_solver3$w
 res_sca3 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-sd-vs-b-times-sd")
 res_sca3$w
-res_sca3 <- riskParityPortfolioSCA(Sigma, b, w0 = w0, formulation = "rc-over-sd-vs-b-times-sd")
+res_sca3 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-sd-vs-b-times-sd")
 res_sca3$w
 ```
 

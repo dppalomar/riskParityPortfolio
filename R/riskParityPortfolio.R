@@ -55,9 +55,15 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     }
     A <- A_rc_over_var_vs_b
   } else if (formulation == "rc-over-sd-vs-b-times-sd") {
-    R <- R_rc_over_sd_vs_b_times_sd
-    g <- g_rc_over_sd_vs_b_times_sd
-    A <- A_rc_over_sd_vs_b_times_sd
+    R <- function(w, Sigma, N, b. = b) {
+      return(R_rc_over_sd_vs_b_times_sd(w, Sigma, N, b.))
+    }
+    g <- function(w, Sigma, N, r, b. = b) {
+      return(g_rc_over_sd_vs_b_times_sd(w, Sigma, r, b.))
+    }
+    A <- function(w, Sigma, N, r, b. = b) {
+      return(A_rc_over_sd_vs_b_times_sd(w, Sigma, N, r, b.))
+    }
   } else {
     stop("formulation ", formulation, " is not included.")
   }
@@ -160,9 +166,13 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
       }
     }
   } else if (formulation == "rc-over-sd-vs-b-times-sd") {
-    R <- R_rc_over_sd_vs_b_times_sd
+    R <- function(w, Sigma, N, b. = b) {
+      return(R_rc_over_sd_vs_b_times_sd(w, Sigma, N, b.))
+    }
     if (use_gradient) {
-      R_grad <- R_grad_rc_over_sd_vs_b_times_sd
+      R_grad <- function(w, Sigma, N, b. = b) {
+        return(R_grad_rc_over_sd_vs_b_times_sd(w, Sigma, N, b.))
+      }
     }
   } else {
     stop("formulation ", formulation, " is not included.")

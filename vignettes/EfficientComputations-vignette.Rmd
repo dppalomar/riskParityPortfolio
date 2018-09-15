@@ -192,7 +192,7 @@ which can be efficiently coded as `g <- x/sum(x) - b`.
 
 Matrix $\mathbf{A}=\left[\nabla g_1,\dots,\nabla g_N\right]^T$ is more involved to compute (we will avoid the M-notation as it gets too involved). The partial derivative is
 $$\frac{\partial g_i}{\partial x_j} = \frac{\delta_{ij}}{\mathbf{1}^T\mathbf{x}} - \frac{x_i}{(\mathbf{1}^T\mathbf{x})^2}$$
-and the gradient is 
+and the gradient is
 $$\nabla_\mathbf{x} g_i = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{e}_i-\frac{\mathbf{x}}{\mathbf{1}^T\mathbf{x}}\right)$$
 where $\mathbf{e}_i$ is the $i$-canonical vector (all-zero except a 1 at the $i$-th position). We can then write the Jacobian as
 $$\textsf{J}_{\mathbf{x}}\mathbf{g} = \frac{1}{\mathbf{1}^T\mathbf{x}}\left(\mathbf{I}-\frac{\mathbf{1}\otimes \mathbf{x}^T}{\mathbf{1}^T\mathbf{x}}\right),$$ where $\otimes$ denotes Kronecker product.
