@@ -19,6 +19,7 @@
 #########################################################
 
 #' Risk concentration vector for the formulation rc-double-index
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -29,6 +30,7 @@ g_rc_double_index <- function(w, Sigma, N, r) {
 }
 
 #' Objective function for the formulation "rc-double-index"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -40,6 +42,7 @@ R_rc_double_index <- function(w, Sigma, N) {
 
 #' Gradient of the objective function wrt the portfolio weights for the
 #' formulation "rc-double-index"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -56,6 +59,7 @@ R_grad_rc_double_index <- function(w, Sigma, N) {
 ##############################################################
 
 #' Risk vector for the formulation "rc-over-var-vs-b"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -68,6 +72,7 @@ g_rc_over_var_vs_b <- function(w, Sigma, r, b) {
 }
 
 #' Objective function for the formulation "rc-over-var-vs-b"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -80,6 +85,7 @@ R_rc_over_var_vs_b <- function(w, Sigma, N, b) {
 
 #' Gradient of the objective function wrt the portfolio weights for the
 #' formulation "rc-over-var-vs-b"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -96,6 +102,7 @@ R_grad_rc_over_var_vs_b <- function(w, Sigma, N, b) {
 
 #' Jacobian of the risk concentration vector wrt the portfolio weights for the
 #' formulation "rc-over-var-vs-b"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -112,6 +119,7 @@ A_rc_over_var_vs_b <- function(w, Sigma, N, r) {
 ######################################################################
 
 #' Risk vector for the formulation "rc-over-sd-vs-b-times-sd"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -124,6 +132,7 @@ g_rc_over_sd_vs_b_times_sd <- function(w, Sigma, r, b) {
 }
 
 #' Objective function for the formulation "rc-over-sd-vs-b-times-sd"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -136,6 +145,7 @@ R_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
 
 #' Gradient of the objective function wrt the portfolio weights for the
 #' formulation "rc-over-sd-vs-b-times-sd"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
@@ -152,6 +162,7 @@ R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
 
 #' Jacobian of the risk concentration vector wrt the portfolio weights for the
 #' formulation "rc-over-sd-vs-b-times-sd"
+#'
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)

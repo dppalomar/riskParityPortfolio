@@ -1,14 +1,30 @@
-#' Implements the risk parity portfolio for the case of diagonal Sigma
+#' Risk parity portfolio optimization for the case of diagonal Sigma
 #' that satisfies the constraints sum(w) = 1 and w >= 0.
 #'
+#' @param Sigma covariance or correlation matrix
+#' @param b budget vector
+#' @return w optimal portfolio vector
+#' @return risk_contribution the risk contribution of every asset
 #' @export
-riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
+riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1 / nrow(Sigma),
+                                                        nrow(Sigma))) {
   w <- sqrt(b) / sqrt(diag(Sigma))
   w <- w / sum(w)
   return (list(w = w, risk_contribution = w * (Sigma %*% w)))
 }
 
-#' Implements the risk parity portfolio using SCA and QP solver
+#' Risk parity portfolio optimization using successive convex approximation (SCA)
+#' and a quadratic programming (QP) solver.
+#'
+#' @param Sigma covariance or correlation matrix
+#' @param b budget vector
+#' @param budget boolean indicating whether to consider sum(w) = 1 as a
+#'        constraint
+#' @param shortselling boolean indicating whether to allow short-selling, i.e.,
+#'        w < 0
+#' @param formulation string indicating the formulation to be used for the risk
+#'        parity optimization problem. It must be one of: "rc-double-index",
+#'        "rc-over-var-vs-b", or "rc-over-sd-vs-b-times-sd"
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    budget = TRUE, shortselling = FALSE,
@@ -111,9 +127,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #' Implements the risk parity portfolio using a general constrained
 #' solver from the alabama package
 #'
-#' @param formulation a string indicating the formulation to use for the risk
-#'        parity optimization problem. It must be one of c("rc-double-index",
-#'        "rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                          budget = TRUE, shortselling = FALSE,
