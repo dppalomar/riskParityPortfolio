@@ -17,7 +17,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    gamma = .9, zeta = 1e-7, tau = NA, maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   
-  if (is.na(w0))
+  if (anyNA(w0))
     wk <- riskParityPortfolioDiagSigma(Sigma, b)$w
   else
     wk <- w0
@@ -116,8 +116,8 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
   
-  if (is.na(w0))
-  w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  if (anyNA(w0))
+    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
   
   if (budget) {
     budget <- function(w, ...) {
