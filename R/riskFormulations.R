@@ -59,6 +59,8 @@ R_grad_rc_double_index <- function(w, Sigma, N) {
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
+#' @param r the quantity w * Sigma_w
+#' @param Sigma_w the quantity Sigma %*% w
 #' @return Jg the jacobian of the risk concentration vector wrt to w
 A_rc_double_index <- function(w, Sigma, N, r, Sigma_w) {
   Ut <- diag(Sigma_w) + Sigma * w
@@ -119,6 +121,8 @@ R_grad_rc_over_var_vs_b <- function(w, Sigma, N, b) {
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
+#' @param r the quantity w * Sigma_w
+#' @param Sigma_w the quantity Sigma %*% w
 #' @return Jg the jacobian of the risk concentration vector wrt to w
 A_rc_over_var_vs_b <- function(w, Sigma, N, r, Sigma_w) {
   sum_r <- sum(r)
@@ -178,7 +182,8 @@ R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
 #' @param w portfolio weights
 #' @param Sigma covariance or correlation matrix
 #' @param N number of stocks (length of w)
-#' @param r the quantity w * (Sigma %*% w)
+#' @param r the quantity w * Sigma_w
+#' @param Sigma_w the quantity Sigma %*% w
 #' @param b budget vector
 #' @return Jg the jacobian of the risk concentration vector wrt to w
 A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, r, Sigma_w, b) {
