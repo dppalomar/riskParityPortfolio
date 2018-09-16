@@ -93,4 +93,15 @@ g_jac_num <- jacobian(g_rc_vs_b_times_var, x = w, Sigma = Sigma, b = b)
 norm(g_jac - g_jac_num, "F")
 
 
+#
+#  Formulation "rc vs theta"
+#
+theta <- sum(r)/N  #BTW, I would use this as the initial value
+R_rc_vs_theta(c(w, theta), Sigma)
+risk_grad <- R_rc_vs_theta(c(w, theta), Sigma)
+risk_grad_num <- grad(R_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
+norm(risk_grad - risk_grad, "2")
+
+
+
 

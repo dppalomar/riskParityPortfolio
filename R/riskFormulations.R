@@ -175,3 +175,33 @@ A_rc_vs_b_times_var <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_
   Ut <- diag(Sigma_w) + Sigma * w
   return (Ut - 2 * b %o% Sigma_w)
 }
+
+
+#########################################################
+# Compute g, R, and A for the formulation “rc vs theta” #
+#########################################################
+
+R_rc_vs_theta <- function(wtheta, Sigma, b = NA, r = NA) {
+  N <- length(wtheta)-1
+  theta <- wtheta[N+1]
+  if (is.na(r)) {
+    w <- wtheta[1:N]
+    r <- as.vector(w*(Sigma %*% w))
+  }
+  return (sum((r - theta)^2))
+}
+
+R_grad_rc_vs_theta <- function(wtheta, Sigma, b = NA, Sigma_w = NA, r = NA) {
+  N <- length(wtheta)-1
+  w <- wtheta[1:N]
+  theta <- wtheta[N+1]
+  if (is.na(r)) {
+    if (is.na(Sigma_w))
+      Sigma_w <- as.vector(Sigma %*% w)
+    r <- as.vector(w*Sigma_w)
+  }
+  
+  v <- r - theta
+  return (2*c(as.vector(Sigma %*% (w*v) + Sigma_w*v), -sum(v)))
+}
+

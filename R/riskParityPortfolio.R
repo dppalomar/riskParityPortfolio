@@ -206,20 +206,18 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(0)
   if (method == "alabama") {
     start_time <- proc.time()[3]
-    res <- alabama::constrOptim.nl(w0, R, R_grad, hin = shortselling,
-                                   hin.jac = shortselling.jac,
+    res <- alabama::constrOptim.nl(w0, R, R_grad, 
+                                   hin = shortselling, hin.jac = shortselling.jac,
                                    heq = budget, heq.jac = budget.jac,
                                    Sigma = Sigma, b = b,
-                                   control.outer = list(trace = FALSE,
-                                                        itmax = maxiter))
+                                   control.outer = list(trace = FALSE, itmax = maxiter))
     end_time <- proc.time()[3]
   } else if (method == "slsqp") {
     start_time <- proc.time()[3]
-    res <- nloptr::slsqp(w0, R, R_grad, hin = shortselling,
-                         hinjac = shortselling.jac,
+    res <- nloptr::slsqp(w0, R, R_grad, 
+                         hin = shortselling, hinjac = shortselling.jac,
                          heq = budget, heqjac = budget.jac,
-                         Sigma = Sigma, b = b, control = list(xtol_rel = wtol,
-                                                              ftol_rel = ftol))
+                         Sigma = Sigma, b = b, control = list(xtol_rel = wtol, ftol_rel = ftol))
     end_time <- proc.time()[3]
   }
   # save objective value and elapsed time
