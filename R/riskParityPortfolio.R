@@ -9,7 +9,7 @@
 riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
   w <- sqrt(b) / sqrt(diag(Sigma))
   w <- w / sum(w)
-  return (list(w = w, 
+  return (list(w = w,
                risk_contribution = as.vector(w * (Sigma %*% w))))
 }
 
@@ -36,7 +36,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
   if (anyNA(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-  
+
   if (is.na(tau))
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
@@ -53,7 +53,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     bvec <- rep(0, N)
     meq <- 0
   }
-  
+
   switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
@@ -69,20 +69,20 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
            R <- R_rc_over_var_vs_b
            g <- g_rc_over_var_vs_b
            A <- A_rc_over_var_vs_b
-         },         
+         },
          "rc-over-var" = {
            R <- R_rc_over_var
            g <- g_rc_over_var
            A <- A_rc_over_var
-         },         
+         },
          "rc-over-sd-vs-b-times-sd" = {
            R <- R_rc_over_sd_vs_b_times_sd
            g <- g_rc_over_sd_vs_b_times_sd
            A <- A_rc_over_sd_vs_b_times_sd
-         },         
+         },
          stop("formulation ", formulation, " is not included.")
   )
-  
+
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
@@ -121,9 +121,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  return(list(w = w_next, 
+  return(list(w = w_next,
               risk_contribution = as.vector(w_next * (Sigma %*% w_next)),
-              obj_fun = fun_seq, 
+              obj_fun = fun_seq,
               elapsed_time = time_seq,
               convergence = sum(!(k == maxiter))))
 }
@@ -181,15 +181,15 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          "rc-over-var-vs-b" = {
            R <- R_rc_over_var_vs_b
            if (use_gradient)  R_grad <- R_grad_rc_over_var_vs_b
-         },         
+         },
          "rc-over-var" = {
            R <- R_rc_over_var
            if (use_gradient)  R_grad <- R_grad_rc_over_var
-         },         
+         },
          "rc-over-sd-vs-b-times-sd" = {
            R <- R_rc_over_sd_vs_b_times_sd
            if (use_gradient)  R_grad <- R_grad_rc_over_sd_vs_b_times_sd
-         },         
+         },
          stop("formulation ", formulation, " is not included.")
   )
 
@@ -217,9 +217,9 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
-  return(list(w = w, 
+  return(list(w = w,
               risk_contribution = as.vector(w * (Sigma %*% w)),
-              obj_fun = fun_seq, 
+              obj_fun = fun_seq,
               elapsed_time = time_seq,
               convergence = res$convergence))
 }
