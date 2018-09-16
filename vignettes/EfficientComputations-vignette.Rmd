@@ -431,7 +431,7 @@ risk_grad <- 2*c(as.vector(Sigma %*% (w*v) + Sigma_w*v), -sum(v))
 Using the M-notation [@FengPal2015riskparity], we can write the risk deviations as
 $$
 \begin{equation}
-g_i(\mathbf{w}) = \mathbf{w}^T\mathbf{M}_i\mathbf{w} - \theta = r_i - \theta
+g_i(\mathbf{w},\theta) = \mathbf{w}^T\mathbf{M}_i\mathbf{w} - \theta = r_i - \theta
 \end{equation}
 $$
 which can be efficiently coded as
@@ -440,15 +440,18 @@ g <- r - theta
 ```
 
 The gradients can be written as [@FengPal2015riskparity]: 
-$$\nabla g_{i}(\mathbf{w}) = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}.$$ 
+$$\nabla_\mathbf{w} g_{i}(\mathbf{w},\theta) = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$$
+and
+$$\nabla_\theta g_{i}(\mathbf{w},\theta) = -1.$$
+
 Recalling that $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ can be conveniently expressed as the $i$-th column of the $N\times N$ matrix $\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$, then we can write
-$\nabla g_{i}(\mathbf{w}) = \mathbf{u}_i$.
+$\nabla_\mathbf{w} g_{i}(\mathbf{w}) = \mathbf{u}_i$.
 Finally, we can compute the Jacobian $\mathbf{A}$ compactly as
-$$\mathbf{A} = \mathbf{U}^T$$
+$$\mathbf{A} = \left[\mathbf{U}^T, -\mathbf{1}_N\right]$$
 which can be compactly coded as
 ```{r, eval=FALSE}
 Ut <- diag(Sigma_w) + Sigma*w
-A <- Ut
+A <- cbind(Ut, -1)
 ```
 
 

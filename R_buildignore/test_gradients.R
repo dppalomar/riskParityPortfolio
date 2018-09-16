@@ -102,6 +102,7 @@ risk_grad <- R_rc_vs_theta(c(w, theta), Sigma)
 risk_grad_num <- grad(R_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
 norm(risk_grad - risk_grad, "2")
 
-
-
+g_jac <- A_rc_vs_theta(c(w, theta), Sigma)
+g_jac_num <- jacobian(g_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
+norm(g_jac - g_jac_num, "F")
 

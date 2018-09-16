@@ -205,3 +205,22 @@ R_grad_rc_vs_theta <- function(wtheta, Sigma, b = NA, Sigma_w = NA, r = NA) {
   return (2*c(as.vector(Sigma %*% (w*v) + Sigma_w*v), -sum(v)))
 }
 
+g_rc_vs_theta <- function(wtheta, Sigma, b = NA, r = NA) {
+  N <- length(wtheta)-1
+  theta <- wtheta[N+1]
+  if (is.na(r)) {
+    w <- wtheta[1:N]
+    r <- as.vector(w*(Sigma %*% w))
+  }
+  return (as.vector(r - theta))
+}
+
+A_rc_vs_theta <- function(wtheta, Sigma, b = NA, Sigma_w = NA, r = NA) {
+  N <- length(wtheta)-1
+  w <- wtheta[1:N]
+  if (is.na(Sigma_w))
+    Sigma_w <- Sigma %*% w
+  Sigma_w <- as.vector(Sigma_w)
+  Ut <- diag(Sigma_w) + Sigma * w
+  return (cbind(Ut, -1))
+}
