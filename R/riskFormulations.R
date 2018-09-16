@@ -74,7 +74,7 @@ A_rc_over_b_double_index <- function(w, Sigma, b, Sigma_w = Sigma %*% w) {
 
 
 ##############################################################
-# Compute g, R, and A for the formulation "rc-over-var-vs-b" #
+# Compute g, R, and A for the formulation "rc-over-var vs b" #
 ##############################################################
 
 g_rc_over_var_vs_b <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
@@ -124,7 +124,7 @@ A_rc_over_var <- A_rc_over_var_vs_b
 
 
 ######################################################################
-# Compute g, R, and A for the formulation "rc-over-sd-vs-b-times-sd" #
+# Compute g, R, and A for the formulation "rc-over-sd vs b-times-sd" #
 ######################################################################
 
 g_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
@@ -148,5 +148,30 @@ A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w
   Sigma_w <- as.vector(Sigma_w)
   r <- as.vector(r)
   Ut <- diag(Sigma_w) + Sigma * w
-  A <- (Ut - (r/sum_r + b) %o% Sigma_w) / sqrt(sum_r)
+  return ((Ut - (r/sum_r + b) %o% Sigma_w) / sqrt(sum_r))
+}
+
+
+###############################################################
+# Compute g, R, and A for the formulation "rc vs b-times-var" #
+###############################################################
+
+g_rc_vs_b_times_var <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  return (as.vector(r - b*sum(r)))
+}
+
+R_rc_vs_b_times_var <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  return (sum((g_rc_vs_b_times_var(w, Sigma, b, r = r))^2))
+}
+
+R_grad_rc_vs_b_times_var <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
+  sum_r <- sum(r)
+  v <- r - b*sum_r - sum(b*r) + sum(b^2)*sum_r
+  return (2*as.vector(Sigma %*% (w*v) + Sigma_w*v))
+}
+
+A_rc_vs_b_times_var <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
+  Sigma_w <- as.vector(Sigma_w)
+  Ut <- diag(Sigma_w) + Sigma * w
+  return (Ut - 2 * b %o% Sigma_w)
 }

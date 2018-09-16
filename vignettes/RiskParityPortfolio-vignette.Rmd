@@ -99,12 +99,15 @@ We condiser the following formulations (equation numbers from the paper):
 - Done. (19): rc-over-b double-index
 - Done. (18): rc-over-var-vs-b
 - Done. (24): rc-over-var
+- Done. (21): rc-over-sd vs b-times-sd
+- (20): rc-vs-b-times-var
 
-- (17): rc vs theta
+- (17): rc-vs-theta
+
+
 - (22): rc-over-b vs theta
-- (20): rc vs b-times-var
-- (21): rc-over-sd vs b-times-sd
 
+We can skip these in our first release, no need to go crazy:
 - (26): group-rc-over-sd vs b-times-sd
 - (31): factor-rc-over-sd vs b-times-sd
 - (32): CVaR-rc-over-sd vs b-times-sd
