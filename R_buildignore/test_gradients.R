@@ -42,7 +42,7 @@ norm(g_jac - g_jac_num, "F")
 
 
 #
-#  Formulation “rc-over-var vs b”
+#  Formulation “rc-over-var-vs-b”
 #
 R_rc_over_var_vs_b(w, Sigma, b)
 risk_grad <- R_grad_rc_over_var_vs_b(w, Sigma, b)
@@ -51,6 +51,19 @@ norm(risk_grad - risk_grad, "2")
 
 g_jac <- A_rc_over_var_vs_b(w, Sigma, b)
 g_jac_num <- jacobian(g_rc_over_var_vs_b, x = w, Sigma = Sigma, b = b)
+norm(g_jac - g_jac_num, "F")
+
+
+#
+#  Formulation “rc-over-var”
+#
+R_rc_over_var(w, Sigma)
+risk_grad <- R_grad_rc_over_var(w, Sigma)
+risk_grad_num <- grad(R_rc_over_var, x = w, Sigma = Sigma)
+norm(risk_grad - risk_grad, "2")
+
+g_jac <- A_rc_over_var(w, Sigma)
+g_jac_num <- jacobian(g_rc_over_var, x = w, Sigma = Sigma)
 norm(g_jac - g_jac_num, "F")
 
 

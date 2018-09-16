@@ -73,7 +73,6 @@ A_rc_over_b_double_index <- function(w, Sigma, b, Sigma_w = Sigma %*% w) {
 }
 
 
-
 ##############################################################
 # Compute g, R, and A for the formulation "rc-over-var-vs-b" #
 ##############################################################
@@ -100,6 +99,28 @@ A_rc_over_var_vs_b <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w, r = w*Si
   Ut <- diag(Sigma_w) + Sigma*w
   return (Ut/sum_r - 2/(sum_r^2) * r %o% Sigma_w)
 }
+
+
+#########################################################
+# Compute g, R, and A for the formulation "rc-over-var" #
+#########################################################
+
+g_rc_over_var <- function(w, Sigma, b = NA, r = w*(Sigma %*% w)) {
+  return (as.vector(r/sum(r)))
+}
+
+R_rc_over_var <- function(w, Sigma, b = NA, r = w*(Sigma %*% w)) {
+  return (sum((g_rc_over_var(w, Sigma, r = r))^2))
+}
+
+R_grad_rc_over_var <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
+  sum_r <- sum(r)
+  r_sumr <- r/sum_r
+  v <- r_sumr - sum(r_sumr^2)
+  return ((2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v))
+}
+
+A_rc_over_var <- A_rc_over_var_vs_b
 
 
 ######################################################################

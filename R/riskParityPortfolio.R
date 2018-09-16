@@ -70,6 +70,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
            g <- g_rc_over_var_vs_b
            A <- A_rc_over_var_vs_b
          },         
+         "rc-over-var" = {
+           R <- R_rc_over_var
+           g <- g_rc_over_var
+           A <- A_rc_over_var
+         },         
          "rc-over-sd-vs-b-times-sd" = {
            R <- R_rc_over_sd_vs_b_times_sd
            g <- g_rc_over_sd_vs_b_times_sd
@@ -176,6 +181,10 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          "rc-over-var-vs-b" = {
            R <- R_rc_over_var_vs_b
            if (use_gradient)  R_grad <- R_grad_rc_over_var_vs_b
+         },         
+         "rc-over-var" = {
+           R <- R_rc_over_var
+           if (use_gradient)  R_grad <- R_grad_rc_over_var
          },         
          "rc-over-sd-vs-b-times-sd" = {
            R <- R_rc_over_sd_vs_b_times_sd

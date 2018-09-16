@@ -183,7 +183,7 @@ g <- rep(rb, times = N) - rep(rb, each = N)
 ```
 The gradients can be written as [@FengPal2015riskparity]:
 $$\nabla g_{ij}(\mathbf{w}) = \left(\frac{\mathbf{M}_i}{b_i} + \frac{\mathbf{M}_i^T}{b_i} - \frac{\mathbf{M}_j}{b_j} - \frac{\mathbf{M}_j^T}{b_j}\right)\mathbf{w}.$$ 
-Recalling that $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ can be conveniently expressed as the $i$-th column of the $N\times N$ matrix $\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$, then we can write $\nabla g_{ij} = \mathbf{u}_i/b_i - \mathbf{u}_j/b_j$
+Recalling that $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ can be conveniently expressed as the $i$-th column of the $N\times N$ matrix $\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$, then we can write $\nabla g_{ij} = \mathbf{u}_i/b_i - \mathbf{u}_j/b_j$.
 Finally, to compute efficiently the Jacobian $\mathbf{A}$ without using loops we can write it as
 $$\mathbf{A} = \mathbf{1}_N \otimes \left(\mathbf{U}\textsf{Diag}(1/\mathbf{b})\right)^T - \left(\mathbf{U}\textsf{Diag}(1/\mathbf{b})\right)^T \otimes \mathbf{1}_N$$
 which can be compactly coded as
@@ -197,8 +197,8 @@ A <- matrix(rep(t(Utb), N), ncol = N, byrow = TRUE) - matrix(rep(Utb, each = N),
 # Single-index formulations
 ## Formulation "rc-over-var vs b"
 Consider now the following risk expression with a single index:
-$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\mathbf{1}^T\mathbf{r}}-b_i\right)^{2}$$
-where $b_{i}=\frac{1}{N}$. This can be efficiently coded as
+$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\mathbf{1}^T\mathbf{r}}-b_i\right)^{2},$$
+which can be efficiently coded as
 ```{r, eval=FALSE}
 risk <- sum((r/sum(r) - b)^2)
 ```
@@ -228,32 +228,57 @@ which can be coded as
 ```{r, eval=FALSE}
 Sigma_w <- as.vector(Sigma %*% w)  # this has already been computed for the computation of r
 sum_r <- sum(r)
-r_b <- r/sum_r - b
-v <- r_b - sum(r_b*r)/sum_r
+r_sumr_b <- r/sum_r - b
+v <- r_sumr_b - sum(r_sumr_b*r)/sum_r
 risk_grad <- (2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 
 **For SCA:**  
-The risk deviations are
-$$g_i(\mathbf{w}) = \frac{r_i}{\mathbf{1}^T\mathbf{r}}-b_i,$$
+Using the M-notation [@FengPal2015riskparity], we can write the risk deviations as
+$$g_i(\mathbf{w}) = \frac{\mathbf{w}^T\mathbf{M}_i\mathbf{w}}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}} - b_i = \frac{r_i}{\mathbf{1}^T\mathbf{r}}-b_i,$$
 which can be efficiently coded as `g <- r/sum(r) - b`.
 
-Matrix $\mathbf{A}$ follows from the M-notation [@FengPal2015riskparity]: 
+The gradients can be written as [@FengPal2015riskparity]: 
 $$\nabla g_{i}(\mathbf{w}) = \frac{(\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w})(\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w} - (\mathbf{w}^T\mathbf{M}_i\mathbf{w})(2\boldsymbol{\Sigma})\mathbf{w}}{(\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w})^2}.$$ 
-Recall that $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ can be conveniently expressed as the $i$-th column of the $N\times N$ matrix
-$$\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}).$$
-We can then write
+Recalling that $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ can be conveniently expressed as the $i$-th column of the $N\times N$ matrix $\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$, then we can write
 $$\nabla g_{i}(\mathbf{w}) = \frac{(\mathbf{1}^T\mathbf{r})\mathbf{u}_i - 2r_i\boldsymbol{\Sigma}\mathbf{w}}{(\mathbf{1}^T\mathbf{r})^2} = \frac{\mathbf{u}_i}{\mathbf{1}^T\mathbf{r}} - 2\frac{r_i}{(\mathbf{1}^T\mathbf{r})^2}\boldsymbol{\Sigma}\mathbf{w}$$
-and
+Finally, we can compute efficiently the Jacobian $\mathbf{A}$ without loops as
 $$\mathbf{A} = \frac{\mathbf{U}^T}{\mathbf{1}^T\mathbf{r}} - \frac{2}{(\mathbf{1}^T\mathbf{r})^2}\mathbf{r}\mathbf{w}^T\boldsymbol{\Sigma}$$
 which can be compactly coded as
 ```{r, eval=FALSE}
-Sigma_w <- as.vector(Sigma %*% w)  # this has already been computed for the computation of r
 sum_r <- sum(r)
 Ut <- diag(Sigma_w) + Sigma*w
 A <- Ut/sum_r - 2/(sum_r^2) * r %o% Sigma_w
 ```
+
+
+## Formulation "rc-over-var"
+Consider now the following risk expression with a single index, which is a particular case of the previous one "rc-over-var-vs-b" setting $b_i=0$:
+$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\mathbf{1}^T\mathbf{r}}\right)^{2},$$
+which can be efficiently coded as
+```{r, eval=FALSE}
+risk <- sum((r/sum(r))^2)
+```
+
+The gradient of the risk $R(\mathbf{w})$ is
+$$\nabla_{\mathbf{w}}R = \frac{2}{\mathbf{1}^T\mathbf{r}}(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}))
+\left(\frac{\mathbf{r}}{\mathbf{1}^T\mathbf{r}}
+ - \mathbf{1}\cdot\frac{\mathbf{r}^T\mathbf{r}}{(\mathbf{1}^T\mathbf{r})^2}\right),$$
+which can be coded as  
+```{r, eval=FALSE}
+sum_r <- sum(r)
+r_sumr <- r/sum_r
+v <- r_sumr - sum(r_sumr^2)
+risk_grad <- (2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v)
+```
+
+**For SCA:**  
+Using the M-notation [@FengPal2015riskparity], we can write the risk deviations as
+$$g_i(\mathbf{w}) = \frac{\mathbf{w}^T\mathbf{M}_i\mathbf{w}}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}} = \frac{r_i}{\mathbf{1}^T\mathbf{r}},$$
+which can be efficiently coded as `g <- r/sum(r)`.
+
+The Jacobian $\mathbf{A}$ is the same as in the previous formulation "rc-over-var-vs-b".
 
 
 
