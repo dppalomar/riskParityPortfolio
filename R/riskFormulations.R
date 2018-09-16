@@ -189,5 +189,5 @@ R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
 A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, r, Sigma_w, b) {
   sum_r <- sum(r)
   Ut <- diag(Sigma_w) + Sigma * w
-  A <- ((Ut - (r / sum_r + b)) / sqrt(sum_r)) %o% Sigma_w
+  A <- (Ut - (r/sum_r + b) %o% Sigma_w) / sqrt(sum_r)
 }
