@@ -24,7 +24,7 @@ R_rc_double_index <- function(w, Sigma, b = NA, r = w*(Sigma %*% w)) {
 
 R_grad_rc_double_index <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   N <- length(w)
-  v <- N * r - sum(r)
+  v <- N*r - sum(r)
   return (as.vector(4*(Sigma %*% (w*v) + Sigma_w*v)))
 }
 
@@ -36,9 +36,42 @@ g_rc_double_index <- function(w, Sigma, b = NA, r = w*(Sigma %*% w)) {
 A_rc_double_index <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w) {
   N <- length(w)
   Sigma_w <- as.vector(Sigma_w)
-  Ut <- diag(Sigma_w) + Sigma * w
+  Ut <- diag(Sigma_w) + Sigma*w
   return (matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) - matrix(rep(Ut, each = N), ncol = N))
 }
+
+
+####################################################################
+# Compute g, R, and A for the formulation "rc-over-b-double-index" #
+####################################################################
+
+R_rc_over_b_double_index <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  N <- length(w)
+  rb <- r/b
+  return (2*(N*sum(rb^2) - sum(rb)^2))
+}
+
+R_grad_rc_over_b_double_index <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
+  N <- length(w)
+  rb <- r/b
+  v <- N*rb - sum(rb)
+  return (as.vector(4*(Sigma %*% (w*v) + Sigma_w*v)))
+}
+
+g_rc_over_b_double_index <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  N <- length(w)
+  rb <- r/b
+  return (rep(rb, times = N) - rep(rb, each = N))
+}
+
+A_rc_over_b_double_index <- function(w, Sigma, b, Sigma_w = Sigma %*% w) {
+  N <- length(w)
+  Sigma_w <- as.vector(Sigma_w)
+  Ut <- diag(Sigma_w) + Sigma*w
+  Utb <- Ut / b
+  return (matrix(rep(t(Utb), N), ncol = N, byrow = TRUE) - matrix(rep(Utb, each = N), ncol = N))
+}
+
 
 
 ##############################################################
@@ -55,9 +88,9 @@ R_rc_over_var_vs_b <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
 
 R_grad_rc_over_var_vs_b <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
-  r_b <- r/sum_r - b
-  v <- r_b - sum(r_b*r)/sum_r
-  return (as.vector((2/sum_r) * (Sigma %*% (w*v) + Sigma_w*v)))
+  r_sumr_b <- r/sum_r - b
+  v <- r_sumr_b - sum(r_sumr_b*r)/sum_r
+  return ((2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v))
 }
 
 A_rc_over_var_vs_b <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
@@ -84,8 +117,8 @@ R_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
 
 R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
-  r_b <- r/sum_r - b
-  v <- 2*r_b - sum(r_b^2)
+  r_sumr_b <- r/sum_r - b
+  v <- 2*r_sumr_b - sum(r_sumr_b^2)
   return (as.vector(Sigma %*% (w*v) + Sigma_w*v))
 }
 

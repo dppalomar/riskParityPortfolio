@@ -16,7 +16,7 @@ sum_r <- sum(r)
 
 
 #
-#  Formulation “rc double-index”
+#  Formulation “rc-double-index”
 #
 R_rc_double_index(w, Sigma)
 risk_grad <- R_grad_rc_double_index(w, Sigma)
@@ -25,6 +25,19 @@ norm(risk_grad - risk_grad, "2")
 
 g_jac <- A_rc_double_index(w, Sigma)
 g_jac_num <- jacobian(g_rc_double_index, x = w, Sigma = Sigma)
+norm(g_jac - g_jac_num, "F")
+
+
+#
+#  Formulation “rc-over-b-double-index”
+#
+R_rc_over_b_double_index(w, Sigma, b)
+risk_grad <- R_grad_rc_over_b_double_index(w, Sigma, b)
+risk_grad_num <- grad(R_rc_over_b_double_index, x = w, Sigma = Sigma, b = b)
+norm(risk_grad - risk_grad, "2")
+
+g_jac <- A_rc_over_b_double_index(w, Sigma, b)
+g_jac_num <- jacobian(g_rc_over_b_double_index, x = w, Sigma = Sigma, b = b)
 norm(g_jac - g_jac_num, "F")
 
 

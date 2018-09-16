@@ -53,21 +53,30 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     bvec <- rep(0, N)
     meq <- 0
   }
-
-  if (formulation == "rc-double-index") {
-    R <- R_rc_double_index
-    g <- g_rc_double_index
-    A <- A_rc_double_index
-  } else if (formulation == "rc-over-var-vs-b") {
-    R <- R_rc_over_var_vs_b
-    g <- g_rc_over_var_vs_b
-    A <- A_rc_over_var_vs_b
-  } else if (formulation == "rc-over-sd-vs-b-times-sd") {
-    R <- R_rc_over_sd_vs_b_times_sd
-    g <- g_rc_over_sd_vs_b_times_sd
-    A <- A_rc_over_sd_vs_b_times_sd
-  } else
-    stop("formulation ", formulation, " is not included.")
+  
+  switch(formulation,
+         "rc-double-index" = {
+           R <- R_rc_double_index
+           g <- g_rc_double_index
+           A <- A_rc_double_index
+         },
+         "rc-over-b-double-index" = {
+           R <- R_rc_over_b_double_index
+           g <- g_rc_over_b_double_index
+           A <- rc_over_b_double_index
+         },
+         "rc-over-var-vs-b" = {
+           R <- R_rc_over_var_vs_b
+           g <- g_rc_over_var_vs_b
+           A <- A_rc_over_var_vs_b
+         },         
+         "rc-over-sd-vs-b-times-sd" = {
+           R <- R_rc_over_sd_vs_b_times_sd
+           g <- g_rc_over_sd_vs_b_times_sd
+           A <- A_rc_over_sd_vs_b_times_sd
+         },         
+         stop("formulation ", formulation, " is not included.")
+  )
   
   # compute and store objective function at the initial value
   wk <- w0
@@ -155,20 +164,25 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   }
 
   R_grad <- NULL
-  if (formulation == "rc-double-index") {
-    R <- R_rc_double_index
-    if (use_gradient)
-      R_grad <- R_grad_rc_double_index
-  } else if (formulation == "rc-over-var-vs-b") {
-    R <- R_rc_over_var_vs_b
-    if (use_gradient)
-      R_grad <- R_grad_rc_over_var_vs_b
-  } else if (formulation == "rc-over-sd-vs-b-times-sd") {
-    R <- R_rc_over_sd_vs_b_times_sd
-    if (use_gradient)
-      R_grad <- R_grad_rc_over_sd_vs_b_times_sd
-  } else
-    stop("formulation ", formulation, " is not included.")
+  switch(formulation,
+         "rc-double-index" = {
+           R <- R_rc_double_index
+           if (use_gradient)  R_grad <- R_grad_rc_double_index
+         },
+         "rc-over-b-double-index" = {
+           R <- R_rc_over_b_double_index
+           if (use_gradient)  R_grad <- R_grad_rc_over_b_double_index
+         },
+         "rc-over-var-vs-b" = {
+           R <- R_rc_over_var_vs_b
+           if (use_gradient)  R_grad <- R_grad_rc_over_var_vs_b
+         },         
+         "rc-over-sd-vs-b-times-sd" = {
+           R <- R_rc_over_sd_vs_b_times_sd
+           if (use_gradient)  R_grad <- R_grad_rc_over_sd_vs_b_times_sd
+         },         
+         stop("formulation ", formulation, " is not included.")
+  )
 
   fun_seq <- c(R(w0, Sigma, b))
   time_seq <- c(0)
