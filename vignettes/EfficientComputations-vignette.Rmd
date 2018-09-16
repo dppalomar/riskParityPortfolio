@@ -263,12 +263,12 @@ $$\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma
 We can then write
 $$\nabla g_{i}(\mathbf{w}) = \frac{(\mathbf{1}^T\mathbf{r})\mathbf{u}_i - r_i\boldsymbol{\Sigma}\mathbf{w}}{(\mathbf{1}^T\mathbf{r})^{3/2}} - b_i\frac{\boldsymbol{\Sigma}\mathbf{w}}{\sqrt{\mathbf{1}^T\mathbf{r}}} = \frac{\mathbf{u}_i}{\sqrt{\mathbf{1}^T\mathbf{r}}} - \left(\frac{r_i}{(\mathbf{1}^T\mathbf{r})^{3/2}}+\frac{b_i}{\sqrt{\mathbf{1}^T\mathbf{r}}}\right)\boldsymbol{\Sigma}\mathbf{w}$$
 and
-$$\mathbf{A} = \frac{\mathbf{U}^T}{\sqrt{\mathbf{1}^T\mathbf{r}}} - \left(\frac{\mathbf{r}}{(\mathbf{1}^T\mathbf{r})^{3/2}}+\frac{\mathbf{b}}{\sqrt{\mathbf{1}^T\mathbf{r}}}\right)\mathbf{w}^T\boldsymbol{\Sigma}$$
+$$\mathbf{A} = \left(\mathbf{U}^T - \left(\frac{\mathbf{r}}{\mathbf{1}^T\mathbf{r}}+\mathbf{b}\right)\mathbf{w}^T\boldsymbol{\Sigma}\right)/\sqrt{\mathbf{1}^T\mathbf{r}}$$
 which can be compactly coded as
 ```{r, eval=FALSE}
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 Ut <- diag(Sigma_w) + Sigma*w
-A <- Ut/sqrt(sum_r) - (r/(sum_r^(3/2)) + b/sqrt(sum_r)) %o% Sigma_w
+A <- (Ut - (r/sum_r + b) %o% Sigma_w) / sqrt(sum_r)
 ```
 
 

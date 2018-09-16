@@ -93,18 +93,7 @@ g_jac_num <- jacobian(g, w)
 norm(g_jac - g_jac_num, "F")
 
 
-
-g <- function(r) r/sum(r)
-jacobian(g, r)
-(1/sum_r) * (diag(N) - (1/sum_r)*matrix(t(r), N, N, byrow = TRUE))
-
-g1 <- function(r) r[1]/sum(r)
-grad(g1, r)
-(1/sum_r) * (c(1, 0, 0, 0, 0) - r/sum_r)
+g_jac_bis <- (Ut - (r/sum_r + b) %o% Sigma_w) / sqrt(sum_r)
 
 
-
-x <- c(1, 2)
-f <- function(x) x/sum(x)
-jacobian(f, x)
-(1/sum(x)) * (diag(2) - (1/sum(x))*matrix(x, 2, 2))
+norm(g_jac_bis - g_jac_num, "F")
