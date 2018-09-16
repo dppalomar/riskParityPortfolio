@@ -17,55 +17,27 @@
 # Compute g, R, and A for the formulation "rc-double-index" #
 #############################################################
 
-#' Risk concentration vector for the formulation rc-double-index
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param r the quantity w * (Sigma %*% w)
-#' @return g risk concentration vector
-g_rc_double_index <- function(w, Sigma, N, r) {
+R_rc_double_index <- function(w, Sigma, b = NA, r = w*(Sigma %*% w)) {
+  N <- length(w)
+  return (2*(N*sum(r^2) - sum(r)^2))
+}
+
+R_grad_rc_double_index <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
+  N <- length(w)
+  v <- N * r - sum(r)
+  return (as.vector(4*(Sigma %*% (w*v) + Sigma_w*v)))
+}
+
+g_rc_double_index <- function(w, Sigma, b = NA, r = w*(Sigma %*% w)) {
+  N <- length(w)
   return (rep(r, times = N) - rep(r, each = N))
 }
 
-#' Objective function for the formulation "rc-double-index"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @return R scalar valued objective function
-R_rc_double_index <- function(w, Sigma, N) {
-  r <- w * (Sigma %*% w)
-  return (2 * (N * sum(r ^ 2) - sum(r) ^ 2))
-}
-
-#' Gradient of the objective function wrt the portfolio weights for the
-#' formulation "rc-double-index"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @return grad_R the gradient of the obejctive function wrt to w
-R_grad_rc_double_index <- function(w, Sigma, N) {
-  Sigma_w <- Sigma %*% w
-  r <- w * Sigma_w
-  v <- N * r - sum(r)
-  return (4 * (Sigma %*% (w * v) + Sigma_w * v))
-}
-
-#' Jacobian of the risk concentration vector wrt the portfolio weights for the
-#' formulation "rc-double-index"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param r the quantity w * Sigma_w
-#' @param Sigma_w the quantity Sigma %*% w
-#' @return Jg the jacobian of the risk concentration vector wrt to w
-A_rc_double_index <- function(w, Sigma, N, r, Sigma_w) {
+A_rc_double_index <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w) {
+  N <- length(w)
+  Sigma_w <- as.vector(Sigma_w)
   Ut <- diag(Sigma_w) + Sigma * w
-  return(matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) -
-         matrix(rep(Ut, each = N), ncol = N))
+  return (matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) - matrix(rep(Ut, each = N), ncol = N))
 }
 
 
@@ -73,121 +45,54 @@ A_rc_double_index <- function(w, Sigma, N, r, Sigma_w) {
 # Compute g, R, and A for the formulation "rc-over-var-vs-b" #
 ##############################################################
 
-#' Risk vector for the formulation "rc-over-var-vs-b"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param r the quantity w * (Sigma %*% w)
-#' @param b budget vector
-#' @return g risk concentration vector
-g_rc_over_var_vs_b <- function(w, Sigma, r, b) {
-  sum_r <- sum(r)
-  return (r / sum_r - b)
+g_rc_over_var_vs_b <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  return (as.vector(r/sum(r) - b))
 }
 
-#' Objective function for the formulation "rc-over-var-vs-b"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param b budget vector
-#' @return R scalar valued objective function
-R_rc_over_var_vs_b <- function(w, Sigma, N, b) {
-  r <- w * (Sigma %*% w)
-  return (sum((g_rc_over_var_vs_b(w, Sigma, r, b)) ^ 2))
+R_rc_over_var_vs_b <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  return (sum((g_rc_over_var_vs_b(w, Sigma, b, r = r))^2))
 }
 
-#' Gradient of the objective function wrt the portfolio weights for the
-#' formulation "rc-over-var-vs-b"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param b budget vector
-#' @return grad_R the gradient of the obejctive function wrt to w
-R_grad_rc_over_var_vs_b <- function(w, Sigma, N, b) {
-  Sigma_w <- Sigma %*% w
-  r <- w * Sigma_w
+R_grad_rc_over_var_vs_b <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
-  r_b <- r / sum_r - b
-  v <- r_b - sum(r_b * r) / sum_r
-  return ((2 / sum_r) * (Sigma %*% (w * v) + Sigma_w * v))
+  r_b <- r/sum_r - b
+  v <- r_b - sum(r_b*r)/sum_r
+  return (as.vector((2/sum_r) * (Sigma %*% (w*v) + Sigma_w*v)))
 }
 
-#' Jacobian of the risk concentration vector wrt the portfolio weights for the
-#' formulation "rc-over-var-vs-b"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param r the quantity w * Sigma_w
-#' @param Sigma_w the quantity Sigma %*% w
-#' @return Jg the jacobian of the risk concentration vector wrt to w
-A_rc_over_var_vs_b <- function(w, Sigma, N, r, Sigma_w) {
+A_rc_over_var_vs_b <- function(w, Sigma, b = NA, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
-  Ut <- diag(Sigma_w) + Sigma * w
-  retun(Ut / sum_r - 2 / (sum_r^2) * r %o% Sigma_w)
+  Sigma_w <- as.vector(Sigma_w)
+  r <- as.vector(r)
+  Ut <- diag(Sigma_w) + Sigma*w
+  return (Ut/sum_r - 2/(sum_r^2) * r %o% Sigma_w)
 }
+
 
 ######################################################################
 # Compute g, R, and A for the formulation "rc-over-sd-vs-b-times-sd" #
 ######################################################################
 
-#' Risk vector for the formulation "rc-over-sd-vs-b-times-sd"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param r the quantity w * (Sigma %*% w)
-#' @param b budget vector
-#' @return g risk concentration vector
-g_rc_over_sd_vs_b_times_sd <- function(w, Sigma, r, b) {
+g_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
   sqrt_sum_r <- sqrt(sum(r))
-  return (r / sqrt_sum_r - b * sqrt_sum_r)
+  return (r/sqrt_sum_r - b*sqrt_sum_r)
 }
 
-#' Objective function for the formulation "rc-over-sd-vs-b-times-sd"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param b budget vector
-#' @return R scalar valued objective function
-R_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
-  r <- w * (Sigma %*% w)
-  return(sum((g_rc_over_sd_vs_b_times_sd(w, Sigma, r, b)) ^ 2))
+R_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
+  return (sum((g_rc_over_sd_vs_b_times_sd(w, Sigma, b, r = r))^2))
 }
 
-#' Gradient of the objective function wrt the portfolio weights for the
-#' formulation "rc-over-sd-vs-b-times-sd"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param b budget vector
-#' @return grad_R the gradient of the obejctive function wrt to w
-R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, b) {
-  Sigma_w <- Sigma %*% w
-  r <- w * Sigma_w
+R_grad_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
-  r_b <- r / sum_r - b
-  v <- 2 * r_b - sum(r_b ^ 2)
-  return (Sigma %*% (w * v) + Sigma_w * v)
+  r_b <- r/sum_r - b
+  v <- 2*r_b - sum(r_b^2)
+  return (as.vector(Sigma %*% (w*v) + Sigma_w*v))
 }
 
-#' Jacobian of the risk concentration vector wrt the portfolio weights for the
-#' formulation "rc-over-sd-vs-b-times-sd"
-#'
-#' @param w portfolio weights
-#' @param Sigma covariance or correlation matrix
-#' @param N number of stocks (length of w)
-#' @param r the quantity w * Sigma_w
-#' @param Sigma_w the quantity Sigma %*% w
-#' @param b budget vector
-#' @return Jg the jacobian of the risk concentration vector wrt to w
-A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, N, r, Sigma_w, b) {
+A_rc_over_sd_vs_b_times_sd <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
+  Sigma_w <- as.vector(Sigma_w)
+  r <- as.vector(r)
   Ut <- diag(Sigma_w) + Sigma * w
   A <- (Ut - (r/sum_r + b) %o% Sigma_w) / sqrt(sum_r)
 }
