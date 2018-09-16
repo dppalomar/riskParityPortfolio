@@ -171,7 +171,7 @@ which can be coded as
 Sigma_w <- Sigma %*% w  # this has already been computed for the computation of r
 sum_r <- sum(r)
 r_b <- r/sum_r - b
-v <- r_b - as.numeric(r_b %*% r)/sum_r
+v <- r_b - sum(r_b*r)/sum_r
 risk_grad <- (2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
