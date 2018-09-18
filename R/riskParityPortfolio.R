@@ -25,10 +25,12 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #'        w < 0
 #' @param formulation string indicating the formulation to be used for the risk
 #'        parity optimization problem. It must be one of: "rc-double-index",
-#'        "rc-over-var-vs-b", or "rc-over-sd-vs-b-times-sd"
+#'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
+#'        "rc-over-sd vs b-times-sd", or "rc vs b-times-var"
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                   budget = TRUE, shortselling = FALSE,
+                                   mu = NA, lambda = 1e-4, budget = TRUE,
+                                   shortselling = FALSE,
                                    formulation = "rc-over-var vs b", w0 = NA,
                                    gamma = .9, zeta = 1e-7, tau = NA,
                                    maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
@@ -74,7 +76,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
            R <- R_rc_over_var
            g <- g_rc_over_var
            A <- A_rc_over_var
-         },         
+         },
          "rc-over-sd vs b-times-sd" = {
            R <- R_rc_over_sd_vs_b_times_sd
            g <- g_rc_over_sd_vs_b_times_sd
@@ -142,12 +144,20 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          budget = TRUE, shortselling = FALSE,
                                          formulation = "rc-over-var vs b",
                                          method = "slsqp", use_gradient = TRUE,
-                                         w0 = NA, maxiter = 500, ftol = 1e-9,
+                                         w0 = NA, theta0 = NA, maxiter = 500, ftol = 1e-9,
                                          wtol = 1e-6) {
   N <- nrow(Sigma)
+  has_theta <- grepl("theta", formulation)
 
-  if (anyNA(w0))
+  if (anyNA(w0)) {
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  }
+
+  if (has_theta) {
+    if (is.na(theta0))
+      theta0 <- mean(w0 * (Sigma %*% w0))
+    w0 <- as.vector(c(w0, theta0))
+  }
 
   if (budget) {
     budget <- function(w, ...) {
@@ -161,6 +171,8 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     budget.jac <- NULL
   }
 
+  if (has_theta) N <- N + 1
+
   if (!shortselling) {
     shortselling <- function(w, ...) {
       return(w)
@@ -173,40 +185,44 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     shortselling.jac <- NULL
   }
 
-  R_grad <- NULL
   switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
-           if (use_gradient)  R_grad <- R_grad_rc_double_index
+           R_grad <- R_grad_rc_double_index
          },
          "rc-over-b-double-index" = {
            R <- R_rc_over_b_double_index
-           if (use_gradient)  R_grad <- R_grad_rc_over_b_double_index
+           R_grad <- R_grad_rc_over_b_double_index
          },
          "rc-over-var vs b" = {
            R <- R_rc_over_var_vs_b
-           if (use_gradient)  R_grad <- R_grad_rc_over_var_vs_b
+           R_grad <- R_grad_rc_over_var_vs_b
          },
          "rc-over-var" = {
            R <- R_rc_over_var
-           if (use_gradient)  R_grad <- R_grad_rc_over_var
+           R_grad <- R_grad_rc_over_var
          },
          "rc-over-sd vs b-times-sd" = {
            R <- R_rc_over_sd_vs_b_times_sd
-           if (use_gradient)  R_grad <- R_grad_rc_over_sd_vs_b_times_sd
+           R_grad <- R_grad_rc_over_sd_vs_b_times_sd
          },
          "rc vs b-times-var"  = {
            R <- R_rc_vs_b_times_var
-           if (use_gradient)  R_grad <- R_rc_vs_b_times_var
+           R_grad <- R_rc_vs_b_times_var
+         },
+         "rc vs theta" = {
+           R <- R_rc_vs_theta
+           R_grad <- R_grad_rc_vs_theta
          },
          stop("formulation ", formulation, " is not included.")
   )
+  if (!use_gradient) R_grad <- NULL
 
   fun_seq <- c(R(w0, Sigma, b))
   time_seq <- c(0)
   if (method == "alabama") {
     start_time <- proc.time()[3]
-    res <- alabama::constrOptim.nl(w0, R, R_grad, 
+    res <- alabama::constrOptim.nl(w0, R, R_grad,
                                    hin = shortselling, hin.jac = shortselling.jac,
                                    heq = budget, heq.jac = budget.jac,
                                    Sigma = Sigma, b = b,
@@ -214,7 +230,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     end_time <- proc.time()[3]
   } else if (method == "slsqp") {
     start_time <- proc.time()[3]
-    res <- nloptr::slsqp(w0, R, R_grad, 
+    res <- nloptr::slsqp(w0, R, R_grad,
                          hin = shortselling, hinjac = shortselling.jac,
                          heq = budget, heqjac = budget.jac,
                          Sigma = Sigma, b = b, control = list(xtol_rel = wtol, ftol_rel = ftol))
@@ -224,9 +240,15 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
+  if (has_theta) {
+    theta <- w[N]
+    w <- w[1:(N-1)]
+  }
+
   return(list(w = w,
               risk_contribution = as.vector(w * (Sigma %*% w)),
               obj_fun = fun_seq,
               elapsed_time = time_seq,
-              convergence = res$convergence))
+              convergence = res$convergence,
+              theta <- if(has_theta) theta else NA))
 }

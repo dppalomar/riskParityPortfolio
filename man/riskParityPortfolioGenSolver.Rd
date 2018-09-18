@@ -7,14 +7,9 @@ solver from the alabama package}
 \usage{
 riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   budget = TRUE, shortselling = FALSE,
-  formulation = "rc-over-var-vs-b", method = "slsqp",
-  use_gradient = TRUE, w0 = NA, maxiter = 500, ftol = 1e-09,
-  wtol = 1e-06)
-}
-\arguments{
-\item{formulation}{a string indicating the formulation to use for the risk
-parity optimization problem. It must be one of c("rc-double-index",
-"rc-over-var-vs-b", "rc-over-sd-vs-b-times-sd")}
+  formulation = "rc-over-var vs b", method = "slsqp",
+  use_gradient = TRUE, w0 = NA, theta0 = NA, maxiter = 500,
+  ftol = 1e-09, wtol = 1e-06)
 }
 \description{
 Implements the risk parity portfolio using a general constrained

@@ -1,6 +1,6 @@
 ---
 title: "Test for Alexis Nortier"
-author: 
+author:
 - name: "Daniel P. Palomar"
   affiliation: "Hong Kong University of Science and Technology (HKUST)"
 date: "`r Sys.Date()`"
@@ -66,7 +66,7 @@ $$\mathbf{b} = \left[
 \begin{array}{c}
  0.1594 \\
  0.0126 \\
- 0.8280 
+ 0.8280
 \end{array}
 \right]$$
 and the corresponding code:
@@ -118,32 +118,32 @@ Consider the risk expression:
 $$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2}.$$
 The general solver seems to be too sensitive to the initial point in this formulation:
 ```{r, message=FALSE}
-res_gen_solver1 <- riskParityPortfolioGenSolver(Sigma, b, formulation = "rc-over-var-vs-b")
+res_gen_solver1 <- riskParityPortfolioGenSolver(Sigma, b, formulation = "rc-over-var vs b")
 res_gen_solver1$w
 last(res_gen_solver1$obj_fun)
-res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-var-vs-b")
+res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-var vs b")
 res_gen_solver2$w
 last(res_gen_solver2$obj_fun)
-res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-var-vs-b")
+res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-var vs b")
 res_gen_solver3$w
 last(res_gen_solver3$obj_fun)
 barplot(rbind(res_gen_solver1$w, res_gen_solver2$w, res_gen_solver3$w),
-        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3])
 ```
 The SCA method seems to be more robust to the initial point (but still somehow sensitive since it is a nonconvex problem after all):
 ```{r}
-res_sca1 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-var-vs-b")
+res_sca1 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-var vs b")
 res_sca1$w
 last(res_sca1$obj_fun)
-res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-var-vs-b")
+res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-var vs b")
 res_sca2$w
 last(res_sca2$obj_fun)
-res_sca3 <- riskParityPortfolioSCA(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-var-vs-b")
+res_sca3 <- riskParityPortfolioSCA(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-var vs b")
 res_sca3$w
 last(res_sca3$obj_fun)
 barplot(rbind(res_sca1$w, res_sca2$w, res_sca3$w),
-        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3])
 ```
 
@@ -154,33 +154,33 @@ Consider the risk expression:
 
 The general solver seems to be more robust with this formulation:
 ```{r}
-res_gen_solver1 <- riskParityPortfolioGenSolver(Sigma, b, formulation = "rc-over-sd-vs-b-times-sd")
+res_gen_solver1 <- riskParityPortfolioGenSolver(Sigma, b, formulation = "rc-over-sd vs b-times-sd")
 res_gen_solver1$w
 last(res_gen_solver1$obj_fun)
-res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-sd-vs-b-times-sd")
+res_gen_solver2 <- riskParityPortfolioGenSolver(Sigma, b, w0 = b, formulation = "rc-over-sd vs b-times-sd")
 res_gen_solver2$w
 last(res_gen_solver2$obj_fun)
-res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-sd-vs-b-times-sd")
+res_gen_solver3 <- riskParityPortfolioGenSolver(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-sd vs b-times-sd")
 res_gen_solver3$w
 last(res_gen_solver3$obj_fun)
 barplot(rbind(res_gen_solver1$w, res_gen_solver2$w, res_gen_solver3$w),
-        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3])
 ```
 
 The SCA method is like in the previous formulation:
 ```{r}
-res_sca1 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-sd-vs-b-times-sd")
+res_sca1 <- riskParityPortfolioSCA(Sigma, b, formulation = "rc-over-sd vs b-times-sd")
 res_sca1$w
 last(res_sca1$obj_fun)
-res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-sd-vs-b-times-sd")
+res_sca2 <- riskParityPortfolioSCA(Sigma, b, w0 = b, formulation = "rc-over-sd vs b-times-sd")
 res_sca2$w
 last(res_sca2$obj_fun)
-res_sca3 <- riskParityPortfolioSCA(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-sd-vs-b-times-sd")
+res_sca3 <- riskParityPortfolioSCA(Sigma, b, w0 = c(1, 1, 1)/3, formulation = "rc-over-sd vs b-times-sd")
 res_sca3$w
 last(res_sca3$obj_fun)
 barplot(rbind(res_sca1$w, res_sca2$w, res_sca3$w),
-        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE, 
+        main = "Portfolios with different initial points", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3])
 ```
 

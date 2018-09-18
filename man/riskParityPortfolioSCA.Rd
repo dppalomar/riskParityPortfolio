@@ -2,14 +2,32 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioSCA}
 \alias{riskParityPortfolioSCA}
-\title{Implements the risk parity portfolio using SCA and QP solver}
+\title{Risk parity portfolio optimization using successive convex approximation (SCA)
+and a quadratic programming (QP) solver.}
 \usage{
 riskParityPortfolioSCA(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-  budget = TRUE, shortselling = FALSE,
-  formulation = "rc-over-var-vs-b", w0 = NA, gamma = 0.9,
+  mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
+  formulation = "rc-over-var vs b", w0 = NA, gamma = 0.9,
   zeta = 1e-07, tau = NA, maxiter = 500, ftol = 1e-09,
   wtol = 1e-06)
 }
+\arguments{
+\item{Sigma}{covariance or correlation matrix}
+
+\item{b}{budget vector}
+
+\item{budget}{boolean indicating whether to consider sum(w) = 1 as a
+constraint}
+
+\item{shortselling}{boolean indicating whether to allow short-selling, i.e.,
+w < 0}
+
+\item{formulation}{string indicating the formulation to be used for the risk
+parity optimization problem. It must be one of: "rc-double-index",
+"rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
+"rc-over-sd vs b-times-sd", or "rc vs b-times-var"}
+}
 \description{
-Implements the risk parity portfolio using SCA and QP solver
+Risk parity portfolio optimization using successive convex approximation (SCA)
+and a quadratic programming (QP) solver.
 }

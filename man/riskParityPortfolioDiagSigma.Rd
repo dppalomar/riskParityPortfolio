@@ -2,12 +2,22 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioDiagSigma}
 \alias{riskParityPortfolioDiagSigma}
-\title{Implements the risk parity portfolio for the case of diagonal Sigma
+\title{Risk parity portfolio optimization for the case of diagonal Sigma
 that satisfies the constraints sum(w) = 1 and w >= 0.}
 \usage{
 riskParityPortfolioDiagSigma(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)))
 }
+\arguments{
+\item{Sigma}{covariance or correlation matrix}
+
+\item{b}{budget vector}
+}
+\value{
+w optimal portfolio vector
+
+risk_contribution the risk contribution of every asset
+}
 \description{
-Implements the risk parity portfolio for the case of diagonal Sigma
+Risk parity portfolio optimization for the case of diagonal Sigma
 that satisfies the constraints sum(w) = 1 and w >= 0.
 }

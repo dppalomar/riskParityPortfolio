@@ -1,6 +1,6 @@
 ---
 title: "Design of Risk Parity Portfolios"
-author: 
+author:
 - name: "Vinicius Ze and Daniel P. Palomar"
   affiliation: "Hong Kong University of Science and Technology (HKUST)"
 date: "`r Sys.Date()`"
@@ -77,7 +77,7 @@ set.seed(123)
 
 N <- 10
 stocks_index <- c(1:N)
-V <- 2.5 * matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
 # compute the portfolio weights for the case when Sigma is diagonal
@@ -129,26 +129,26 @@ $$\begin{array}{ll}
 which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
 
 ## Experiment with synthetic data: single-index case
-```{r, cache = TRUE}
+```{r}
 set.seed(123)
 N <- 100
-V <- 2.5 * matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
-res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var-vs-b",
+res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var vs b",
                                           method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-var vs b",
                                                  method = "slsqp",
                                                  use_gradient = FALSE)
 res_alabama <- riskParityPortfolioGenSolver(Sigma,
-                                            formulation = "rc-over-var-vs-b",
+                                            formulation = "rc-over-var vs b",
                                             method = "alabama")
 res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-var vs b",
                                                  method = "alabama",
                                                  use_gradient = FALSE)
-res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var-vs-b")
+res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var vs b")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -172,26 +172,26 @@ legend("topright", legend=c("alabama-solver-nograd",
 ```
 
 ## Experiment with real data: single-index case
-```{r, cache = TRUE}
+```{r}
 library(sparseIndexTracking)
 library(xts)
 data(INDEX_2010)
-Sigma <- cov(100 * INDEX_2010$X)
+Sigma <- cov(INDEX_2010$X)
 
-res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var-vs-b",
+res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-var vs b",
                                           method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-var vs b",
                                                  method = "slsqp",
                                                  use_gradient = FALSE)
 res_alabama <- riskParityPortfolioGenSolver(Sigma,
-                                            formulation = "rc-over-var-vs-b",
+                                            formulation = "rc-over-var vs b",
                                              method = "alabama")
 res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var-vs-b",
+                                                 formulation = "rc-over-var vs b",
                                                  method = "alabama",
                                                  use_gradient = FALSE)
-res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var-vs-b")
+res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var vs b")
 
 plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
