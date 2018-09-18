@@ -243,6 +243,8 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   if (has_theta) {
     theta <- w[N]
     w <- w[1:(N-1)]
+  } else {
+    theta <- NA
   }
 
   return(list(w = w,
@@ -250,5 +252,5 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
               obj_fun = fun_seq,
               elapsed_time = time_seq,
               convergence = res$convergence,
-              theta <- if(has_theta) theta else NA))
+              theta = theta))
 }
