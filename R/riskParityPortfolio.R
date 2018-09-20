@@ -32,27 +32,37 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NA, lambda = 1e-4, budget = TRUE,
                                    shortselling = FALSE,
                                    formulation = "rc-over-var vs b", w0 = NA,
-                                   gamma = .9, zeta = 1e-7, tau = NA,
+                                   theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
                                    maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
 
   if (anyNA(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
+  has_theta <- grepl("theta", formulation)
+  if (has_theta) {
+    N_ <- N + 1
+    if (is.na(theta0))
+      theta0 <- mean(w0 * (Sigma %*% w0))
+    w0 <- as.vector(c(w0, theta0))
+  } else {
+    N_ <- N
+  }
+
   if (is.na(tau))
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
   if (budget & (!shortselling)) {
-    Amat <- cbind(matrix(1, N, 1), diag(N))
-    bvec <- c(1, rep(0, N))
+    Amat <- cbind(matrix(1, N_, 1), diag(N_))
+    bvec <- c(1, rep(0, N_))
     meq <- 1
   } else if (budget) {
-    Amat <- matrix(1, N, 1)
+    Amat <- matrix(1, N_, 1)
     bvec <- 1
     meq <- 1
   } else if (!shortselling) {
-    Amat <- diag(N)
-    bvec <- rep(0, N)
+    Amat <- diag(N_)
+    bvec <- rep(0, N_)
     meq <- 0
   }
 
@@ -87,6 +97,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
            g <- g_rc_vs_b_times_var
            A <- A_rc_vs_b_times_var
          },
+         "rc vs theta" = {
+           R <- R_rc_vs_theta
+           g <- g_rc_vs_theta
+           A <- A_rc_vs_theta
+         },
          stop("formulation ", formulation, " is not included.")
   )
 
@@ -98,11 +113,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   start_time <- proc.time()[3]
   for (k in 1:maxiter) {
     # auxiliary quantities
-    Sigma_wk <- Sigma %*% wk
-    rk <- wk * Sigma_wk
+    Sigma_wk <- Sigma %*% wk[1:N]
+    rk <- wk[1:N] * Sigma_wk
     Ak <- A(wk, Sigma, b, Sigma_w = Sigma_wk)
     g_wk <- g(wk, Sigma, b, r = rk)
-    Qk <- 2 * crossprod(Ak) + tau * diag(N)
+    Qk <- 2 * crossprod(Ak) + tau * diag(N_)
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat,
@@ -128,6 +143,13 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     gamma <- gamma * (1 - zeta * gamma)
   }
 
+  if (has_theta) {
+    theta <- w_next[N_]
+    w_next <- w_next[1:N]
+  } else {
+    theta <- NA
+  }
+
   return(list(w = w_next,
               risk_contribution = as.vector(w_next * (Sigma %*% w_next)),
               obj_fun = fun_seq,
@@ -147,16 +169,19 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          w0 = NA, theta0 = NA, maxiter = 500, ftol = 1e-9,
                                          wtol = 1e-6) {
   N <- nrow(Sigma)
-  has_theta <- grepl("theta", formulation)
 
   if (anyNA(w0)) {
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
   }
 
+  has_theta <- grepl("theta", formulation)
   if (has_theta) {
+    N_ <- N + 1
     if (is.na(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
     w0 <- as.vector(c(w0, theta0))
+  } else {
+    N_ <- N
   }
 
   if (budget) {
@@ -164,21 +189,19 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
       return(sum(w) - 1)
     }
     budget.jac <- function(w, ...) {
-      return(matrix(1, 1, N))
+      return(matrix(1, 1, N_))
     }
   } else {
     budget <- NULL
     budget.jac <- NULL
   }
 
-  if (has_theta) N <- N + 1
-
   if (!shortselling) {
     shortselling <- function(w, ...) {
       return(w)
     }
     shortselling.jac <- function(w, ...) {
-      return(diag(N))
+      return(diag(N_))
     }
   } else {
     shortselling <- NULL
@@ -240,9 +263,10 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
+
   if (has_theta) {
-    theta <- w[N]
-    w <- w[1:(N-1)]
+    theta <- w[N_]
+    w <- w[1:N]
   } else {
     theta <- NA
   }
