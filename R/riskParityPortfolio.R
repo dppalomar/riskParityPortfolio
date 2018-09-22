@@ -44,25 +44,39 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     if (is.na(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
     w0 <- as.vector(c(w0, theta0))
-  } else {
-    N_ <- N
   }
 
   if (is.na(tau))
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
-  if (budget & (!shortselling)) {
-    Amat <- cbind(matrix(1, N_, 1), diag(N_))
-    bvec <- c(1, rep(0, N_))
-    meq <- 1
-  } else if (budget) {
-    Amat <- matrix(1, N_, 1)
-    bvec <- 1
-    meq <- 1
-  } else if (!shortselling) {
-    Amat <- diag(N_)
-    bvec <- rep(0, N_)
-    meq <- 0
+  if (has_theta) {
+    if (budget & (!shortselling)) {
+      Amat <- cbind(rbind(matrix(1, N, 1), 0), diag(c(rep(1, N), 0)))
+      bvec <- c(1, rep(0, N+1))
+      meq <- 1
+    } else if (budget) {
+      Amat <- rbind(matrix(1, N, 1), 0)
+      bvec <- 1
+      meq <- 1
+    } else if (!shortselling) {
+      Amat <- diag(c(rep(1, N), 0))
+      bvec <- rep(0, N+1)
+      meq <- 0
+    }
+  } else {
+    if (budget & (!shortselling)) {
+      Amat <- cbind(matrix(1, N, 1), diag(N))
+      bvec <- c(1, rep(0, N))
+      meq <- 1
+    } else if (budget) {
+      Amat <- matrix(1, N, 1)
+      bvec <- 1
+      meq <- 1
+    } else if (!shortselling) {
+      Amat <- diag(N)
+      bvec <- rep(0, N)
+      meq <- 0
+    }
   }
 
   switch(formulation,
@@ -116,7 +130,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     rk <- wk[1:N] * Sigma_wk
     Ak <- A(wk, Sigma, b, Sigma_w = Sigma_wk)
     g_wk <- g(wk, Sigma, b, r = rk)
-    Qk <- 2 * crossprod(Ak) + tau * diag(N_)
+    Qk <- 2 * crossprod(Ak) + tau * diag(N)
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat,
@@ -142,20 +156,21 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  if (has_theta) {
-    theta <- w_next[N_]
-    w_next <- w_next[1:N]
-  } else {
-    theta <- NA
-  }
+  if (!has_theta)
+    return(list(w = w_next,
+           risk_contribution = as.vector(w_next * (Sigma %*% w_next)),
+           obj_fun = fun_seq,
+           elapsed_time = time_seq,
+           convergence = sum(!(k == maxiter))))
+  else
+    return(list(w = w_next[1:N],
+           risk_contribution = as.vector(w_next[1:N] * (Sigma %*% w_next[1:N])),
+           obj_fun = fun_seq,
+           elapsed_time = time_seq,
+           convergence = sum(!(k == maxiter))),
+           theta = w_next[N+1])
 
-  return(list(w = w_next,
-              risk_contribution = as.vector(w_next * (Sigma %*% w_next)),
-              obj_fun = fun_seq,
-              elapsed_time = time_seq,
-              convergence = sum(!(k == maxiter))))
 }
-
 
 
 #' Implements the risk parity portfolio using a general constrained
@@ -185,7 +200,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
       budget <- function(w, ...)
         return(sum(w[1:N]) - 1) # slicing is slow
       budget.jac <- function(w, ...)
-        return(cbind(matrix(1, 1, N), c(0)))
+        return(cbind(matrix(1, 1, N), 0))
     } else {
       budget <- function(w, ...)
         return(sum(w) - 1)
@@ -278,7 +293,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                 convergence = res$convergence))
   else
     return(list(w = w[1:N],
-                risk_contribution = as.vector(w * (Sigma %*% w)),
+                risk_contribution = as.vector(w[1:N] * (Sigma %*% w[1:N])),
                 obj_fun = fun_seq,
                 elapsed_time = time_seq,
                 convergence = res$convergence,

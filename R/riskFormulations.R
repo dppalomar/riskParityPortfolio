@@ -88,7 +88,7 @@ R_rc_over_var_vs_b <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
 R_grad_rc_over_var_vs_b <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
   r_sumr_b <- r/sum_r - b
-  v <- (2/sum_r)*(r_sumr_b - sum(r_sumr_b*r)/sum_r)  
+  v <- (2/sum_r)*(r_sumr_b - sum(r_sumr_b*r)/sum_r)
   return(as.vector(Sigma %*% (w*v) + Sigma_w*v))
 }
 
@@ -166,7 +166,7 @@ R_rc_vs_b_times_var <- function(w, Sigma, b, r = w*(Sigma %*% w)) {
 
 R_grad_rc_vs_b_times_var <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_w) {
   sum_r <- sum(r)
-  v <- 2*(r - b*sum_r - sum(b*r) + sum(b^2)*sum_r)  
+  v <- 2*(r - b*sum_r - sum(b*r) + sum(b^2)*sum_r)
   return(as.vector(Sigma %*% (w*v) + Sigma_w*v))
 }
 
