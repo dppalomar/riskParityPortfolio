@@ -100,12 +100,11 @@ We condiser the following formulations (equation numbers from the paper):
 - Done. (18): rc-over-var-vs-b
 - Done. (24): rc-over-var
 - Done. (21): rc-over-sd vs b-times-sd
-- (20): rc-vs-b-times-var
-
-- (17): rc-vs-theta
-
+- Done. (20): rc-vs-b-times-var
+- Done. (17): rc-vs-theta
 
 - (22): rc-over-b vs theta
+
 
 We can skip these in our first release, no need to go crazy:
 - (26): group-rc-over-sd vs b-times-sd

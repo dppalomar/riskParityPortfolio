@@ -412,7 +412,7 @@ risk <- sum((r - theta)^2)
 Let's compute now the gradient of $R(\mathbf{w})$:
 
 - first, w.r.t. $\theta$:
-$$\frac{\partial R}{\partial\theta} = 2\sum_{i=1}^{N}\left(\theta - r_i\right)$$
+$$\frac{\partial R}{\partial\theta} = -2\sum_{i=1}^{N}\left(r_i - \theta\right)$$
 
 - now, w.r.t. $\mathbf{r}$:
 $$\nabla_{\mathbf{r}}R = 2(\mathbf{r}-\theta\mathbf{1})$$
@@ -453,6 +453,63 @@ which can be compactly coded as
 Ut <- diag(Sigma_w) + Sigma*w
 A <- cbind(Ut, -1)
 ```
+
+
+
+## Formulation "rc-over-b vs theta"
+Consider now the following risk expression:
+$$R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \theta \right)^{2} = \sum_{i=1}^{N}\left(r_i/b_i - \theta\right)^{2},$$
+where $\theta$ is also an optimization variable. This expression can be efficiently coded as
+```{r, eval=FALSE}
+risk <- sum((r/b - theta)^2)
+```
+
+Let's compute now the gradient of $R(\mathbf{w})$:
+
+- first, w.r.t. $\theta$:
+$$\frac{\partial R}{\partial\theta} = -2\sum_{i=1}^{N}\left(r_i/b_i - \theta\right)$$
+
+- now, w.r.t. $\mathbf{r}$:
+$$\nabla_{\mathbf{r}}R = 2(\mathbf{r}/\mathbf{b}-\theta\mathbf{1})/\mathbf{b}$$
+
+- $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{r})^T \cdot \nabla_{\mathbf{r}}R$ with $\textsf{J}_{\mathbf{w}}\mathbf{r} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$:
+
+$$\nabla_{\mathbf{w}}R = 2(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}))
+(\mathbf{r}/\mathbf{b}-\theta\mathbf{1})/\mathbf{b},$$
+which can be coded as (note that we use the notation $\nabla R = \left[\begin{array}{c} \nabla_{\mathbf{w}}R\\ \nabla_{\theta}R\end{array}\right]$)
+```{r, eval=FALSE}
+v <- r/b - theta
+vb <- v/b
+risk_grad <- 2*c(as.vector(Sigma %*% (w*vb) + Sigma_w*vb), -sum(v))
+```
+
+**For SCA:**  
+Using the M-notation [@FengPal2015riskparity], we can write the risk deviations as
+$$
+\begin{equation}
+g_i(\mathbf{w},\theta) = \frac{\mathbf{w}^T\mathbf{M}_i\mathbf{w}}{b_i} - \theta = r_i/b_i - \theta
+\end{equation}
+$$
+which can be efficiently coded as
+```{r, eval=FALSE}
+g <- r/b - theta
+```
+
+The gradients can be written as [@FengPal2015riskparity]: 
+$$\nabla_\mathbf{w} g_{i}(\mathbf{w},\theta) = \left(\frac{\mathbf{M}_i}{b_i} + \frac{\mathbf{M}_i^T}{b_i}\right)\mathbf{w}$$
+and
+$$\nabla_\theta g_{i}(\mathbf{w},\theta) = -1.$$
+
+Recalling that $\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}$ can be conveniently expressed as the $i$-th column of the $N\times N$ matrix $\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})$, then we can write
+$\nabla_\mathbf{w} g_{i}(\mathbf{w}) = \mathbf{u}_i/b_i$.
+Finally, we can compute the Jacobian $\mathbf{A}$ compactly as
+$$\mathbf{A} = \left[\textsf{Diag}(\mathbf{1}/\mathbf{b})\mathbf{U}^T, -\mathbf{1}_N\right]$$
+which can be compactly coded as
+```{r, eval=FALSE}
+Ut <- diag(Sigma_w) + Sigma*w
+A <- cbind(Ut/b, -1)
+```
+
 
 
 # References {-}
