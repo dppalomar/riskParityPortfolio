@@ -1,6 +1,6 @@
-#' Implements the risk parity portfolio using SCA and CVXR
-#' this implementation is basically used for the sake of unit
-#' testing.
+# Implements the risk parity portfolio using SCA and CVXR
+# this implementation is basically used for the sake of unit
+# testing.
 riskParityPortfolioCVX <- function(Sigma, w0 = NA, budget = TRUE,
                                    shortselling = FALSE, gamma = .9,
                                    zeta = 1e-7, tau = NA, maxiter = 500,

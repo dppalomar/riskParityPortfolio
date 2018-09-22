@@ -1,26 +1,26 @@
-#' Jointly estimates a portfolio with risk-parity strategy and asset selection
-#'
-#' @param mu mean vector of the random returns of n assets
-#' @param Sigma positive definite covariance matrix of the random returns
-#'        of n assets
-#' @param w0 initial estimate of the portfolio weights
-#' @param risk_contrib function that takes the portfolio weights and the
-#'        covariance matrix of the returns as inputs and outputs the risk
-#'        contribution of each asset
-#' @param gamma learning rate for the optimization
-#' @param zeta how much to decrease the learning rate per iteration such that
-#'        gamma <- gamma * (1 - zeta * gamma)
-#' @param nu regularization parameter
-#' @param l1 regularization parameter
-#' @param l2 regularization parameter
-#' @param tau regularization parameter
-#' @param type approximation type
-#' @param maxiter maximum number of iterations
-#' @param w_tol convergence tolerance on the portfolio weights
-#' @param theta_tol convergence tolerance on the average of the RCs for the
-#'        selected assets
-#' @param ftol convergence tolerance on the objective function
-#' @export
+# Jointly estimates a portfolio with risk-parity strategy and asset selection
+#
+# @param mu mean vector of the random returns of n assets
+# @param Sigma positive definite covariance matrix of the random returns
+#        of n assets
+# @param w0 initial estimate of the portfolio weights
+# @param risk_contrib function that takes the portfolio weights and the
+#        covariance matrix of the returns as inputs and outputs the risk
+#        contribution of each asset
+# @param gamma learning rate for the optimization
+# @param zeta how much to decrease the learning rate per iteration such that
+#        gamma <- gamma * (1 - zeta * gamma)
+# @param nu regularization parameter
+# @param l1 regularization parameter
+# @param l2 regularization parameter
+# @param tau regularization parameter
+# @param type approximation type
+# @param maxiter maximum number of iterations
+# @param w_tol convergence tolerance on the portfolio weights
+# @param theta_tol convergence tolerance on the average of the RCs for the
+#        selected assets
+# @param ftol convergence tolerance on the objective function
+# @export
 sparseRiskParityPortfolio <- function(mu, Sigma, w0 = NA, risk_contrib = NA,
                                       gamma = 1e-1, zeta = 1e-2, nu = 5e-1,
                                       l1 = 1e-1, l2 = 4, tau = 1e-3, type = "1",

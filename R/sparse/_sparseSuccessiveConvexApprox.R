@@ -2,17 +2,17 @@
 # problem described in FengPalomar-TSP2015.pdf and
 # FengPalomar-ICASSP2016.pdf
 
-#' Update step for the average RCs of the selected assets
-#'
-#' @param theta_k the avg RCs at the previous iteration
-#' @param w_k the portfolio weights at the previous iteration
-#' @param Sigma covariance matrix of the assets
-#' @param g function to represent the risk controbution
-#' @param p parameter for the l0 norm approximation
-#' @param e parameter for the l0 norm approximation
-#' @param gamma the learning rate
-#'
-#' @export
+# Update step for the average RCs of the selected assets
+#
+# @param theta_k the avg RCs at the previous iteration
+# @param w_k the portfolio weights at the previous iteration
+# @param Sigma covariance matrix of the assets
+# @param g function to represent the risk controbution
+# @param p parameter for the l0 norm approximation
+# @param e parameter for the l0 norm approximation
+# @param gamma the learning rate
+#
+# @export
 theta_update <- function(theta_k, w_k, Sigma, g, p, e, gamma) {
   rho_sq <- rho(w_k, p, e) ^ 2
   x <- rho_sq / sum(rho_sq ^ 2)
@@ -20,13 +20,13 @@ theta_update <- function(theta_k, w_k, Sigma, g, p, e, gamma) {
   return(theta_k + gamma * (theta_hat - theta_k))
 }
 
-#' Update step for the portfolio weights
-#'
-#' @param w_k weights vector at the previous iteration
-#' @param theta_k avg the portfolio weights at the previous iteration
-#' @param gamma the learning rate
-#'
-#' @export
+# Update step for the portfolio weights
+#
+# @param w_k weights vector at the previous iteration
+# @param theta_k avg the portfolio weights at the previous iteration
+# @param gamma the learning rate
+#
+# @export
 w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
                      mu, Sigma, tau, p, e, type) {
   w <- CVXR::Variable(length(w_k))
@@ -40,19 +40,19 @@ w_update <- function(w_k, theta_k, nu, gamma, l1, l2,
 }
 
 
-#' @export
+# @export
 negLogLikelihoodCVX <- function(w, nu, mu, Sigma) {
   return (CVXR::quad_form(w, Sigma) - nu * t(w) %*% mu)
 }
 
 
-#' @export
+# @export
 negLogLikelihood <- function(w, nu, mu, Sigma) {
   return (t(w) %*% (Sigma %*% w - nu * mu))
 }
 
 
-#' @export
+# @export
 negLogPrior <- function(w, w_k, theta, Sigma, l1, l2, p, e, tau, type) {
   if (type == "1") {
     D <- sum(abs(d1(w_k, p, e) * w))
@@ -69,7 +69,7 @@ negLogPrior <- function(w, w_k, theta, Sigma, l1, l2, p, e, tau, type) {
 }
 
 
-#' @export
+# @export
 d1 <- function(x, p, e) {
   d1x <- rep(0, length(x))
   abs_x <- abs(x)
@@ -82,7 +82,7 @@ d1 <- function(x, p, e) {
 }
 
 
-#' @export
+# @export
 d2 <- function(x, p, e) {
   d2x <- rep(1 / (e * (p + e)), length(x))
   abs_x <- abs(x)
@@ -92,34 +92,34 @@ d2 <- function(x, p, e) {
   return (d2x)
 }
 
-#' @export
+# @export
 g <- function(w, Sigma) {
   return (w * (Sigma %*% w))
 }
 
 
-#' @export
+# @export
 g_grad <- function(w, Sigma) {
   # Jacobian of the Hadamard product
   return (diag(as.vector(Sigma %*% w)) + diag(as.vector(w)) %*% Sigma)
 }
 
 
-#' @export
+# @export
 g_tilde <- function(w, theta, p, e, Sigma) {
   return ((g(w, Sigma) - theta) * rho(w, p, e))
 }
 
 
-#' @export
+# @export
 g_tilde_grad <- function(w, theta, p, e, Sigma) {
   return(rho(w, p, e) * g_grad(w, Sigma) +
          (g(w, Sigma) - theta) * rho_grad(w, p, e))
 }
 
 
-#' Approximation for the lp-norm, 0 < p < 1
-#' @export
+# Approximation for the lp-norm, 0 < p < 1
+# @export
 rho <- function(x, p, e) {
   val <- rep(0, length(x))
   abs_x <- abs(x)
@@ -131,8 +131,8 @@ rho <- function(x, p, e) {
   return (val)
 }
 
-#' Gradient of the approximation for the lp-norm, 0 < p < 1, w.r.t. to x
-#' @export
+# Gradient of the approximation for the lp-norm, 0 < p < 1, w.r.t. to x
+# @export
 rho_grad <- function(x, p, e) {
   val <- rep(0, length(x))
   abs_x <- abs(x)

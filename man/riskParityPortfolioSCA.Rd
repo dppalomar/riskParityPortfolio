@@ -7,9 +7,9 @@ and a quadratic programming (QP) solver.}
 \usage{
 riskParityPortfolioSCA(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
-  formulation = "rc-over-var vs b", w0 = NA, gamma = 0.9,
-  zeta = 1e-07, tau = NA, maxiter = 500, ftol = 1e-09,
-  wtol = 1e-06)
+  formulation = "rc-over-var vs b", w0 = NA, theta0 = NA,
+  gamma = 0.9, zeta = 1e-07, tau = NA, maxiter = 500,
+  ftol = 1e-09, wtol = 1e-06)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
