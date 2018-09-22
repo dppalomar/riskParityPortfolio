@@ -108,14 +108,13 @@ g_jac_num <- jacobian(g_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
 norm(g_jac - g_jac_num, "F")
 
 
-# WRONG!!!!!
 #
 #  Formulation "rc-over-b vs theta"
 #
 theta <- mean(r/b)
 R_rc_over_b_vs_theta(c(w, theta), Sigma, b)
 risk_grad <- R_grad_rc_over_b_vs_theta(c(w, theta), Sigma, b)
-risk_grad_num <- grad(R_rc_vs_theta, x = c(w, theta), Sigma = Sigma, b = b)
+risk_grad_num <- grad(R_rc_over_b_vs_theta, x = c(w, theta), Sigma = Sigma, b = b)
 norm(risk_grad - risk_grad_num, "2")
 
 g_jac <- A_rc_over_b_vs_theta(c(w, theta), Sigma, b)
