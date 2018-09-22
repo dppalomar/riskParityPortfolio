@@ -108,14 +108,14 @@ Let's compute now the gradient of $R(\mathbf{w})$:
 $$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N\mathbf{r}-(\mathbf{1}^T\mathbf{r})\mathbf{1}),$$
 which can be coded as
 ```{r, eval=FALSE}
-v <- N*r - sum(r)
+v <- 4*(N*r - sum(r))
 Ut <- Sigma*w + diag(Sigma_w)
-risk_grad <- 4 * t(Ut) %*% v
+risk_grad <- t(Ut) %*% v
 ```
 or
 ```{r, eval=FALSE}
-v <- N*r - sum(r)
-risk_grad <- as.vector(4*(Sigma %*% (w*v) + Sigma_w*v))
+v <- 4*(N*r - sum(r))
+risk_grad <- as.vector((Sigma %*% (w*v) + Sigma_w*v))
 ```
 
 **For SCA:**  
@@ -139,13 +139,14 @@ $$\mathbf{A} = \mathbf{1}_N \otimes \mathbf{U}^T - \mathbf{U}^T \otimes \mathbf{
 which can be compactly coded as
 ```{r, eval=FALSE}
 Ut <- diag(Sigma_w) + Sigma*w
-A <- matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) - matrix(rep(Ut, each = N), ncol = N)
+A <- matrix(rep(t(Ut), N), ncol = N, byrow = TRUE) 
+      - matrix(rep(Ut, each = N), ncol = N)
 ```
 
 
 ## Formulation "rc-over-b-double-index"
 Consider now the risk expression:
-$$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \frac{w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j}{b_j}\right)^{2} = \sum_{i,j=1}^{N}(\frac{r_i}{b_i} - \frac{r_j}{b_j})^2 = 2N\sum_i \left(\frac{r_i}{b_i}\right)^2 - 2\left(\sum_i \frac{r_i}{b_i}\right)^2$$
+$$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \frac{w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j}{b_j}\right)^{2} = \sum_{i,j=1}^{N}\left(\frac{r_i}{b_i} - \frac{r_j}{b_j}\right)^2 = 2N\sum_i \left(\frac{r_i}{b_i}\right)^2 - 2\left(\sum_i \frac{r_i}{b_i}\right)^2$$
 which can be efficiently coded as
 ```{r, eval=FALSE}
 rb <- r/b
@@ -154,23 +155,23 @@ risk <- 2*N*sum(rb^2) - 2*sum(rb)^2
 
 Let's compute now the gradient of $R(\mathbf{w})$:
 
-- $\frac{\partial R}{\partial r_i}=4(N r_i/b_i - \sum_i r_i/b_i)$ $\Longrightarrow$ $\nabla_{\mathbf{r}}R = 4(N(\mathbf{r}/\mathbf{b}) - (\mathbf{1}^T(\mathbf{r}/\mathbf{b})\mathbf{1})$
+- $\frac{\partial R}{\partial r_i}=4\left(N r_i/b_i - \sum_j r_j/b_j\right)/b_i$ $\Longrightarrow$ $\nabla_{\mathbf{r}}R = 4(N(\mathbf{r}/\mathbf{b}) - (\mathbf{1}^T(\mathbf{r}/\mathbf{b})\mathbf{1})/\mathbf{b}$
 
 - $\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{r})^T \cdot \nabla_{\mathbf{r}}R$ with $\textsf{J}_{\mathbf{w}}\mathbf{r} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})$:
 
-$$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N(\mathbf{r}/\mathbf{b}) - (\mathbf{1}^T(\mathbf{r}/\mathbf{b})\mathbf{1}),$$
+$$\nabla_{\mathbf{w}}R = 4(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})) (N(\mathbf{r}/\mathbf{b}) - (\mathbf{1}^T(\mathbf{r}/\mathbf{b})\mathbf{1})/\mathbf{b},$$
 which can be coded as
 ```{r, eval=FALSE}
 rb <- r/b
-v <- N*rb - sum(rb)
+v <- 4*(N*rb - sum(rb))/b
 Ut <- Sigma*w + diag(Sigma_w)
-risk_grad <- 4 * t(Ut) %*% v
+risk_grad <- t(Ut) %*% v
 ```
 or
 ```{r, eval=FALSE}
 rb <- r/b
-v <- N*rb - sum(rb)
-risk_grad <- as.vector(4*(Sigma %*% (w*v) + Sigma_w*v))
+v <- 4*(N*rb - sum(rb))/b
+risk_grad <- as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 **For SCA:**  
@@ -190,7 +191,8 @@ which can be compactly coded as
 ```{r, eval=FALSE}
 Ut <- diag(Sigma_w) + Sigma*w
 Utb <- Ut / b
-A <- matrix(rep(t(Utb), N), ncol = N, byrow = TRUE) - matrix(rep(Utb, each = N), ncol = N)
+A <- matrix(rep(t(Utb), N), ncol = N, byrow = TRUE) 
+      - matrix(rep(Utb, each = N), ncol = N)
 ```
 
 
@@ -228,8 +230,8 @@ which can be coded as
 ```{r, eval=FALSE}
 sum_r <- sum(r)
 r_sumr_b <- r/sum_r - b
-v <- r_sumr_b - sum(r_sumr_b*r)/sum_r
-risk_grad <- (2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v)
+v <- (2/sum_r)*(r_sumr_b - sum(r_sumr_b*r)/sum_r)
+risk_grad <- as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 
@@ -268,8 +270,8 @@ which can be coded as
 ```{r, eval=FALSE}
 sum_r <- sum(r)
 r_sumr <- r/sum_r
-v <- r_sumr - sum(r_sumr^2)
-risk_grad <- (2/sum_r) * as.vector(Sigma %*% (w*v) + Sigma_w*v)
+v <- (2/sum_r)*(r_sumr - sum(r_sumr^2))
+risk_grad <- as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 **For SCA:**  
@@ -372,8 +374,8 @@ $$\nabla_{\mathbf{w}}R = 2(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \texts
 which can be coded as
 ```{r, eval=FALSE}
 sum_r <- sum(r)
-v <- r - b*sum_r - sum(b*r) + sum(b^2)*sum_r
-risk_grad <- 2*as.vector(Sigma %*% (w*v) + Sigma_w*v)
+v <- 2*(r - b*sum_r - sum(b*r) + sum(b^2)*sum_r)
+risk_grad <- as.vector(Sigma %*% (w*v) + Sigma_w*v)
 ```
 
 **For SCA:**  
@@ -423,8 +425,8 @@ $$\nabla_{\mathbf{w}}R = 2(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \texts
 (\mathbf{r}-\theta\mathbf{1}),$$
 which can be coded as (note that we use the notation $\nabla R = \left[\begin{array}{c} \nabla_{\mathbf{w}}R\\ \nabla_{\theta}R\end{array}\right]$)
 ```{r, eval=FALSE}
-v <- r - theta
-risk_grad <- 2*c(as.vector(Sigma %*% (w*v) + Sigma_w*v), -sum(v))
+v <- 2*(r - theta)
+risk_grad <- c(as.vector(Sigma %*% (w*v) + Sigma_w*v), -sum(v))
 ```
 
 **For SCA:**  
@@ -478,9 +480,9 @@ $$\nabla_{\mathbf{w}}R = 2(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \texts
 (\mathbf{r}/\mathbf{b}-\theta\mathbf{1})/\mathbf{b},$$
 which can be coded as (note that we use the notation $\nabla R = \left[\begin{array}{c} \nabla_{\mathbf{w}}R\\ \nabla_{\theta}R\end{array}\right]$)
 ```{r, eval=FALSE}
-v <- r/b - theta
+v <- 2*(r/b - theta)
 vb <- v/b
-risk_grad <- 2*c(as.vector(Sigma %*% (w*vb) + Sigma_w*vb), -sum(v))
+risk_grad <- c(as.vector(Sigma %*% (w*vb) + Sigma_w*vb), -sum(v))
 ```
 
 **For SCA:**  

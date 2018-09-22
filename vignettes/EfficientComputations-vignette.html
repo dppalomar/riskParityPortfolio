@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-09-17" />
+<meta name="date" content="2018-09-22" />
 
 <title>Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio</title>
 
@@ -73,7 +73,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1 class="title toc-ignore">Efficient Computation of Risk and Jacobians for Risk-Parity Portfolio</h1>
 <h3 class="author">Daniel P. Palomar and Vinicius Ze</h3>
 <address class="author_afil">
-Hong Kong University of Science and Technology (HKUST)<br><h3 class="date">2018-09-17</h3>
+Hong Kong University of Science and Technology (HKUST)<br><h3 class="date">2018-09-22</h3>
 </header>
 
 <hr>
@@ -92,6 +92,7 @@ Hong Kong University of Science and Technology (HKUST)<br><h3 class="date">2018-
 <li><a href="#formulation-rc-over-sd-vs-b-times-sd">Formulation “rc-over-sd vs b-times-sd”</a></li>
 <li><a href="#formulation-rc-vs-b-times-var">Formulation “rc vs b-times-var”</a></li>
 <li><a href="#formulation-rc-vs-theta">Formulation “rc vs theta”</a></li>
+<li><a href="#formulation-rc-over-b-vs-theta">Formulation “rc-over-b vs theta”</a></li>
 </ul></li>
 <li><a href="#references">References</a></li>
 </ul>
@@ -313,7 +314,7 @@ A &lt;-<span class="st"> </span>Ut <span class="op">-</span><span class="st"> </
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">risk &lt;-<span class="st"> </span><span class="kw">sum</span>((r <span class="op">-</span><span class="st"> </span>theta)<span class="op">^</span><span class="dv">2</span>)</code></pre></div>
 <p>Let’s compute now the gradient of <span class="math inline">\(R(\mathbf{w})\)</span>:</p>
 <ul>
-<li><p>first, w.r.t. <span class="math inline">\(\theta\)</span>: <span class="math display">\[\frac{\partial R}{\partial\theta} = 2\sum_{i=1}^{N}\left(\theta - r_i\right)\]</span></p></li>
+<li><p>first, w.r.t. <span class="math inline">\(\theta\)</span>: <span class="math display">\[\frac{\partial R}{\partial\theta} = -2\sum_{i=1}^{N}\left(r_i - \theta\right)\]</span></p></li>
 <li><p>now, w.r.t. <span class="math inline">\(\mathbf{r}\)</span>: <span class="math display">\[\nabla_{\mathbf{r}}R = 2(\mathbf{r}-\theta\mathbf{1})\]</span></p></li>
 <li><p><span class="math inline">\(\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{r})^T \cdot \nabla_{\mathbf{r}}R\)</span> with <span class="math inline">\(\textsf{J}_{\mathbf{w}}\mathbf{r} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\)</span>:</p></li>
 </ul>
@@ -332,6 +333,33 @@ g_i(\mathbf{w},\theta) = \mathbf{w}^T\mathbf{M}_i\mathbf{w} - \theta = r_i - \th
 <p>Recalling that <span class="math inline">\(\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}\)</span> can be conveniently expressed as the <span class="math inline">\(i\)</span>-th column of the <span class="math inline">\(N\times N\)</span> matrix <span class="math inline">\(\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\)</span>, then we can write <span class="math inline">\(\nabla_\mathbf{w} g_{i}(\mathbf{w}) = \mathbf{u}_i\)</span>. Finally, we can compute the Jacobian <span class="math inline">\(\mathbf{A}\)</span> compactly as <span class="math display">\[\mathbf{A} = \left[\mathbf{U}^T, -\mathbf{1}_N\right]\]</span> which can be compactly coded as</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Ut &lt;-<span class="st"> </span><span class="kw">diag</span>(Sigma_w) <span class="op">+</span><span class="st"> </span>Sigma<span class="op">*</span>w
 A &lt;-<span class="st"> </span><span class="kw">cbind</span>(Ut, <span class="op">-</span><span class="dv">1</span>)</code></pre></div>
+</div>
+<div id="formulation-rc-over-b-vs-theta" class="section level2">
+<h2>Formulation “rc-over-b vs theta”</h2>
+<p>Consider now the following risk expression: <span class="math display">\[R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \theta \right)^{2} = \sum_{i=1}^{N}\left(r_i/b_i - \theta\right)^{2},\]</span> where <span class="math inline">\(\theta\)</span> is also an optimization variable. This expression can be efficiently coded as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">risk &lt;-<span class="st"> </span><span class="kw">sum</span>((r<span class="op">/</span>b <span class="op">-</span><span class="st"> </span>theta)<span class="op">^</span><span class="dv">2</span>)</code></pre></div>
+<p>Let’s compute now the gradient of <span class="math inline">\(R(\mathbf{w})\)</span>:</p>
+<ul>
+<li><p>first, w.r.t. <span class="math inline">\(\theta\)</span>: <span class="math display">\[\frac{\partial R}{\partial\theta} = -2\sum_{i=1}^{N}\left(r_i/b_i - \theta\right)\]</span></p></li>
+<li><p>now, w.r.t. <span class="math inline">\(\mathbf{r}\)</span>: <span class="math display">\[\nabla_{\mathbf{r}}R = 2(\mathbf{r}/\mathbf{b}-\theta\mathbf{1})/\mathbf{b}\]</span></p></li>
+<li><p><span class="math inline">\(\nabla_{\mathbf{w}}R = (\textsf{J}_{\mathbf{w}}\mathbf{r})^T \cdot \nabla_{\mathbf{r}}R\)</span> with <span class="math inline">\(\textsf{J}_{\mathbf{w}}\mathbf{r} = \textsf{Diag}(\mathbf{w})\boldsymbol{\Sigma} + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w})\)</span>:</p></li>
+</ul>
+<p><span class="math display">\[\nabla_{\mathbf{w}}R = 2(\boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w}) + \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}))
+(\mathbf{r}/\mathbf{b}-\theta\mathbf{1})/\mathbf{b},\]</span> which can be coded as (note that we use the notation <span class="math inline">\(\nabla R = \left[\begin{array}{c} \nabla_{\mathbf{w}}R\\ \nabla_{\theta}R\end{array}\right]\)</span>)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">v &lt;-<span class="st"> </span>r<span class="op">/</span>b <span class="op">-</span><span class="st"> </span>theta
+vb &lt;-<span class="st"> </span>v<span class="op">/</span>b
+risk_grad &lt;-<span class="st"> </span><span class="dv">2</span><span class="op">*</span><span class="kw">c</span>(<span class="kw">as.vector</span>(Sigma <span class="op">%*%</span><span class="st"> </span>(w<span class="op">*</span>vb) <span class="op">+</span><span class="st"> </span>Sigma_w<span class="op">*</span>vb), <span class="op">-</span><span class="kw">sum</span>(v))</code></pre></div>
+<p><strong>For SCA:</strong><br />
+Using the M-notation <span class="citation">[2]</span>, we can write the risk deviations as <span class="math display">\[
+\begin{equation}
+g_i(\mathbf{w},\theta) = \frac{\mathbf{w}^T\mathbf{M}_i\mathbf{w}}{b_i} - \theta = r_i/b_i - \theta
+\end{equation}
+\]</span> which can be efficiently coded as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g &lt;-<span class="st"> </span>r<span class="op">/</span>b <span class="op">-</span><span class="st"> </span>theta</code></pre></div>
+<p>The gradients can be written as <span class="citation">[2]</span>: <span class="math display">\[\nabla_\mathbf{w} g_{i}(\mathbf{w},\theta) = \left(\frac{\mathbf{M}_i}{b_i} + \frac{\mathbf{M}_i^T}{b_i}\right)\mathbf{w}\]</span> and <span class="math display">\[\nabla_\theta g_{i}(\mathbf{w},\theta) = -1.\]</span></p>
+<p>Recalling that <span class="math inline">\(\mathbf{u}_i = (\mathbf{M}_i + \mathbf{M}_i^T)\mathbf{w}\)</span> can be conveniently expressed as the <span class="math inline">\(i\)</span>-th column of the <span class="math inline">\(N\times N\)</span> matrix <span class="math inline">\(\mathbf{U} = \textsf{Diag}(\boldsymbol{\Sigma}\mathbf{w}) + \boldsymbol{\Sigma}\textsf{Diag}(\mathbf{w})\)</span>, then we can write <span class="math inline">\(\nabla_\mathbf{w} g_{i}(\mathbf{w}) = \mathbf{u}_i/b_i\)</span>. Finally, we can compute the Jacobian <span class="math inline">\(\mathbf{A}\)</span> compactly as <span class="math display">\[\mathbf{A} = \left[\textsf{Diag}(\mathbf{1}/\mathbf{b})\mathbf{U}^T, -\mathbf{1}_N\right]\]</span> which can be compactly coded as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Ut &lt;-<span class="st"> </span><span class="kw">diag</span>(Sigma_w) <span class="op">+</span><span class="st"> </span>Sigma<span class="op">*</span>w
+A &lt;-<span class="st"> </span><span class="kw">cbind</span>(Ut<span class="op">/</span>b, <span class="op">-</span><span class="dv">1</span>)</code></pre></div>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
