@@ -41,7 +41,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
-    N_ <- N + 1
     if (is.na(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
     w0 <- as.vector(c(w0, theta0))
@@ -176,28 +175,40 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
-    N_ <- N + 1
     if (is.na(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
     w0 <- as.vector(c(w0, theta0))
-  } else
-    N_ <- N
+  }
 
   if (budget) {
-    budget <- function(w, ...)
-      return(sum(w) - 1)
-    budget.jac <- function(w, ...)
-      return(matrix(1, 1, N_))
+    if (has_theta) {
+      budget <- function(w, ...)
+        return(sum(w[1:N]) - 1) # slicing is slow
+      budget.jac <- function(w, ...)
+        return(cbind(matrix(1, 1, N), c(0)))
+    } else {
+      budget <- function(w, ...)
+        return(sum(w) - 1)
+      budget.jac <- function(w, ...)
+        return(matrix(1, 1, N))
+    }
   } else {
     budget <- NULL
     budget.jac <- NULL
   }
 
   if (!shortselling) {
-    shortselling <- function(w, ...)
-      return(w)
-    shortselling.jac <- function(w, ...)
-      return(diag(N_))
+    if (has_theta) {
+      shortselling <- function(w, ...)
+        return(w[1:N])
+      shortselling.jac <- function(w, ...)
+        return(diag(c(rep(1, N), 0)))
+    } else {
+      shortselling <- function(w, ...)
+        return(w)
+      shortselling.jac <- function(w, ...)
+        return(diag(N))
+    }
   } else {
     shortselling <- NULL
     shortselling.jac <- NULL
@@ -264,12 +275,12 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                 risk_contribution = as.vector(w * (Sigma %*% w)),
                 obj_fun = fun_seq,
                 elapsed_time = time_seq,
-                convergence = res$convergence))    
+                convergence = res$convergence))
   else
     return(list(w = w[1:N],
                 risk_contribution = as.vector(w * (Sigma %*% w)),
                 obj_fun = fun_seq,
                 elapsed_time = time_seq,
                 convergence = res$convergence,
-                theta = w[N+1]))  
+                theta = w[N+1]))
 }
