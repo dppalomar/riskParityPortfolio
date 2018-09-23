@@ -115,6 +115,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
            g <- g_rc_vs_theta
            A <- A_rc_vs_theta
          },
+         "rc-over-b vs theta" = {
+           R <- R_rc_over_b_vs_theta
+           g <- g_rc_over_b_vs_theta
+           A <- A_rc_over_b_vs_theta
+         },
          stop("formulation ", formulation, " is not included.")
   )
 
@@ -193,10 +198,14 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   if (anyNA(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
-  has_theta <- grepl("theta", formulation)
   if (has_theta) {
-    if (is.na(theta0))
-      theta0 <- mean(w0 * (Sigma %*% w0))
+    if (is.na(theta0)) {
+      r0 <- w0 * (Sigma %*% w0)
+      if (formulation == "rc vs theta")
+        theta0 <- mean(r0)
+      else if (formulation == "rc-over-b vs theta")
+        theta0 <- mean(r0 / b)
+    }
     w0 <- as.vector(c(w0, theta0))
   }
 
@@ -260,6 +269,10 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          "rc vs theta" = {
            R <- R_rc_vs_theta
            R_grad <- R_grad_rc_vs_theta
+         },
+         "rc-over-b vs theta" = {
+           R <- R_rc_over_b_vs_theta
+           R_grad <- R_grad_rc_over_b_vs_theta
          },
          stop("formulation ", formulation, " is not included.")
   )
