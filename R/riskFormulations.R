@@ -178,7 +178,7 @@ A_rc_vs_b_times_var <- function(w, Sigma, b, Sigma_w = Sigma %*% w, r = w*Sigma_
 
 
 #########################################################
-# Compute g, R, and A for the formulation “rc vs theta” #
+# Compute g, R, and A for the formulation "rc vs theta" #
 #########################################################
 
 R_rc_vs_theta <- function(wtheta, Sigma, b = NA, r = NA) {
@@ -213,7 +213,7 @@ A_rc_vs_theta <- function(wtheta, Sigma, b = NA, Sigma_w = NA) {
 
 
 ################################################################
-# Compute g, R, and A for the formulation “rc-over-b vs theta” #
+# Compute g, R, and A for the formulation "rc-over-b vs theta" #
 ################################################################
 
 R_rc_over_b_vs_theta <- function(wtheta, Sigma, b, r = NA) {
