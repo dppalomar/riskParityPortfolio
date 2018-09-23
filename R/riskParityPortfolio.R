@@ -123,14 +123,20 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   fun_k <- R(wk, Sigma, b)
   fun_seq <- c(fun_k)
   time_seq <- c(0)
+
+  if (has_theta)
+    I <- diag((N + 1))
+  else
+    I <- diag(N)
+
   start_time <- proc.time()[3]
   for (k in 1:maxiter) {
     # auxiliary quantities
-    Sigma_wk <- Sigma %*% wk[1:N]
+    Sigma_wk <- Sigma %*% wk[1:N] # slicing is slow
     rk <- wk[1:N] * Sigma_wk
     Ak <- A(wk, Sigma, b, Sigma_w = Sigma_wk)
     g_wk <- g(wk, Sigma, b, r = rk)
-    Qk <- 2 * crossprod(Ak) + tau * diag(N)
+    Qk <- 2 * crossprod(Ak) + tau * I
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat,
@@ -167,9 +173,8 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
            risk_contribution = as.vector(w_next[1:N] * (Sigma %*% w_next[1:N])),
            obj_fun = fun_seq,
            elapsed_time = time_seq,
-           convergence = sum(!(k == maxiter))),
-           theta = w_next[N+1])
-
+           convergence = sum(!(k == maxiter)),
+           theta = w_next[N+1]))
 }
 
 
@@ -213,14 +218,12 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   }
 
   if (!shortselling) {
+    shortselling <- function(w, ...)
+      return(w[1:N])
     if (has_theta) {
-      shortselling <- function(w, ...)
-        return(w[1:N])
       shortselling.jac <- function(w, ...)
-        return(diag(c(rep(1, N), 0)))
+        return(cbind(diag(N), rep(0, N)))
     } else {
-      shortselling <- function(w, ...)
-        return(w)
       shortselling.jac <- function(w, ...)
         return(diag(N))
     }
