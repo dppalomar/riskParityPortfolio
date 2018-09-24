@@ -25,3 +25,10 @@ library(riskParityPortfolio)
 # Documentation
 devtools::document()  #to generate all documentation via roxygen
 ?riskParityPortfolioSCA
+
+
+# Code tests
+#devtools::use_testthat()  # the first time
+devtools::test()
+covr::package_coverage()  #coverage of tests
+#goodpractice::gp()  # overall checks
