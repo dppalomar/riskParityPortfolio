@@ -2,8 +2,7 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioDiagSigma}
 \alias{riskParityPortfolioDiagSigma}
-\title{Risk parity portfolio optimization for the case of diagonal Sigma
-that satisfies the constraints sum(w) = 1 and w >= 0.}
+\title{Risk parity portfolio design for uncorrelated assets}
 \usage{
 riskParityPortfolioDiagSigma(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)))
 }

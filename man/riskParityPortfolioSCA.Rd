@@ -2,19 +2,22 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioSCA}
 \alias{riskParityPortfolioSCA}
-\title{Risk parity portfolio optimization using successive convex approximation (SCA)
-and a quadratic programming (QP) solver.}
+\title{Fast risk parity portfolio design using successive convex
+       approximation (SCA) and a quadratic programming (QP) solver.}
 \usage{
 riskParityPortfolioSCA(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-  mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
-  formulation = "rc-over-var vs b", w0 = NA, theta0 = NA,
+  mu = NA, budget = TRUE, shortselling = FALSE,
+  formulation = c("rc-double-index", "rc-over-b-double-index",
+  "rc-over-var vs b", "rc-over-var", "rc-over-sd vs b-times-sd",
+  "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"),
+  w0 = riskParityPortfolioDiagSigma(Sigma, b)$w, theta0 = NA,
   gamma = 0.9, zeta = 1e-07, tau = NA, maxiter = 500,
   ftol = 1e-09, wtol = 1e-06)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
 
-\item{b}{budget vector}
+\item{b}{budget vector, aka, risk budgeting targets}
 
 \item{budget}{boolean indicating whether to consider sum(w) = 1 as a
 constraint}
@@ -25,9 +28,29 @@ w < 0}
 \item{formulation}{string indicating the formulation to be used for the risk
 parity optimization problem. It must be one of: "rc-double-index",
 "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
-"rc-over-sd vs b-times-sd", or "rc vs b-times-var"}
+"rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
+"rc-over-b vs theta".}
+
+\item{w0}{initial value for the portfolio wieghts. Default is the optimum
+portfolio weights for the case when Sigma is diagonal.}
+
+\item{theta0}{initial value for theta. If NA, the optimum solution for a fixed
+vector of portfolio weights will be used}
+
+\item{gamma}{learning rate}
+
+\item{zeta}{factor used to decrease the learning rate at each iteration}
+
+\item{tau}{regularization factor. If NA, a meaningful value will be used}
+
+\item{maxiter}{maximum number of iterations for the SCA loop}
+
+\item{ftol}{convergence tolerance on the value of the objective function}
+
+\item{wtol}{convergence tolerance on the values of the parameters}
 }
 \description{
-Risk parity portfolio optimization using successive convex approximation (SCA)
-and a quadratic programming (QP) solver.
+Risk parity portfolio optimization using SCA to cast the
+             optimization problem into a series of QP problems fastly
+             solvable using a quadprog::solve.QP.
 }

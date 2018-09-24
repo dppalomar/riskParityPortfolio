@@ -1,4 +1,6 @@
-#' Risk parity portfolio optimization for the case of diagonal Sigma
+#' @title Risk parity portfolio design for uncorrelated assets
+#'
+#' @description Risk parity portfolio optimization for the case of diagonal Sigma
 #' that satisfies the constraints sum(w) = 1 and w >= 0.
 #'
 #' @param Sigma covariance or correlation matrix
@@ -14,11 +16,15 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 }
 
 
-#' Risk parity portfolio optimization using successive convex approximation (SCA)
-#' and a quadratic programming (QP) solver.
+#' @title Fast risk parity portfolio design using successive convex
+#'        approximation (SCA) and a quadratic programming (QP) solver.
+#'
+#' @description Risk parity portfolio optimization using SCA to cast the
+#'              optimization problem into a series of QP problems fastly
+#'              solvable using a quadprog::solve.QP.
 #'
 #' @param Sigma covariance or correlation matrix
-#' @param b budget vector
+#' @param b budget vector, aka, risk budgeting targets
 #' @param budget boolean indicating whether to consider sum(w) = 1 as a
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
@@ -26,18 +32,34 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #' @param formulation string indicating the formulation to be used for the risk
 #'        parity optimization problem. It must be one of: "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
-#'        "rc-over-sd vs b-times-sd", or "rc vs b-times-var"
+#'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
+#'        "rc-over-b vs theta".
+#' @param w0 initial value for the portfolio wieghts. Default is the optimum
+#'        portfolio weights for the case when Sigma is diagonal.
+#' @param theta0 initial value for theta. If NA, the optimum solution for a fixed
+#'        vector of portfolio weights will be used
+#' @param gamma learning rate
+#' @param zeta factor used to decrease the learning rate at each iteration
+#' @param tau regularization factor. If NA, a meaningful value will be used
+#' @param maxiter maximum number of iterations for the SCA loop
+#' @param ftol convergence tolerance on the value of the objective function
+#' @param wtol convergence tolerance on the values of the parameters
+#'
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                   mu = NA, lambda = 1e-4, budget = TRUE,
-                                   shortselling = FALSE,
-                                   formulation = "rc-over-var vs b", w0 = NA,
+                                   mu = NA, budget = TRUE, shortselling = FALSE,
+                                   formulation = c("rc-double-index",
+                                                   "rc-over-b-double-index",
+                                                   "rc-over-var vs b",
+                                                   "rc-over-var",
+                                                   "rc-over-sd vs b-times-sd",
+                                                   "rc vs b-times-var",
+                                                   "rc vs theta",
+                                                   "rc-over-b vs theta"),
+                                   w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
                                    theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
                                    maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
-
-  if (anyNA(w0))
-    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
@@ -79,7 +101,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     }
   }
 
-  switch(formulation,
+  switch(match.arg(formulation),
          "rc-double-index" = {
            R <- R_rc_double_index
            g <- g_rc_double_index
@@ -167,19 +189,19 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  if (!has_theta)
-    return(list(w = w_next,
-           risk_contribution = as.vector(w_next * (Sigma %*% w_next)),
-           obj_fun = fun_seq,
-           elapsed_time = time_seq,
-           convergence = sum(!(k == maxiter))))
-  else
-    return(list(w = w_next[1:N],
-           risk_contribution = as.vector(w_next[1:N] * (Sigma %*% w_next[1:N])),
-           obj_fun = fun_seq,
-           elapsed_time = time_seq,
-           convergence = sum(!(k == maxiter)),
-           theta = w_next[N+1]))
+  portfolio_results <- list(obj_fun = fun_seq, elapsed_time = time_seq,
+                            convergence = sum(!(k == maxiter)))
+
+  if (!has_theta) {
+    portfolio_results$w <- w_next
+    portfolio_results$risk_contribution <- as.vector(w_next * (Sigma %*% w_next))
+  } else {
+    portfolio_results$w <- w_next[1:N]
+    portfolio_results$risk_contribution <- as.vector(w_next[1:N] * (Sigma %*% w_next[1:N]))
+    portfolio_results$theta <- w_next[N+1]
+  }
+
+  return(portfolio_results)
 }
 
 
@@ -194,10 +216,9 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          w0 = NA, theta0 = NA, maxiter = 500, ftol = 1e-9,
                                          wtol = 1e-6) {
   N <- nrow(Sigma)
-
+  # set initial values for w and theta
   if (anyNA(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.na(theta0)) {
@@ -207,10 +228,11 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     w0 <- as.vector(c(w0, theta0))
   }
 
+  # set equality constraints
   if (budget) {
     if (has_theta) {
       budget <- function(w, ...)
-        return(sum(w[1:N]) - 1)  # slicing is slow
+        return(sum(w[1:N]) - 1)
       budget.jac <- function(w, ...)
         return(cbind(matrix(1, 1, N), 0))
     } else {
@@ -224,6 +246,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     budget.jac <- NULL
   }
 
+  # set inequality constraints
   if (!shortselling) {
     if (has_theta) {
       shortselling <- function(w, ...)
