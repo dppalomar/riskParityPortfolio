@@ -225,12 +225,14 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   }
 
   if (!shortselling) {
-    shortselling <- function(w, ...)
-      return(w[1:N])
     if (has_theta) {
+      shortselling <- function(w, ...)
+        return(w[1:N])
       shortselling.jac <- function(w, ...)
         return(cbind(diag(N), rep(0, N)))
     } else {
+      shortselling <- function(w, ...)
+        return(w)
       shortselling.jac <- function(w, ...)
         return(diag(N))
     }
