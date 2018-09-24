@@ -2,16 +2,63 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioGenSolver}
 \alias{riskParityPortfolioGenSolver}
-\title{Implements the risk parity portfolio using a general constrained
-solver from the alabama package}
+\title{Risk parity portfolio design using a general constrained
+       solvers}
 \usage{
 riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   budget = TRUE, shortselling = FALSE,
-  formulation = "rc-over-var vs b", method = "slsqp",
-  use_gradient = TRUE, w0 = NA, theta0 = NA, maxiter = 500,
-  ftol = 1e-09, wtol = 1e-06)
+  formulation = c("rc-double-index", "rc-over-b-double-index",
+  "rc-over-var vs b", "rc-over-var", "rc-over-sd vs b-times-sd",
+  "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"),
+  method = c("slsqp", "alabama"), use_gradient = TRUE,
+  w0 = riskParityPortfolioDiagSigma(Sigma, b)$w, theta0 = NA,
+  maxiter = 500, ftol = 1e-09, wtol = 1e-06)
+}
+\arguments{
+\item{Sigma}{covariance or correlation matrix}
+
+\item{b}{budget vector, aka, risk budgeting targets}
+
+\item{budget}{boolean indicating whether to consider sum(w) = 1 as a
+constraint}
+
+\item{shortselling}{boolean indicating whether to allow short-selling, i.e.,
+w < 0}
+
+\item{formulation}{string indicating the formulation to be used for the risk
+parity optimization problem. It must be one of: "rc-double-index",
+"rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
+"rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
+"rc-over-b vs theta".}
+
+\item{method}{which solver to use. It must be one of: "slsqp" or "alabama"}
+
+\item{use_gradient}{if TRUE, gradients of the objective function wrt to the
+parameters will be used. This is strongly recommended to achive faster
+results}
+
+\item{w0}{initial value for the portfolio wieghts. Default is the optimum
+portfolio weights for the case when Sigma is diagonal.}
+
+\item{theta0}{initial value for theta. If NA, the optimum solution for a fixed
+vector of portfolio weights will be used}
+
+\item{maxiter}{maximum number of iterations for the outer loop of the solver}
+
+\item{ftol}{convergence tolerance on the value of the objective function}
+
+\item{wtol}{convergence tolerance on the values of the parameters}
+
+\item{gamma}{learning rate}
+
+\item{zeta}{factor used to decrease the learning rate at each iteration}
+
+\item{tau}{regularization factor. If NA, a meaningful value will be used}
+}
+\value{
+TODO
 }
 \description{
-Implements the risk parity portfolio using a general constrained
-solver from the alabama package
+Risk parity portfolio optimization using general purpose
+             constrained solvers from the alabama and nloptr packages
 }

@@ -3,7 +3,7 @@
 \name{riskParityPortfolioSCA}
 \alias{riskParityPortfolioSCA}
 \title{Fast risk parity portfolio design using successive convex
-       approximation (SCA) and a quadratic programming (QP) solver.}
+       approximation (SCA) and a quadratic programming (QP) solver}
 \usage{
 riskParityPortfolioSCA(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   mu = NA, budget = TRUE, shortselling = FALSE,
@@ -48,6 +48,9 @@ vector of portfolio weights will be used}
 \item{ftol}{convergence tolerance on the value of the objective function}
 
 \item{wtol}{convergence tolerance on the values of the parameters}
+}
+\value{
+TODO
 }
 \description{
 Risk parity portfolio optimization using SCA to cast the

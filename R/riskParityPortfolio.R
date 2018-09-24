@@ -17,7 +17,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
 
 #' @title Fast risk parity portfolio design using successive convex
-#'        approximation (SCA) and a quadratic programming (QP) solver.
+#'        approximation (SCA) and a quadratic programming (QP) solver
 #'
 #' @description Risk parity portfolio optimization using SCA to cast the
 #'              optimization problem into a series of QP problems fastly
@@ -44,6 +44,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #' @param maxiter maximum number of iterations for the SCA loop
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
+#' @return TODO
 #'
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
@@ -205,20 +206,56 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 }
 
 
-#' Implements the risk parity portfolio using a general constrained
-#' solver from the alabama package
+#' @title Risk parity portfolio design using a general constrained
+#'        solvers
+#'
+#' @description Risk parity portfolio optimization using general purpose
+#'              constrained solvers from the alabama and nloptr packages
+#'
+#' @param Sigma covariance or correlation matrix
+#' @param b budget vector, aka, risk budgeting targets
+#' @param budget boolean indicating whether to consider sum(w) = 1 as a
+#'        constraint
+#' @param shortselling boolean indicating whether to allow short-selling, i.e.,
+#'        w < 0
+#' @param formulation string indicating the formulation to be used for the risk
+#'        parity optimization problem. It must be one of: "rc-double-index",
+#'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
+#'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
+#'        "rc-over-b vs theta".
+#' @param method which solver to use. It must be one of: "slsqp" or "alabama"
+#' @param use_gradient if TRUE, gradients of the objective function wrt to the
+#'        parameters will be used. This is strongly recommended to achive faster
+#'        results
+#' @param w0 initial value for the portfolio wieghts. Default is the optimum
+#'        portfolio weights for the case when Sigma is diagonal.
+#' @param theta0 initial value for theta. If NA, the optimum solution for a fixed
+#'        vector of portfolio weights will be used
+#' @param gamma learning rate
+#' @param zeta factor used to decrease the learning rate at each iteration
+#' @param tau regularization factor. If NA, a meaningful value will be used
+#' @param maxiter maximum number of iterations for the outer loop of the solver
+#' @param ftol convergence tolerance on the value of the objective function
+#' @param wtol convergence tolerance on the values of the parameters
+#' @return TODO
 #'
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                          budget = TRUE, shortselling = FALSE,
-                                         formulation = "rc-over-var vs b",
-                                         method = "slsqp", use_gradient = TRUE,
-                                         w0 = NA, theta0 = NA, maxiter = 500, ftol = 1e-9,
+                                         formulation = c("rc-double-index",
+                                                         "rc-over-b-double-index",
+                                                         "rc-over-var vs b",
+                                                         "rc-over-var",
+                                                         "rc-over-sd vs b-times-sd",
+                                                         "rc vs b-times-var",
+                                                         "rc vs theta",
+                                                         "rc-over-b vs theta"),
+                                         method = c("slsqp", "alabama"), use_gradient = TRUE,
+                                         w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
+                                         theta0 = NA, maxiter = 500, ftol = 1e-9,
                                          wtol = 1e-6) {
   N <- nrow(Sigma)
-  # set initial values for w and theta
-  if (anyNA(w0))
-    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  # set initial value for theta
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.na(theta0)) {
@@ -264,7 +301,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     shortselling.jac <- NULL
   }
 
-  switch(formulation,
+  switch(match.arg(formulation),
          "rc-double-index" = {
            R <- R_rc_double_index
            R_grad <- R_grad_rc_double_index
@@ -303,38 +340,41 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
   fun_seq <- c(R(w0, Sigma, b))
   time_seq <- c(0)
-  if (method == "alabama") {
-    start_time <- proc.time()[3]
-    res <- alabama::constrOptim.nl(w0, R, R_grad,
-                                   hin = shortselling, hin.jac = shortselling.jac,
-                                   heq = budget, heq.jac = budget.jac,
-                                   Sigma = Sigma, b = b,
-                                   control.outer = list(trace = FALSE, itmax = maxiter))
-    end_time <- proc.time()[3]
-  } else if (method == "slsqp") {
-    start_time <- proc.time()[3]
-    res <- nloptr::slsqp(w0, R, R_grad,
-                         hin = shortselling, hinjac = shortselling.jac,
-                         heq = budget, heqjac = budget.jac,
-                         Sigma = Sigma, b = b, control = list(xtol_rel = wtol, ftol_rel = ftol))
-    end_time <- proc.time()[3]
-  }
+  switch(match.arg(method),
+         "alabama" = {
+         start_time <- proc.time()[3]
+         res <- alabama::constrOptim.nl(w0, R, R_grad,
+                                        hin = shortselling, hin.jac = shortselling.jac,
+                                        heq = budget, heq.jac = budget.jac,
+                                        Sigma = Sigma, b = b,
+                                        control.outer = list(trace = FALSE, itmax = maxiter))
+         end_time <- proc.time()[3]
+  },
+         "slsqp" = {
+         start_time <- proc.time()[3]
+         res <- nloptr::slsqp(w0, R, R_grad,
+                              hin = shortselling, hinjac = shortselling.jac,
+                              heq = budget, heqjac = budget.jac,
+                              Sigma = Sigma, b = b,
+                              control = list(xtol_rel = wtol, ftol_rel = ftol))
+         end_time <- proc.time()[3]
+         },
+         stop("method ", method, "is not included.")
+  )
   # save objective value and elapsed time
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
 
-  if (!has_theta)
-    return(list(w = w,
-                risk_contribution = as.vector(w * (Sigma %*% w)),
-                obj_fun = fun_seq,
-                elapsed_time = time_seq,
-                convergence = res$convergence))
-  else
-    return(list(w = w[1:N],
-                risk_contribution = as.vector(w[1:N] * (Sigma %*% w[1:N])),
-                obj_fun = fun_seq,
-                elapsed_time = time_seq,
-                convergence = res$convergence,
-                theta = w[N+1]))
+  portfolio_results <- list(obj_fun = fun_seq, elapsed_time = time_seq,
+                            convergence = res$convergence)
+  if (!has_theta) {
+    portfolio_results$w <- w
+    portfolio_results$risk_contribution <- as.vector(w * (Sigma %*% w))
+  } else {
+    portfolio_results$w <- w[1:N]
+    portfolio_results$risk_contribution <- as.vector(w[1:N] * (Sigma %*% w[1:N]))
+    portfolio_results$theta <- w[N+1]
+  }
+  return(portfolio_results)
 }
