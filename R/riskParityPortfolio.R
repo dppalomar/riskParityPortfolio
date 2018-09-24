@@ -130,9 +130,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   time_seq <- c(0)
 
   if (has_theta)
-    I <- diag(N + 1)
+    tauI <- diag(rep(tau, N + 1))
   else
-    I <- diag(N)
+    tauI <- diag(rep(tau, N))
 
   start_time <- proc.time()[3]
   for (k in 1:maxiter) {
@@ -141,7 +141,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     rk <- wk[1:N] * Sigma_wk
     Ak <- A(wk, Sigma, b, Sigma_w = Sigma_wk)
     g_wk <- g(wk, Sigma, b, r = rk)
-    Qk <- 2 * crossprod(Ak) + tau * I
+    Qk <- 2 * crossprod(Ak) + tauI
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat,
