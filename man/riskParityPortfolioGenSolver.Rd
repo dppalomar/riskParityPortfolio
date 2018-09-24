@@ -29,7 +29,7 @@ w < 0}
 parity optimization problem. It must be one of: "rc-double-index",
 "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-"rc-over-b vs theta".}
+"rc-over-b vs theta"}
 
 \item{method}{which solver to use. It must be one of: "slsqp" or "alabama"}
 
@@ -38,7 +38,7 @@ parameters will be used. This is strongly recommended to achive faster
 results}
 
 \item{w0}{initial value for the portfolio wieghts. Default is the optimum
-portfolio weights for the case when Sigma is diagonal.}
+portfolio weights for the case when Sigma is diagonal}
 
 \item{theta0}{initial value for theta. If NA, the optimum solution for a fixed
 vector of portfolio weights will be used}
@@ -56,9 +56,31 @@ vector of portfolio weights will be used}
 \item{tau}{regularization factor. If NA, a meaningful value will be used}
 }
 \value{
-TODO
+w optimal portfolio vector
+
+theta the optimal value for theta (in case that it is part of the
+        chosen formulation)
+
+obj_fun the sequence of values from the objective function at each
+        iteration
+
+elapsed_time elapsed time recorded at every iteration
+
+convergence flag to indicate whether or not the optimization
+        converged. The value `1` means it has converged, and `0` otherwise.
+
+risk_contribution the risk contribution of every asset
 }
 \description{
 Risk parity portfolio optimization using general purpose
              constrained solvers from the alabama and nloptr packages
+}
+\examples{
+library(riskParityPortfolio)
+
+N <- 100
+V <- matrix(rnorm(N ^ 2), nrow = N)
+Sigma <- V \%*\% t(V)
+portfolio <- riskParityPortfolioGenSolver(Sigma,
+                                          formulation = "rc-over-var vs b")
 }

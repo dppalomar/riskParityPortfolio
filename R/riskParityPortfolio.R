@@ -7,6 +7,17 @@
 #' @param b budget vector
 #' @return w optimal portfolio vector
 #' @return risk_contribution the risk contribution of every asset
+#'
+#' @examples
+#' library(riskParityPortfolio)
+#'
+#' generate synthetic covariance matrix
+#' N <- 100
+#' v <- rnorm(N)
+#' Sigma <- diag(v * v)
+#' # compute optimal risk parity portfolio
+#' portfolio <- riskParityPortfolioDiagSigma(Sigma)
+#'
 #' @export
 riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
   w <- sqrt(b) / sqrt(diag(Sigma))
@@ -17,11 +28,11 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
 
 #' @title Fast risk parity portfolio design using successive convex
-#'        approximation (SCA) and a quadratic programming (QP) solver
+#'        approximation and a quadratic programming solver
 #'
-#' @description Risk parity portfolio optimization using SCA to cast the
-#'              optimization problem into a series of QP problems fastly
-#'              solvable using a quadprog::solve.QP.
+#' @description Risk parity portfolio optimization using successive convex
+#'              approximation (SCA) to cast the optimization problem into a
+#'              series of QP problems fastly solvable using quadprog::solve.QP.
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
@@ -44,8 +55,26 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #' @param maxiter maximum number of iterations for the SCA loop
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
-#' @return TODO
+#' @return w optimal portfolio vector
+#' @return theta the optimal value for theta (in case that it is part of the
+#'         chosen formulation)
+#' @return obj_fun the sequence of values from the objective function at each
+#'         iteration
+#' @return elapsed_time elapsed time recorded at every iteration
+#' @return convergence flag to indicate whether or not the optimization
+#'         converged. The value `1` means it has converged, and `0` otherwise.
+#' @return risk_contribution the risk contribution of every asset
 #'
+#' @examples
+#' library(riskParityPortfolio)
+#'
+#' # generate synthetic covariance matrix
+#' N <- 100
+#' V <- matrix(rnorm(N ^ 2), nrow = N)
+#' Sigma <- V %*% t(V)
+#' # compute optimal risk parity portfolio
+#' portfolio <- riskParityPortfolioGenSolver(Sigma,
+#'                                           formulation = "rc-over-var vs b")
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NA, budget = TRUE, shortselling = FALSE,
@@ -222,13 +251,13 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #'        parity optimization problem. It must be one of: "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 #'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#'        "rc-over-b vs theta".
+#'        "rc-over-b vs theta"
 #' @param method which solver to use. It must be one of: "slsqp" or "alabama"
 #' @param use_gradient if TRUE, gradients of the objective function wrt to the
 #'        parameters will be used. This is strongly recommended to achive faster
 #'        results
 #' @param w0 initial value for the portfolio wieghts. Default is the optimum
-#'        portfolio weights for the case when Sigma is diagonal.
+#'        portfolio weights for the case when Sigma is diagonal
 #' @param theta0 initial value for theta. If NA, the optimum solution for a fixed
 #'        vector of portfolio weights will be used
 #' @param gamma learning rate
@@ -237,8 +266,24 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #' @param maxiter maximum number of iterations for the outer loop of the solver
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
-#' @return TODO
+#' @return w optimal portfolio vector
+#' @return theta the optimal value for theta (in case that it is part of the
+#'         chosen formulation)
+#' @return obj_fun the sequence of values from the objective function at each
+#'         iteration
+#' @return elapsed_time elapsed time recorded at every iteration
+#' @return convergence flag to indicate whether or not the optimization
+#'         converged. The value `1` means it has converged, and `0` otherwise.
+#' @return risk_contribution the risk contribution of every asset
 #'
+#' @examples
+#' library(riskParityPortfolio)
+#'
+#' N <- 100
+#' V <- matrix(rnorm(N ^ 2), nrow = N)
+#' Sigma <- V %*% t(V)
+#' portfolio <- riskParityPortfolioGenSolver(Sigma,
+#'                                           formulation = "rc-over-var vs b")
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                          budget = TRUE, shortselling = FALSE,
