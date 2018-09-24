@@ -88,7 +88,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          "rc-over-b-double-index" = {
            R <- R_rc_over_b_double_index
            g <- g_rc_over_b_double_index
-           A <- rc_over_b_double_index
+           A <- A_rc_over_b_double_index
          },
          "rc-over-var vs b" = {
            R <- R_rc_over_var_vs_b
@@ -130,7 +130,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   time_seq <- c(0)
 
   if (has_theta)
-    I <- diag((N + 1))
+    I <- diag(N + 1)
   else
     I <- diag(N)
 
@@ -198,13 +198,11 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   if (anyNA(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
+  has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.na(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
-      if (formulation == "rc vs theta")
-        theta0 <- mean(r0)
-      else if (formulation == "rc-over-b vs theta")
-        theta0 <- mean(r0 / b)
+      theta0 <- mean(r0 / b)
     }
     w0 <- as.vector(c(w0, theta0))
   }
@@ -212,7 +210,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   if (budget) {
     if (has_theta) {
       budget <- function(w, ...)
-        return(sum(w[1:N]) - 1) # slicing is slow
+        return(sum(w[1:N]) - 1)  # slicing is slow
       budget.jac <- function(w, ...)
         return(cbind(matrix(1, 1, N), 0))
     } else {
