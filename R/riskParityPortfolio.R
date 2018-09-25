@@ -90,8 +90,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
                                    maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
   N <- nrow(Sigma)
-
-  has_theta <- grepl("theta", formulation)
+  has_theta <- grepl("theta", match.arg(formulation))
   if (has_theta) {
     if (is.na(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
@@ -301,7 +300,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          wtol = 1e-6) {
   N <- nrow(Sigma)
   # set initial value for theta
-  has_theta <- grepl("theta", formulation)
+  has_theta <- grepl("theta", match.arg(formulation))
   if (has_theta) {
     if (is.na(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
