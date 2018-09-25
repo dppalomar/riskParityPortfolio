@@ -56,6 +56,19 @@ description of the algorithms used.
 
 
 # Comparison with other packages
+```{r}
+library(riskParityPortfolio)
+library(cccp)
+library(FinCovRegularization)
+library(microbenchmark)
+
+N <- 100
+V <- matrix(rnorm(N ^ 2), nrow = N)
+Sigma <- V %*% t(V)
+
+microbenchmark(RiskParity(Sigma))
+microbenchmark(riskParityPortfolioSCA(Sigma, formulation = "rc-over-var"))
+```
 Existing packages that I quickly found (a more thorough search is due):
 
 - Package [cccp](https://CRAN.R-project.org/package=cccp) contains function
