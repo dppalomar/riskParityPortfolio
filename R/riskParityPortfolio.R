@@ -206,7 +206,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     # check convergence on parameters and objective function
     werr <- norm(w_next - wk, "2") / max(1., norm(wk, "2"))
     ferr <- abs(fun_next - fun_k) / max(1., abs(fun_k))
-    if (k > 1 && (werr < wtol && ferr < ftol))
+    if (k > 1 && (werr < wtol || ferr < ftol))
       break
     # update variables
     wk <- w_next
@@ -214,21 +214,22 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     gamma <- gamma * (1 - zeta * gamma)
   }
 
-  portfolio_results <- list(obj_fun = fun_seq, elapsed_time = time_seq,
-                            convergence = sum(!(k == maxiter)))
-
+  portfolio_results <- list()
   if (!has_theta) {
     portfolio_results$w <- w_next
-    portfolio_results$risk_contribution <- as.vector(w_next * (Sigma %*% w_next))
+    portfolio_results$risk_contribution <- as.vector(w_next *
+                                                     (Sigma %*% w_next))
   } else {
     portfolio_results$w <- w_next[1:N]
-    portfolio_results$risk_contribution <- as.vector(w_next[1:N] * (Sigma %*% w_next[1:N]))
     portfolio_results$theta <- w_next[N+1]
+    portfolio_results$risk_contribution <- as.vector(w_next[1:N] *
+                                                     (Sigma %*% w_next[1:N]))
   }
-
+  portfolio_results$obj_fun <- fun_seq
+  portfolio_results$elapsed_time <- time_seq
+  portfolio_results$convergence <- sum(!(k == maxiter))
   return(portfolio_results)
 }
-
 
 
 #' @title Risk parity portfolio design using general constrained solvers
@@ -290,13 +291,15 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                                          "rc vs b-times-var",
                                                          "rc vs theta",
                                                          "rc-over-b vs theta"),
-                                         method = c("slsqp", "alabama"), use_gradient = TRUE,
+                                         method = c("slsqp", "alabama"),
+                                         use_gradient = TRUE,
                                          w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
                                          theta0 = NA, maxiter = 500, ftol = 1e-9,
                                          wtol = 1e-6) {
   N <- nrow(Sigma)
+  formulation <- match.arg(formulation)
   # set initial value for theta
-  has_theta <- grepl("theta", match.arg(formulation))
+  has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.na(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
@@ -308,15 +311,21 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   # set equality constraints
   if (budget) {
     if (has_theta) {
-      budget <- function(w, ...)
+      budget <- function(w, ...) {
+        N <- length(w) - 1
         return(sum(w[1:N]) - 1)
-      budget.jac <- function(w, ...)
+      }
+      budget.jac <- function(w, ...) {
+        N <- length(w) - 1
         return(cbind(matrix(1, 1, N), 0))
+      }
     } else {
       budget <- function(w, ...)
         return(sum(w) - 1)
-      budget.jac <- function(w, ...)
+      budget.jac <- function(w, ...) {
+        N <- length(w)
         return(matrix(1, 1, N))
+      }
     }
   } else {
     budget <- NULL
@@ -326,22 +335,26 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   # set inequality constraints
   if (!shortselling) {
     if (has_theta) {
-      shortselling <- function(w, ...)
+      shortselling <- function(w, ...) {
+        N <- length(w) - 1
         return(w[1:N])
-      shortselling.jac <- function(w, ...)
+      }
+      shortselling.jac <- function(w, ...) {
+        N <- length(w) - 1
         return(cbind(diag(N), rep(0, N)))
+      }
     } else {
       shortselling <- function(w, ...)
         return(w)
       shortselling.jac <- function(w, ...)
-        return(diag(N))
+        return(diag(length(w)))
     }
   } else {
     shortselling <- NULL
     shortselling.jac <- NULL
   }
 
-  switch(match.arg(formulation),
+  switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
            R_grad <- R_grad_rc_double_index
@@ -382,22 +395,25 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(0)
   switch(match.arg(method),
          "alabama" = {
-         start_time <- proc.time()[3]
-         res <- alabama::constrOptim.nl(w0, R, R_grad,
-                                        hin = shortselling, hin.jac = shortselling.jac,
-                                        heq = budget, heq.jac = budget.jac,
-                                        Sigma = Sigma, b = b,
-                                        control.outer = list(trace = FALSE, itmax = maxiter))
-         end_time <- proc.time()[3]
+           start_time <- proc.time()[3]
+           res <- alabama::constrOptim.nl(w0, R, R_grad,
+                                          hin = shortselling,
+                                          hin.jac = shortselling.jac,
+                                          heq = budget,
+                                          heq.jac = budget.jac,
+                                          Sigma = Sigma, b = b,
+                                          control.outer = list(trace = FALSE,
+                                                               itmax = maxiter))
+           end_time <- proc.time()[3]
          },
          "slsqp" = {
-         start_time <- proc.time()[3]
-         res <- nloptr::slsqp(w0, R, R_grad,
-                              hin = shortselling, hinjac = shortselling.jac,
-                              heq = budget, heqjac = budget.jac,
-                              Sigma = Sigma, b = b,
-                              control = list(xtol_rel = wtol, ftol_rel = ftol))
-         end_time <- proc.time()[3]
+           start_time <- proc.time()[3]
+           res <- nloptr::slsqp(w0, R, R_grad,
+                                hin = shortselling, hinjac = shortselling.jac,
+                                heq = budget, heqjac = budget.jac,
+                                Sigma = Sigma, b = b,
+                                control = list(xtol_rel = wtol, ftol_rel = ftol))
+           end_time <- proc.time()[3]
          },
          stop("method ", method, "is not included.")
   )
@@ -405,7 +421,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
-  
+
   portfolio_results <- list()
   if (!has_theta) {
     portfolio_results$w <- w
