@@ -66,9 +66,11 @@ N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
-microbenchmark(RiskParity(Sigma))
-microbenchmark(riskParityPortfolioSCA(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE))
-microbenchmark(riskParityPortfolioGenSolver(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE))
+op <- microbenchmark(FinCov = RiskParity(Sigma),
+               SCA = riskParityPortfolioSCA(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE),
+               GenSolver = riskParityPortfolioGenSolver(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE), times = 10L)
+par(mar = c(7, 4, 4, 2))
+boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 Existing packages that I quickly found (a more thorough search is due):
 
