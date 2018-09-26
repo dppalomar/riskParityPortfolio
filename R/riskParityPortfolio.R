@@ -234,8 +234,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 }
 
 
-#' @title Risk parity portfolio design using a general constrained
-#'        solvers
+#' @title Risk parity portfolio design using general constrained solvers
 #'
 #' @description Risk parity portfolio optimization using general purpose
 #'              constrained solvers from the alabama and nloptr packages
@@ -368,7 +367,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          },
          "rc vs b-times-var"  = {
            R <- R_rc_vs_b_times_var
-           R_grad <- R_rc_vs_b_times_var
+           R_grad <- R_grad_rc_vs_b_times_var
          },
          "rc vs theta" = {
            R <- R_rc_vs_theta
