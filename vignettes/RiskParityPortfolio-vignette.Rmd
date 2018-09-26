@@ -67,7 +67,8 @@ V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
 microbenchmark(RiskParity(Sigma))
-microbenchmark(riskParityPortfolioSCA(Sigma, formulation = "rc-over-var"))
+microbenchmark(riskParityPortfolioSCA(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE))
+microbenchmark(riskParityPortfolioGenSolver(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE))
 ```
 Existing packages that I quickly found (a more thorough search is due):
 
