@@ -89,8 +89,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
                                    theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
                                    maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
+  formulation <- match.arg(formulation)
   N <- nrow(Sigma)
-  has_theta <- grepl("theta", match.arg(formulation))
+  has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.na(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
@@ -101,7 +102,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
   if (has_theta) {
-    if (budget & (!shortselling)) {
+    if (budget && !shortselling) {
       Amat <- cbind(rbind(matrix(1, N, 1), 0), diag(c(rep(1, N), 0)))
       bvec <- c(1, rep(0, N+1))
       meq <- 1
@@ -115,7 +116,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
       meq <- 0
     }
   } else {
-    if (budget & (!shortselling)) {
+    if (budget && !shortselling) {
       Amat <- cbind(matrix(1, N, 1), diag(N))
       bvec <- c(1, rep(0, N))
       meq <- 1
@@ -130,7 +131,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     }
   }
 
-  switch(match.arg(formulation),
+  switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
            g <- g_rc_double_index
@@ -202,16 +203,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     time_seq <- c(time_seq, proc.time()[3] - start_time)
     fun_next <- R(w_next, Sigma, b)
     fun_seq <- c(fun_seq, fun_next)
-    # check convergence on parameters
-    werr <- norm(w_next - wk, "2") / max(1., norm(w_next, "2"))
-    if ((werr < wtol) & k > 1) {
+    # check convergence on parameters and objective function
+    werr <- norm(w_next - wk, "2") / max(1., norm(wk, "2"))
+    ferr <- abs(fun_next - fun_k) / max(1., abs(fun_k))
+    if (k > 1 && (werr < wtol && ferr < ftol))
       break
-    }
-    # check convergence on objective function
-    ferr <- abs(fun_next - fun_k) / max(1., abs(fun_next))
-    if ((ferr < ftol) & k > 1) {
-      break
-    }
     # update variables
     wk <- w_next
     fun_k <- fun_next
@@ -232,6 +228,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
   return(portfolio_results)
 }
+
 
 
 #' @title Risk parity portfolio design using general constrained solvers
@@ -392,7 +389,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                         Sigma = Sigma, b = b,
                                         control.outer = list(trace = FALSE, itmax = maxiter))
          end_time <- proc.time()[3]
-  },
+         },
          "slsqp" = {
          start_time <- proc.time()[3]
          res <- nloptr::slsqp(w0, R, R_grad,
@@ -408,16 +405,18 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   time_seq <- c(time_seq, end_time - start_time)
   fun_seq <- c(fun_seq, res$value)
   w <- res$par
-
-  portfolio_results <- list(obj_fun = fun_seq, elapsed_time = time_seq,
-                            convergence = res$convergence)
+  
+  portfolio_results <- list()
   if (!has_theta) {
     portfolio_results$w <- w
     portfolio_results$risk_contribution <- as.vector(w * (Sigma %*% w))
   } else {
     portfolio_results$w <- w[1:N]
-    portfolio_results$risk_contribution <- as.vector(w[1:N] * (Sigma %*% w[1:N]))
     portfolio_results$theta <- w[N+1]
+    portfolio_results$risk_contribution <- as.vector(w[1:N] * (Sigma %*% w[1:N]))
   }
+  portfolio_results$obj_fun <- fun_seq
+  portfolio_results$elapsed_time <- time_seq
+  portfolio_results$convergence <- res$convergence
   return(portfolio_results)
 }
