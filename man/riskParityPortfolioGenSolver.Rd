@@ -2,8 +2,7 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolioGenSolver}
 \alias{riskParityPortfolioGenSolver}
-\title{Risk parity portfolio design using a general constrained
-       solvers}
+\title{Risk parity portfolio design using general constrained solvers}
 \usage{
 riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   budget = TRUE, shortselling = FALSE,

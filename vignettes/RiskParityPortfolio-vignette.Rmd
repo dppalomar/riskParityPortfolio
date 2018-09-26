@@ -140,7 +140,7 @@ $$\begin{array}{ll}
 \end{array}$$
 which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
 
-## Experiment with synthetic data: single-index case
+## Formulation "rc-over-var vs b"
 ```{r}
 set.seed(123)
 N <- 100
@@ -182,6 +182,84 @@ legend("topright", legend=c("alabama-solver-nograd",
                             "sca"),
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
+
+## Formulation "rc vs b-times-var"
+```{r}
+res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc vs b-times-var",
+                                          method = "slsqp")
+res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
+                                                 formulation = "rc vs b-times-var",
+                                                 method = "slsqp",
+                                                 use_gradient = FALSE)
+res_alabama <- riskParityPortfolioGenSolver(Sigma,
+                                            formulation = "rc vs b-times-var",
+                                            method = "alabama")
+res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
+                                                 formulation = "rc vs b-times-var",
+                                                 method = "alabama",
+                                                 use_gradient = FALSE)
+res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc vs b-times-var")
+
+plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
+     pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
+     ylab = "Objective function", main = "Convergence trend versus CPU time",
+     ylim = c(0, 0.01))
+lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
+      col = "red")
+lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
+      cex=.8, col = "purple")
+lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
+      col = "green")
+lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
+      col = "black")
+
+legend("topright", legend=c("alabama-solver-nograd",
+                            "alabama-solver",
+                            "slsqp-solver-nograd",
+                            "slsqp-solver",
+                            "sca"),
+       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
+```
+
+## Formulation "rc-over-sd vs b-times-sd"
+```{r}
+res_slsqp <- riskParityPortfolioGenSolver(Sigma, formulation = "rc-over-sd vs b-times-sd",
+                                          method = "slsqp")
+res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
+                                                 formulation = "rc-over-sd vs b-times-sd",
+                                                 method = "slsqp",
+                                                 use_gradient = FALSE)
+res_alabama <- riskParityPortfolioGenSolver(Sigma,
+                                            formulation = "rc-over-sd vs b-times-sd",
+                                            method = "alabama")
+res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
+                                                 formulation = "rc-over-sd vs b-times-sd",
+                                                 method = "alabama",
+                                                 use_gradient = FALSE)
+res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-sd vs b-times-sd")
+
+plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
+     pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
+     ylab = "Objective function", main = "Convergence trend versus CPU time",
+     ylim = c(0, 0.01))
+lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
+      col = "red")
+lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
+      cex=.8, col = "purple")
+lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
+      col = "green")
+lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
+      col = "black")
+
+legend("topright", legend=c("alabama-solver-nograd",
+                            "alabama-solver",
+                            "slsqp-solver-nograd",
+                            "slsqp-solver",
+                            "sca"),
+       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
+```
+
+
 
 ## Experiment with real data: single-index case
 ```{r}
