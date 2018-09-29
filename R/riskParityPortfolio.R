@@ -189,8 +189,13 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   start_time <- proc.time()[3]
   for (k in 1:maxiter) {
     # auxiliary quantities
-    Sigma_wk <- Sigma %*% wk[1:N] # slicing is slow
-    rk <- wk[1:N] * Sigma_wk
+    if (has_theta) {
+      Sigma_wk <- Sigma %*% wk[1:N]
+      rk <- wk[1:N] * Sigma_wk
+    } else {
+      Sigma_wk <- Sigma %*% wk
+      rk <- wk * Sigma_wk
+    }
     Ak <- A(wk, Sigma, b, Sigma_w = Sigma_wk)
     g_wk <- g(wk, Sigma, b, r = rk)
     Qk <- 2 * crossprod(Ak) + tauI
@@ -199,7 +204,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat,
                                 bvec = bvec, meq = meq)$solution
     w_next <- wk + gamma * (w_hat - wk)
-    # save objective function values and elapsed time
+    # save objective function value and elapsed time
     time_seq <- c(time_seq, proc.time()[3] - start_time)
     fun_next <- R(w_next, Sigma, b)
     fun_seq <- c(fun_seq, fun_next)
