@@ -36,6 +36,8 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
+#' @param mu vector of expected returns
+#' @param lambda scalar the controls the importance of the expected return term
 #' @param budget boolean indicating whether to consider sum(w) = 1 as a
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
@@ -77,7 +79,8 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #'                                           formulation = "rc-over-var vs b")
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                   mu = NA, budget = TRUE, shortselling = FALSE,
+                                   mu = NA, lambda = 1e-4,
+                                   budget = TRUE, shortselling = FALSE,
                                    formulation = c("rc-double-index",
                                                    "rc-over-b-double-index",
                                                    "rc-over-var vs b",
@@ -88,9 +91,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc-over-b vs theta"),
                                    w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
                                    theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
-                                   maxiter = 500, ftol = 1e-9, wtol = 1e-6) {
-  formulation <- match.arg(formulation)
+                                   maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
+  formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.na(theta0))
@@ -175,9 +178,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          stop("formulation ", formulation, " is not included.")
   )
 
+  has_mu <- !is.na(mu)
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
+  if (has_mu)
+    fun_k <- fun_k - lambda * t(u) %*% wk
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
@@ -201,16 +207,22 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     Qk <- 2 * crossprod(Ak) + tauI
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
-    w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat,
-                                bvec = bvec, meq = meq)$solution
+    if (has_mu)
+      w_hat <- quadprog::solve.QP(Qk, -(qk - lambda * mu), Amat = Amat,
+                                  bvec = bvec, meq = meq)$solution
+    else
+      w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
+                                  meq = meq)$solution
     w_next <- wk + gamma * (w_hat - wk)
     # save objective function value and elapsed time
     time_seq <- c(time_seq, proc.time()[3] - start_time)
     fun_next <- R(w_next, Sigma, b)
+    if (has_mu)
+      fun_next <- fun_next - lambda * t(u) %*% w_next
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters and objective function
-    werr <- norm(w_next - wk, "2") / max(1., norm(wk, "2"))
-    ferr <- abs(fun_next - fun_k) / max(1., abs(fun_k))
+    werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
+    ferr <- abs(fun_next - fun_k) / max(1, abs(fun_k))
     if (k > 1 && (werr < wtol || ferr < ftol))
       break
     # update variables
@@ -299,8 +311,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          method = c("slsqp", "alabama"),
                                          use_gradient = TRUE,
                                          w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
-                                         theta0 = NA, maxiter = 500, ftol = 1e-9,
-                                         wtol = 1e-6) {
+                                         theta0 = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
   formulation <- match.arg(formulation)
   # set initial value for theta

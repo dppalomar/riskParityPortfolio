@@ -11,7 +11,7 @@ riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"),
   method = c("slsqp", "alabama"), use_gradient = TRUE,
   w0 = riskParityPortfolioDiagSigma(Sigma, b)$w, theta0 = NA,
-  maxiter = 500, ftol = 1e-09, wtol = 1e-06)
+  maxiter = 500, ftol = 1e-06, wtol = 1e-06)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}

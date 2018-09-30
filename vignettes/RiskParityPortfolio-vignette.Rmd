@@ -59,16 +59,16 @@ description of the algorithms used.
 ```{r}
 library(riskParityPortfolio)
 library(cccp)
-library(FinCovRegularization)
 library(microbenchmark)
 
 N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
-op <- microbenchmark(FinCov = RiskParity(Sigma),
-               SCA = riskParityPortfolioSCA(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE),
-               GenSolver = riskParityPortfolioGenSolver(Sigma, w0 = c(rep(0, N-1), 1), formulation = "rc-double-index", shortselling = TRUE), times = 10L)
+op <- microbenchmark(SCA = riskParityPortfolioSCA(Sigma, formulation = "rc-double-index"),
+                     GenSolver = riskParityPortfolioGenSolver(Sigma, formulation = "rc-double-index"),
+                     times = 10L)
+print(op)
 par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
