@@ -208,11 +208,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     if (has_mu)
-      w_hat <- quadprog::solve.QP(Qk, -(qk - lambda * mu), Amat = Amat,
-                                  bvec = bvec, meq = meq)$solution
-    else
-      w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
-                                  meq = meq)$solution
+      qk <- qk - lambda * mu
+    w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
+                                meq = meq)$solution
     w_next <- wk + gamma * (w_hat - wk)
     # save objective function value and elapsed time
     time_seq <- c(time_seq, proc.time()[3] - start_time)
