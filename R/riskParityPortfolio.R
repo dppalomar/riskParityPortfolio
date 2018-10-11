@@ -320,7 +320,6 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     }
     w0 <- as.vector(c(w0, theta0))
   }
-
   # set equality constraints
   if (budget) {
     if (has_theta) {
@@ -344,7 +343,6 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     budget <- NULL
     budget.jac <- NULL
   }
-
   # set inequality constraints
   if (!shortselling) {
     if (has_theta) {
@@ -402,22 +400,28 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          },
          stop("formulation ", formulation, " is not included.")
   )
-  if (!use_gradient) R_grad <- NULL
-
+  if (!use_gradient)
+    R_grad <- NULL
   has_mu <- !anyNA(mu)
   if (has_mu) {
-    wrapfunc <- function(R, lambda, mu) {
-      func <- function(...) {
-        kwargs <- list(...)
-        return(R(...) - lambda * t(mu) %*% kwargs$w)
+    wrapfunc <- function(R, lambda, mu, has_theta, N) {
+      if (has_theta) {
+        func <- function(...) {
+          kwargs <- list(...)
+          w_ <- kwargs[[1]]
+          return(R(...) - lambda * t(mu) %*% w_[1:N])
+      } else {
+        func <- function(...) {
+          kwargs <- list(...)
+          return(R(...) - lambda * t(mu) %*% kwargs[[1]])
+        }
       }
       return(func)
     }
-    R_ <- wrapfunc(R, lambda, mu)
+    R_ <- wrapfunc(R, lambda, mu, has_theta, N)
   } else {
     R_ <- R
   }
-
   fun_seq <- c(R(w0, Sigma, b))
   time_seq <- c(0)
   switch(match.arg(method),
