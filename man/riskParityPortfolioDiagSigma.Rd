@@ -12,9 +12,9 @@ riskParityPortfolioDiagSigma(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)))
 \item{b}{budget vector}
 }
 \value{
-w optimal portfolio vector
-
-risk_contribution the risk contribution of every asset
+a list containing the following elements:
+\item{\code{w}}{optimal portfolio vector}
+\item{\code{risk_contribution}}{the risk contribution of every asset}
 }
 \description{
 Risk parity portfolio optimization for the case of diagonal Sigma
@@ -22,7 +22,6 @@ that satisfies the constraints sum(w) = 1 and w >= 0.
 }
 \examples{
 library(riskParityPortfolio)
-
 generate synthetic covariance matrix
 N <- 100
 v <- rnorm(N)
@@ -30,4 +29,7 @@ Sigma <- diag(v * v)
 # compute optimal risk parity portfolio
 portfolio <- riskParityPortfolioDiagSigma(Sigma)
 
+}
+\author{
+Daniel Palomar and Ze Vinicius
 }

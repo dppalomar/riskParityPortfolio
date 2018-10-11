@@ -54,16 +54,28 @@ vector of portfolio weights will be used}
 
 \item{tau}{regularization factor. If NA, a meaningful value will be used}
 }
+\value{
+a list containing the following elements:
+\item{\code{w}}{optimal portfolio vector}
+\item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
+\item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
+\item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+\item{\code{convergence}}{flag to indicate whether or not the optimization converged.
+The value `1` means it has converged, and `0` otherwise.}
+\item{\code{risk_contribution}}{the risk contribution of every asset}
+}
 \description{
 Risk parity portfolio optimization using general purpose
              constrained solvers from the alabama and nloptr packages
 }
 \examples{
 library(riskParityPortfolio)
-
 N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V \%*\% t(V)
 portfolio <- riskParityPortfolioGenSolver(Sigma,
                                           formulation = "rc-over-var vs b")
+}
+\author{
+Daniel Palomar and Ze Vinicius
 }

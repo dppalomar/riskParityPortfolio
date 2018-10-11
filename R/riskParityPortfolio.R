@@ -5,12 +5,13 @@
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector
-#' @return w optimal portfolio vector
-#' @return risk_contribution the risk contribution of every asset
+#' @return a list containing the following elements:
+#' \item{\code{w}}{optimal portfolio vector}
+#' \item{\code{risk_contribution}}{the risk contribution of every asset}
 #'
+#' @author Daniel Palomar and Ze Vinicius
 #' @examples
 #' library(riskParityPortfolio)
-#'
 #' generate synthetic covariance matrix
 #' N <- 100
 #' v <- rnorm(N)
@@ -58,23 +59,23 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
 #' @return a list containing the following elements:
-#'\item{\code{w}}{optimal portfolio vector}
-#'\item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
-#'\item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
-#'\item{\code{elapsed_time elapsed time recorded at every iteration
-#'\item{\code{convergence}}{flag to indicate whether or not the optimization converged.
-#'                          The value `1` means it has converged, and `0` otherwise.}
-#'\item{\code{risk_contribution}}{the risk contribution of every asset}
+#' \item{\code{w}}{optimal portfolio vector}
+#' \item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
+#' \item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
+#' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+#' \item{\code{convergence}}{flag to indicate whether or not the optimization converged.
+#' The value `1` means it has converged, and `0` otherwise.}
+#' \item{\code{risk_contribution}}{the risk contribution of every asset}
+#'
+#' @author Daniel Palomar and Ze Vinicius
 #' @examples
 #' library(riskParityPortfolio)
-#'
 #' # generate synthetic covariance matrix
 #' N <- 100
 #' V <- matrix(rnorm(N ^ 2), nrow = N)
 #' Sigma <- V %*% t(V)
 #' # compute optimal risk parity portfolio
-#' portfolio <- riskParityPortfolioGenSolver(Sigma,
-#'                                           formulation = "rc-over-var vs b")
+#' portfolio <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var vs b")
 #' @export
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NA, lambda = 1e-4,
@@ -283,16 +284,17 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
 #' @return a list containing the following elements:
-#'\item{\code{w}}{optimal portfolio vector}
-#'\item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
-#'\item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
-#'\item{\code{elapsed_time elapsed time recorded at every iteration
-#'\item{\code{convergence}}{flag to indicate whether or not the optimization converged.
-#'                          The value `1` means it has converged, and `0` otherwise.}
-#'\item{\code{risk_contribution}}{the risk contribution of every asset}
+#' \item{\code{w}}{optimal portfolio vector}
+#' \item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
+#' \item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
+#' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+#' \item{\code{convergence}}{flag to indicate whether or not the optimization converged.
+#' The value `1` means it has converged, and `0` otherwise.}
+#' \item{\code{risk_contribution}}{the risk contribution of every asset}
+#'
+#' @author Daniel Palomar and Ze Vinicius
 #' @examples
 #' library(riskParityPortfolio)
-#'
 #' N <- 100
 #' V <- matrix(rnorm(N ^ 2), nrow = N)
 #' Sigma <- V %*% t(V)
