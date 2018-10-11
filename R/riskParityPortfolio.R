@@ -183,7 +183,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   wk <- w0
   fun_k <- R(wk, Sigma, b)
   if (has_mu)
-    fun_k <- fun_k - lambda * t(u) %*% wk
+    fun_k <- fun_k - lambda * t(mu) %*% wk
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
@@ -216,7 +216,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     time_seq <- c(time_seq, proc.time()[3] - start_time)
     fun_next <- R(w_next, Sigma, b)
     if (has_mu)
-      fun_next <- fun_next - lambda * t(u) %*% w_next
+      fun_next <- fun_next - lambda * t(mu) %*% w_next
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters and objective function
     werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
