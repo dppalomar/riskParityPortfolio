@@ -19,6 +19,10 @@ riskParityPortfolioSCA(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
 \item{b}{budget vector, aka, risk budgeting targets}
 
+\item{mu}{vector of expected returns}
+
+\item{lambda}{scalar the controls the importance of the expected return term}
+
 \item{budget}{boolean indicating whether to consider sum(w) = 1 as a
 constraint}
 

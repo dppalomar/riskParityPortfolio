@@ -5,7 +5,7 @@
 \title{Risk parity portfolio design using general constrained solvers}
 \usage{
 riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-  budget = TRUE, shortselling = FALSE,
+  mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
   formulation = c("rc-double-index", "rc-over-b-double-index",
   "rc-over-var vs b", "rc-over-var", "rc-over-sd vs b-times-sd",
   "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"),

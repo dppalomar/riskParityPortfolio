@@ -61,7 +61,7 @@ library(riskParityPortfolio)
 library(cccp)
 library(microbenchmark)
 
-N <- 100
+N <- 200
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
