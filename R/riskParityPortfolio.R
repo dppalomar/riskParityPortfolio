@@ -183,7 +183,10 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   wk <- w0
   fun_k <- R(wk, Sigma, b)
   if (has_mu)
-    fun_k <- fun_k - lambda * t(mu) %*% wk
+    if (has_theta)
+      fun_k <- fun_k - lambda * t(mu) %*% wk[1:N]
+    else
+      fun_k <- fun_k - lambda * t(mu) %*% wk
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
@@ -208,7 +211,10 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     # build and solve problem (39) as in Feng & Palomar TSP2015
     if (has_mu)
-      qk <- qk - lambda * mu
+      if (has_theta)
+        qk <- qk - lambda * c(mu, 0)
+      else
+        qk <- qk - lambda * mu
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
                                 meq = meq)$solution
     w_next <- wk + gamma * (w_hat - wk)
@@ -216,7 +222,10 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     time_seq <- c(time_seq, proc.time()[3] - start_time)
     fun_next <- R(w_next, Sigma, b)
     if (has_mu)
-      fun_next <- fun_next - lambda * t(mu) %*% w_next
+      if (has_theta)
+        fun_next <- fun_next - lambda * t(mu) %*% w_next[1:N]
+      else
+        fun_next <- fun_next - lambda * t(mu) %*% w_next
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters and objective function
     werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
@@ -410,6 +419,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
           kwargs <- list(...)
           w_ <- kwargs[[1]]
           return(R(...) - lambda * t(mu) %*% w_[1:N])
+        }
       } else {
         func <- function(...) {
           kwargs <- list(...)
