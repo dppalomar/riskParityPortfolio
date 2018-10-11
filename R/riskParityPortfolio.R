@@ -232,13 +232,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   portfolio_results <- list()
   if (!has_theta) {
     portfolio_results$w <- w_next
-    portfolio_results$risk_contribution <- as.vector(w_next *
-                                                     (Sigma %*% w_next))
+    portfolio_results$risk_contribution <- as.vector(w_next * (Sigma %*% w_next))
   } else {
     portfolio_results$w <- w_next[1:N]
     portfolio_results$theta <- w_next[N+1]
-    portfolio_results$risk_contribution <- as.vector(w_next[1:N] *
-                                                     (Sigma %*% w_next[1:N]))
+    portfolio_results$risk_contribution <- as.vector(w_next[1:N] * (Sigma %*% w_next[1:N]))
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
@@ -297,6 +295,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #'                                           formulation = "rc-over-var vs b")
 #' @export
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                         mu = NA, lambda = 1e-4,
                                          budget = TRUE, shortselling = FALSE,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
@@ -405,12 +404,26 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   )
   if (!use_gradient) R_grad <- NULL
 
+  has_mu <- !is.na(mu)
+  if (has_mu) {
+    wrapfunc <- function(R, lambda, mu) {
+      func <- function(...) {
+        kwargs <- list(...)
+        return(R(...) - lambda * t(mu) %*% kwargs$w)
+      }
+      return(func)
+    }
+    R_ <- wrapfunc(R, lambda, mu)
+  } else {
+    R_ <- R
+  }
+
   fun_seq <- c(R(w0, Sigma, b))
   time_seq <- c(0)
   switch(match.arg(method),
          "alabama" = {
            start_time <- proc.time()[3]
-           res <- alabama::constrOptim.nl(w0, R, R_grad,
+           res <- alabama::constrOptim.nl(w0, R_, R_grad,
                                           hin = shortselling,
                                           hin.jac = shortselling.jac,
                                           heq = budget,
@@ -422,7 +435,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          },
          "slsqp" = {
            start_time <- proc.time()[3]
-           res <- nloptr::slsqp(w0, R, R_grad,
+           res <- nloptr::slsqp(w0, R_, R_grad,
                                 hin = shortselling, hinjac = shortselling.jac,
                                 heq = budget, heqjac = budget.jac,
                                 Sigma = Sigma, b = b,
