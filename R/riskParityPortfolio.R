@@ -178,7 +178,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          stop("formulation ", formulation, " is not included.")
   )
 
-  has_mu <- !is.na(mu)
+  has_mu <- !anyNA(mu)
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
@@ -404,7 +404,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   )
   if (!use_gradient) R_grad <- NULL
 
-  has_mu <- !is.na(mu)
+  has_mu <- !anyNA(mu)
   if (has_mu) {
     wrapfunc <- function(R, lambda, mu) {
       func <- function(...) {
