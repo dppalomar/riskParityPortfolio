@@ -57,16 +57,14 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #' @param maxiter maximum number of iterations for the SCA loop
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
-#' @return w optimal portfolio vector
-#' @return theta the optimal value for theta (in case that it is part of the
-#'         chosen formulation)
-#' @return obj_fun the sequence of values from the objective function at each
-#'         iteration
-#' @return elapsed_time elapsed time recorded at every iteration
-#' @return convergence flag to indicate whether or not the optimization
-#'         converged. The value `1` means it has converged, and `0` otherwise.
-#' @return risk_contribution the risk contribution of every asset
-#'
+#' @return a list containing the following elements:
+#'\item{\code{w}}{optimal portfolio vector}
+#'\item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
+#'\item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
+#'\item{\code{elapsed_time elapsed time recorded at every iteration
+#'\item{\code{convergence}}{flag to indicate whether or not the optimization converged.
+#'                          The value `1` means it has converged, and `0` otherwise.}
+#'\item{\code{risk_contribution}}{the risk contribution of every asset}
 #' @examples
 #' library(riskParityPortfolio)
 #'
@@ -209,12 +207,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     g_wk <- g(wk, Sigma, b, r = rk)
     Qk <- 2 * crossprod(Ak) + tauI
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
-    # build and solve problem (39) as in Feng & Palomar TSP2015
     if (has_mu)
       if (has_theta)
         qk <- qk - lambda * c(mu, 0)
       else
         qk <- qk - lambda * mu
+    # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
                                 meq = meq)$solution
     w_next <- wk + gamma * (w_hat - wk)
@@ -284,16 +282,14 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #' @param maxiter maximum number of iterations for the outer loop of the solver
 #' @param ftol convergence tolerance on the value of the objective function
 #' @param wtol convergence tolerance on the values of the parameters
-#' @return w optimal portfolio vector
-#' @return theta the optimal value for theta (in case that it is part of the
-#'         chosen formulation)
-#' @return obj_fun the sequence of values from the objective function at each
-#'         iteration
-#' @return elapsed_time elapsed time recorded at every iteration
-#' @return convergence flag to indicate whether or not the optimization
-#'         converged. The value `1` means it has converged, and `0` otherwise.
-#' @return risk_contribution the risk contribution of every asset
-#'
+#' @return a list containing the following elements:
+#'\item{\code{w}}{optimal portfolio vector}
+#'\item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
+#'\item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
+#'\item{\code{elapsed_time elapsed time recorded at every iteration
+#'\item{\code{convergence}}{flag to indicate whether or not the optimization converged.
+#'                          The value `1` means it has converged, and `0` otherwise.}
+#'\item{\code{risk_contribution}}{the risk contribution of every asset}
 #' @examples
 #' library(riskParityPortfolio)
 #'

@@ -53,22 +53,6 @@ vector of portfolio weights will be used}
 
 \item{wtol}{convergence tolerance on the values of the parameters}
 }
-\value{
-w optimal portfolio vector
-
-theta the optimal value for theta (in case that it is part of the
-        chosen formulation)
-
-obj_fun the sequence of values from the objective function at each
-        iteration
-
-elapsed_time elapsed time recorded at every iteration
-
-convergence flag to indicate whether or not the optimization
-        converged. The value `1` means it has converged, and `0` otherwise.
-
-risk_contribution the risk contribution of every asset
-}
 \description{
 Risk parity portfolio optimization using successive convex
              approximation (SCA) to cast the optimization problem into a
