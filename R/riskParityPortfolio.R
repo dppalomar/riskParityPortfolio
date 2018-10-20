@@ -304,6 +304,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                          mu = NA, lambda = 1e-4,
                                          budget = TRUE, shortselling = FALSE,
+                                         lb = NA, ub = NA,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
                                                          "rc-over-var vs b",
@@ -411,7 +412,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     R_grad <- NULL
   has_mu <- !anyNA(mu)
   if (has_mu) {
-    wrapfunc <- function(R, lambda, mu, has_theta, N) {
+    wrap_R <- function(R, lambda, mu, has_theta, N) {
       if (has_theta) {
         func <- function(...) {
           kwargs <- list(...)
@@ -426,7 +427,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
       }
       return(func)
     }
-    R_ <- wrapfunc(R, lambda, mu, has_theta, N)
+    R_ <- wrap_R(R, lambda, mu, has_theta, N)
   } else {
     R_ <- R
   }
