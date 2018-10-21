@@ -6,12 +6,12 @@
 \usage{
 riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
-  formulation = c("rc-double-index", "rc-over-b-double-index",
-  "rc-over-var vs b", "rc-over-var", "rc-over-sd vs b-times-sd",
-  "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"),
-  method = c("slsqp", "alabama"), use_gradient = TRUE,
-  w0 = riskParityPortfolioDiagSigma(Sigma, b)$w, theta0 = NA,
-  maxiter = 500, ftol = 1e-06, wtol = 1e-06)
+  lb = NA, ub = NA, formulation = c("rc-double-index",
+  "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
+  "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta",
+  "rc-over-b vs theta"), method = c("slsqp", "alabama"),
+  use_gradient = TRUE, w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
+  theta0 = NA, maxiter = 500, ftol = 1e-06, wtol = 1e-06)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}

@@ -23,8 +23,7 @@
 riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
   w <- sqrt(b) / sqrt(diag(Sigma))
   w <- w / sum(w)
-  return (list(w = w,
-               risk_contribution = as.vector(w * (Sigma %*% w))))
+  return (list(w = w, risk_contribution = as.vector(w * (Sigma %*% w))))
 }
 
 
