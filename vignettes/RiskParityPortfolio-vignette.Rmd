@@ -54,34 +54,13 @@ used by practitioners in the financial industry, with the package
 `riskParityPortfolio` (with a comparison with other packages) and gives a
 description of the algorithms used.
 
-
-# Comparison with other packages
-```{r}
-library(riskParityPortfolio)
-library(cccp)
-library(microbenchmark)
-
-N <- 200
-V <- matrix(rnorm(N ^ 2), nrow = N)
-Sigma <- V %*% t(V)
-
-op <- microbenchmark(SCA = riskParityPortfolioSCA(Sigma, formulation = "rc-double-index"),
-                     GenSolver = riskParityPortfolioGenSolver(Sigma, formulation = "rc-double-index"),
-                     times = 10L)
-print(op)
-par(mar = c(7, 4, 4, 2))
-boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
-```
-Existing packages that I quickly found (a more thorough search is due):
-
-- Package [cccp](https://CRAN.R-project.org/package=cccp) contains function
-  `rp` (and the package itself may be useful for solving conic optimization problems)
-- Package [FinCovRegularization](https://CRAN.R-project.org/package=FinCovRegularization)
-  contains function `RiskParity` (the package may be useful for covariance matrix
-  regularization, which is one of my upcoming projects...)
-
-
 # Usage of the package
+
+We provide two functions to design risk parity portofolios: *riskParityPortfolioSCA* and *riskParityPortfolioGenSolver*.
+*riskParityPortfolioSCA* makes use of the successive convex approximation framework in order to optimize the portfolio weights,
+whereas *riskParityPortfolioGenSolver* uses general solvers such as slsqp and alabama.
+
+A simple example on how to use those functions is as follows.
 
 ```{r, message = FALSE}
 library(riskParityPortfolio)
@@ -92,13 +71,52 @@ library(PerformanceAnalytics)
 set.seed(123)
 
 N <- 10
-stocks_index <- c(1:N)
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
 # compute the portfolio weights for the case when Sigma is diagonal
-res_diag <- riskParityPortfolioDiagSigma(Sigma)
+sca <- riskParityPortfolioSCA(Sigma)
+slsqp <- riskParityPortfolioGenSolver(Sigma, method = "slsqp")
+alabama <- riskParityPortfolioGenSolver(Sigma, method = "alabama")
+barplot(rbind(sca$w, slsqp$w, alabama$w),
+        main = "Portfolio Weights", xlab = "stocks", ylab = "dollars", beside = TRUE,
+        col = rainbow8equal[1:3], legend = c("sca", "slsqp", "alabama"))
+barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contribution),
+        main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars", beside = TRUE,
+        col = rainbow8equal[1:3], legend = c("sca", "slsqp", "alabama"))
 ```
+
+Please, check the documentation for the full description of the parameters taken by each function.
+
+# Performance comparison with other packages
+
+Others packages with the goal of designing risk parity portfolios do exist, such as *FinCovRegularization* and
+*cccp*. Let's check how do they perform against the functions we present here.
+
+```{r, message = FALSE}
+library(FinCovRegularization)
+library(cccp)
+
+fincov <- RiskParity(Sigma)
+fincov_risk_contribution <- c(fincov * (Sigma %*% fincov))
+# The list of arguments is the following: 1) the initial guess for the portfolio weights,
+# 2) the covariance matrix of the asset returns, 3) the marginal risk contributions
+cccp_rp <- c(getx(rp(rep(1/N, N), Sigma, rep(1/N, N))))
+cccp_risk_contribution <- c(cccp_rp * (Sigma %*% cccp_rp))
+
+barplot(rbind(sca$w, slsqp$w, alabama$w, fincov, cccp_rp),
+        main = "Portfolios Weights", xlab = "stocks", ylab = "dollars", beside = TRUE,
+        col = rainbow8equal[1:5], legend = c("sca", "slsqp", "alabama", "FinCovRegularization", "cccp"))
+barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contribution, fincov_risk_contribution, cccp_risk_contribution),
+        main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars", beside = TRUE,
+        col = rainbow8equal[1:5], legend = c("sca", "slsqp", "alabama", "FinCovRegularization", "cccp"))
+```
+
+As it can be observed, the function *RiskParity* from the *FinCovRegularization* package fails to
+design a portfolio that meet the risk parity requirement, even in a scenario with as few as ten assets.
+As for the *cccp* package, although it works as expected, its API is cumbersome when compared to our
+straightforward function call.
+
 
 ## Formulations
 In its simples version, the risk-parity portfolio aims at achieving parity of the risk contributions from the different assets:
@@ -111,23 +129,14 @@ $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$
 
 We condiser the following formulations (equation numbers from the paper):
 
-- Done. (16): rc double-index
-- Done. (19): rc-over-b double-index
-- Done. (18): rc-over-var-vs-b
-- Done. (24): rc-over-var
-- Done. (21): rc-over-sd vs b-times-sd
-- Done. (20): rc-vs-b-times-var
-- Done. (17): rc-vs-theta
-
+- (16): rc double-index
+- (17): rc-vs-theta
+- (18): rc-over-var-vs-b
+- (19): rc-over-b double-index
+- (20): rc-vs-b-times-var
+- (21): rc-over-sd vs b-times-sd
 - (22): rc-over-b vs theta
-
-
-We can skip these in our first release, no need to go crazy:
-- (26): group-rc-over-sd vs b-times-sd
-- (31): factor-rc-over-sd vs b-times-sd
-- (32): CVaR-rc-over-sd vs b-times-sd
-
-And here give then one by one...
+- (24): rc-over-var
 
 One of the earliest risk-parity portfolio formulations is
 $$\begin{array}{ll}
@@ -206,7 +215,7 @@ res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc vs b-times-var")
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
      ylab = "Objective function", main = "Convergence trend versus CPU time",
-     ylim = c(0, 0.01))
+     ylim = c(0, 0.009))
 lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
       col = "red")
 lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
@@ -306,7 +315,32 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-# Explanation of the algorithms
+<!--
+# Comparison with other packages
+```{r}
+library(riskParityPortfolio)
+library(cccp)
+library(microbenchmark)
+
+N <- 200
+V <- matrix(rnorm(N ^ 2), nrow = N)
+Sigma <- V %*% t(V)
+
+op <- microbenchmark(SCA = riskParityPortfolioSCA(Sigma, formulation = "rc-double-index"),
+                     GenSolver = riskParityPortfolioGenSolver(Sigma, formulation = "rc-double-index"),
+                     times = 10L)
+print(op)
+par(mar = c(7, 4, 4, 2))
+boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
+```
+Existing packages that I quickly found (a more thorough search is due):
+
+- Package [cccp](https://CRAN.R-project.org/package=cccp) contains function
+  `rp` (and the package itself may be useful for solving conic optimization problems)
+- Package [FinCovRegularization](https://CRAN.R-project.org/package=FinCovRegularization)
+  contains function `RiskParity` (the package may be useful for covariance matrix
+  regularization, which is one of my upcoming projects...)
+-->
 
 # References {-}
 \setlength{\parindent}{-0.2in}
