@@ -68,19 +68,26 @@ library(xts)
 library(quantmod)
 library(PerformanceAnalytics)
 
+# generate data
 set.seed(123)
-
 N <- 10
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 
-# compute the portfolio weights for the case when Sigma is diagonal
-sca <- riskParityPortfolioSCA(Sigma)
-slsqp <- riskParityPortfolioGenSolver(Sigma, method = "slsqp")
-alabama <- riskParityPortfolioGenSolver(Sigma, method = "alabama")
+# compute uniform initial guess for the portfolio weights
+w0 <- rep(1 / N, N)
+
+# compute risk parity portfolios using different methods
+sca <- riskParityPortfolioSCA(Sigma, w0 = w0)
+slsqp <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "slsqp")
+alabama <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "alabama")
+
+# plot the portfolio designed by each method
 barplot(rbind(sca$w, slsqp$w, alabama$w),
         main = "Portfolio Weights", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3], legend = c("sca", "slsqp", "alabama"))
+
+# plot the risk contribution associated with each portfolio
 barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3], legend = c("sca", "slsqp", "alabama"))
@@ -101,7 +108,7 @@ fincov <- RiskParity(Sigma)
 fincov_risk_contribution <- c(fincov * (Sigma %*% fincov))
 # The list of arguments is the following: 1) the initial guess for the portfolio weights,
 # 2) the covariance matrix of the asset returns, 3) the marginal risk contributions
-cccp_rp <- c(getx(rp(rep(1/N, N), Sigma, rep(1/N, N))))
+cccp_rp <- c(getx(rp(w0, Sigma, w0, optctrl = ctrl(trace = FALSE))))
 cccp_risk_contribution <- c(cccp_rp * (Sigma %*% cccp_rp))
 
 barplot(rbind(sca$w, slsqp$w, alabama$w, fincov, cccp_rp),
@@ -125,24 +132,16 @@ library(microbenchmark)
 N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
+w0 <- rep(1 / N, N)
 
-op <- microbenchmark(SCA = riskParityPortfolioSCA(Sigma),
-                     GenSolver = riskParityPortfolioGenSolver(Sigma),
-                     CCCP = getx(rp(rep(1/N, N), Sigma, rep(1/N, N))),
+op <- microbenchmark(SCA = riskParityPortfolioSCA(Sigma, w0 = w0),
+                     GenSolver = riskParityPortfolioGenSolver(Sigma, w0 = w0),
+                     CCCP = getx(rp(w0, Sigma, w0, optctrl = ctrl(trace = FALSE))),
                      times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
-
-Existing packages that I quickly found (a more thorough search is due):
-
-- Package [cccp](https://CRAN.R-project.org/package=cccp) contains function
-  `rp` (and the package itself may be useful for solving conic optimization problems)
-- Package [FinCovRegularization](https://CRAN.R-project.org/package=FinCovRegularization)
-  contains function `RiskParity` (the package may be useful for covariance matrix
-  regularization, which is one of my upcoming projects...)
-
 
 ## Formulations
 In its simples version, the risk-parity portfolio aims at achieving parity of the risk contributions from the different assets:
