@@ -426,16 +426,24 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
       }
       return(func)
     }
+    wrap_R_grad <- function(R_grad, lambda, mu) {
+      grad <- function(...) {
+        return(R_grad(...) - lambda * mu)
+      }
+      return(grad)
+    }
     R_ <- wrap_R(R, lambda, mu, has_theta, N)
+    R_grad_ <- wrap_R_grad(R_grad, lambda, mu)
   } else {
     R_ <- R
+    R_grad_ <- R_grad
   }
   fun_seq <- c(R(w0, Sigma, b))
   time_seq <- c(0)
   switch(match.arg(method),
          "alabama" = {
            start_time <- proc.time()[3]
-           res <- alabama::constrOptim.nl(w0, R_, R_grad,
+           res <- alabama::constrOptim.nl(w0, R_, R_grad_,
                                           hin = shortselling,
                                           hin.jac = shortselling.jac,
                                           heq = budget,
@@ -447,7 +455,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
          },
          "slsqp" = {
            start_time <- proc.time()[3]
-           res <- nloptr::slsqp(w0, R_, R_grad,
+           res <- nloptr::slsqp(w0, R_, R_grad_,
                                 hin = shortselling, hinjac = shortselling.jac,
                                 heq = budget, heqjac = budget.jac,
                                 Sigma = Sigma, b = b,
