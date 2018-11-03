@@ -49,7 +49,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 -----------
-> This vignette illustrates the design of risk-parity portfolios, widely
+This vignette illustrates the design of risk-parity portfolios, widely
 used by practitioners in the financial industry, with the package
 `riskParityPortfolio` (with a comparison with other packages) and gives a
 description of the algorithms used.
@@ -142,6 +142,10 @@ print(op)
 par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
+
+Although the  *rp* function from the *cccp* package is around 6x faster than *riskParityPortfolioSCA*,
+*cccp* uses a formulation that is only applicable for long-only portfolio, whereas the formulations available
+in our package can be applied for the design of general long/short portfolios.
 
 ## Formulations
 In its simples version, the risk-parity portfolio aims at achieving parity of the risk contributions from the different assets:
