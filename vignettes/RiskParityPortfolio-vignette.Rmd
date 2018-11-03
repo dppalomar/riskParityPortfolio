@@ -56,9 +56,9 @@ description of the algorithms used.
 
 # Usage of the package
 
-We provide two functions to design risk parity portofolios: *riskParityPortfolioSCA* and *riskParityPortfolioGenSolver*.
-*riskParityPortfolioSCA* makes use of the successive convex approximation framework in order to optimize the portfolio weights,
-whereas *riskParityPortfolioGenSolver* uses general solvers such as slsqp and alabama.
+We provide two functions to design risk parity portofolios: `riskParityPortfolioSCA` and `riskParityPortfolioGenSolver`.
+`riskParityPortfolioSCA` makes use of the successive convex approximation framework in order to optimize the portfolio weights,
+whereas `riskParityPortfolioGenSolver` uses general solvers such as slsqp and alabama.
 
 A simple example on how to use those functions is as follows.
 
@@ -97,8 +97,9 @@ Please, check the documentation for the full description of the parameters taken
 
 # Performance comparison with other packages
 
-Others packages with the goal of designing risk parity portfolios do exist, such as *FinCovRegularization* and
-*cccp*. Let's check how do they perform against the functions we present here.
+Others packages with the goal of designing risk parity portfolios do exist,
+such as `FinCovRegularization` and `cccp`. Let's check how do they perform
+against the functions we present here.
 
 ```{r, message = FALSE}
 library(FinCovRegularization)
@@ -119,12 +120,14 @@ barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contr
         col = rainbow8equal[1:5], legend = c("sca", "slsqp", "alabama", "FinCovRegularization", "cccp"))
 ```
 
-As it can be observed, the function *RiskParity* from the *FinCovRegularization* package fails to
-design a portfolio that meet the risk parity requirement, even in a scenario with as few as ten assets.
-As for the *cccp* package, although it works as expected, its API is cumbersome when compared to our
-straightforward function call.
+As it can be observed, the function `RiskParity` from the `FinCovRegularization`
+package fails to design a portfolio that meet the risk parity requirement, even
+in a scenario with as few as ten assets. As for the `cccp` package, although it
+works as expected, its API is cumbersome when compared to our straightforward
+function call.
 
-Now let's take a look at the computational time taken by our functions and the *rp* function from the *cccp* package:
+Now let's take a look at the computational time taken by our functions and th
+`rp` function from the `cccp` package:
 
 ```{r}
 library(microbenchmark)
@@ -143,8 +146,8 @@ par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
-Although the  *rp* function from the *cccp* package is around 6x faster than
-*riskParityPortfolioSCA*, *cccp* uses a formulation that is only applicable
+Although the `rp` function from the `cccp` package is around 6x faster than
+`riskParityPortfolioSCA`, `cccp` uses a formulation that is only applicable
 for long-only portfolio [@Spinu2013], whereas the formulations available in
 our package can be applied for the design of general long/short portfolios.
 
