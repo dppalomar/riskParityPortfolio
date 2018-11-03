@@ -185,6 +185,9 @@ $$\begin{array}{ll}
 \end{array}$$
 which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
 
+In the sections that follows we show the computational time required by
+`riskParityPortfolioGenSolver` and `riskParityPortfolioSCA` for different formulations.
+
 ## Formulation "rc-over-var vs b"
 ```{r}
 set.seed(123)
@@ -306,7 +309,7 @@ legend("topright", legend=c("alabama-solver-nograd",
 
 
 
-## Experiment with real data: single-index case
+## Experiment with real data
 ```{r}
 library(sparseIndexTracking)
 library(xts)
