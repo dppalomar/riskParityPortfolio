@@ -1,4 +1,4 @@
-context("testRiskFormulations.R")
+context("test-riskFormulations.R")
 library(riskParityPortfolio)
 library(numDeriv) # install.packages("numDeriv")
 library(testthat)

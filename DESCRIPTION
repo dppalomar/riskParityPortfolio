@@ -22,6 +22,7 @@ Imports:
 Remotes:
     google/patrick
 Suggests:
+    patrick
 VignetteBuilder:
     knitr,
     rmarkdown,
