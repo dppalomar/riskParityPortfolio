@@ -351,9 +351,39 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-<!--
-# Comparison with other packages
--->
+## Experiment with Mean Return
+```{r}
+library(scales)
+
+N <- 100
+V <- matrix(rnorm(N ^ 2), nrow = N)
+Sigma <- V %*% t(V)
+mu <- runif(N)
+
+lambdas <- 10 ^ (seq(-3, 3, .25))
+mean_return_sca <- c()
+risk_parity_sca <- c()
+mean_return_gen <- c()
+risk_parity_gen <- c()
+
+for (lmd in lambdas) {
+  rpp_sca <- riskParityPortfolioSCA(Sigma, mu = mu, lambda = lmd)
+  rpp_gen <- riskParityPortfolioGenSolver(Sigma, mu = mu, lambda = lmd)
+  mean_return_sca <- c(mean_return_sca, rpp_sca$mean_return)
+  risk_parity_sca <- c(risk_parity_sca, rpp_sca$risk)
+  mean_return_gen <- c(mean_return_gen, rpp_gen$mean_return)
+  risk_parity_gen <- c(risk_parity_gen, rpp_gen$risk)
+}
+
+colors <- c(alpha("blue", .5), alpha("red", .5))
+plot(risk_parity_sca, mean_return_sca, type = "b", pch=19, cex=.6, col = colors[1],
+     xlab = "Risk Parity", ylab = "Mean Return",
+     ylim = c(min(mean_return_sca, mean_return_gen), max(mean_return_sca, mean_return_gen)),
+     xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)))
+lines(risk_parity_gen, mean_return_gen, type = "b", pch=19, cex=.6, col = colors[2],
+      xlab = "Risk Parity", ylab = "Mean Return")
+legend("bottomright", legend=c("SCA", "GenSolver"), col=colors, lty=c(1, 1, 1), cex=0.8)
+```
 
 # References {-}
 \setlength{\parindent}{-0.2in}

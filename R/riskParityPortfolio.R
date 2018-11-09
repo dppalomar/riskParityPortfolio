@@ -237,6 +237,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   }
 
   portfolio_results <- list()
+  portfolio_results$risk <- fun_seq[length(fun_seq)]
   if (!has_theta) {
     portfolio_results$w <- w_next
     portfolio_results$risk_contribution <- as.vector(w_next * (Sigma %*% w_next))
@@ -245,8 +246,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     portfolio_results$theta <- w_next[N+1]
     portfolio_results$risk_contribution <- as.vector(w_next[1:N] * (Sigma %*% w_next[1:N]))
   }
-  if (has_mu)
+  if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
+    portfolio_results$risk <- fun_seq[length(fun_seq)] + lambda * portfolio_results$mean_return
+  } else {
+    portfolio_results$risk <- fun_seq[length(fun_seq)]
+  }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
   portfolio_results$convergence <- sum(!(k == maxiter))
@@ -480,8 +485,12 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     portfolio_results$theta <- w[N+1]
     portfolio_results$risk_contribution <- as.vector(w[1:N] * (Sigma %*% w[1:N]))
   }
-  if (has_mu)
+  if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
+    portfolio_results$risk <- fun_seq[length(fun_seq)] + lambda * portfolio_results$mean_return
+  } else {
+    portfolio_results$risk <- fun_seq[length(fun_seq)]
+  }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
   portfolio_results$convergence <- res$convergence
