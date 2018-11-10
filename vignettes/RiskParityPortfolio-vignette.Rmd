@@ -7,7 +7,7 @@ date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
     base_format: prettydoc::html_pretty
-    theme: tactile
+    theme: cayman
     highlight: vignette
     fig_caption: yes
     number_sections: no
