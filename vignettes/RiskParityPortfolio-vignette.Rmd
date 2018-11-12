@@ -1,7 +1,7 @@
 ---
 title: "Design of Risk Parity Portfolios"
 author:
-- name: "Vinicius Ze and Daniel P. Palomar"
+- name: "Zé Vinícius and Daniel P. Palomar"
   affiliation: "Hong Kong University of Science and Technology (HKUST)"
 date: "`r Sys.Date()`"
 output:
@@ -51,16 +51,17 @@ knit_hooks$set(pngquant = hook_pngquant)
 -----------
 This vignette illustrates the design of risk-parity portfolios, widely
 used by practitioners in the financial industry, with the package
-`riskParityPortfolio` (with a comparison with other packages) and gives a
-description of the algorithms used.
+`riskParityPortfolio` and gives a description of the algorithms used.
 
 # Usage of the package
 
-We provide two functions to design risk parity portofolios: `riskParityPortfolioSCA` and `riskParityPortfolioGenSolver`.
-`riskParityPortfolioSCA` makes use of the successive convex approximation framework in order to optimize the portfolio weights,
-whereas `riskParityPortfolioGenSolver` uses general solvers such as slsqp and alabama.
+We provide two functions to design risk parity portofolios: `riskParityPortfolioSCA` and
+`riskParityPortfolioGenSolver`. The first one makes use of the successive convex approximation (SCA)
+framework in order to optimize the portfolio weights, and it is based on the works of Feng & Palomar
+[@FengPal2016monograph][@FengPal2015riskparity], whereas `riskParityPortfolioGenSolver` uses general
+solvers widely used by the R community such as `slsqp` and `alabama`.
 
-A simple example on how to use those functions is as follows.
+A simple example on how to use those functions is as follows:
 
 ```{r, message = FALSE}
 library(riskParityPortfolio)
@@ -68,7 +69,7 @@ library(xts)
 library(quantmod)
 library(PerformanceAnalytics)
 
-# generate data
+# generate synthetic data
 set.seed(123)
 N <- 10
 V <- matrix(rnorm(N ^ 2), nrow = N)
@@ -86,20 +87,22 @@ alabama <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "alabama")
 barplot(rbind(sca$w, slsqp$w, alabama$w),
         main = "Portfolio Weights", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3], legend = c("sca", "slsqp", "alabama"))
-
 # plot the risk contribution associated with each portfolio
 barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars", beside = TRUE,
         col = rainbow8equal[1:3], legend = c("sca", "slsqp", "alabama"))
 ```
+As we can observe, the risk parity portfolios are designed in such a way as to ensure equal risk
+contribution from the assests.
 
-Please, check the documentation for the full description of the parameters taken by each function.
+Many more parameters are available in both `riskParityPortfolioSCA` and `riskParityPortfolioGenSolver`,
+please, check the documentation for their full description.
 
 # Performance comparison with other packages
 
 Others packages with the goal of designing risk parity portfolios do exist,
 such as `FinCovRegularization` and `cccp`. Let's check how do they perform
-against the functions we present here.
+against `riskParityPortfolio`.
 
 ```{r, message = FALSE}
 library(FinCovRegularization)
@@ -120,14 +123,12 @@ barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contr
         col = rainbow8equal[1:5], legend = c("sca", "slsqp", "alabama", "FinCovRegularization", "cccp"))
 ```
 
-As it can be observed, the function `RiskParity` from the `FinCovRegularization`
-package fails to design a portfolio that meet the risk parity requirement, even
+We can conclude that the function `RiskParity` from the `FinCovRegularization`
+package fails to design a portfolio that meets the risk parity requirement
 in a scenario with as few as ten assets. As for the `cccp` package, although it
-works as expected, its API is cumbersome when compared to our straightforward
-function call.
+works as expected, its API is a bit cumbersome specially for newcomers.
 
-Now let's take a look at the computational time taken by our functions and th
-`rp` function from the `cccp` package:
+Now, let's take a look at the computational time taken by each function:
 
 ```{r}
 library(microbenchmark)
@@ -152,8 +153,8 @@ for long-only portfolio [@Spinu2013], whereas the formulations available in
 our package can be applied for the design of general long/short portfolios.
 
 ## Formulations
-In its simples version, the risk-parity portfolio aims at achieving parity of the risk contributions from the different assets:
-$$w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j \qquad \forall i,j.$$
+In its simples version, the risk-parity portfolio aims at achieving parity of the risk
+contributions from the different assets: $$w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j \qquad \forall i,j.$$
 
 Assuming that $\boldsymbol{\Sigma}$ is diagonal and with the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w}\ge\mathbf{0}$, the risk budgeting portfolio is
 $$w_i = \frac{\sqrt{b_i}/\sqrt{\Sigma_{ii}}}{\sum_{k=1}^N\sqrt{b_k}/\sqrt{\Sigma_{kk}}}, \qquad i=1,\ldots,N.$$
@@ -185,7 +186,7 @@ $$\begin{array}{ll}
 \end{array}$$
 which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
 
-In the sections that follows we show the computational time required by
+In the subsections that follows we explore the computational time required by
 `riskParityPortfolioGenSolver` and `riskParityPortfolioSCA` for different formulations.
 
 ## Formulation "rc-over-var vs b"
@@ -351,16 +352,20 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-## Experiment with Mean Return
+## The Role of the Mean Return
+
+Now, let's explore the effects of having the mean return in the optimization problem:
+
 ```{r}
 library(scales)
+library(latex2exp)
 
 N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 mu <- runif(N)
 
-lambdas <- 10 ^ (seq(-3, 3, .25))
+lambdas <- 10 ^ (seq(-5, 2, .25))
 mean_return_sca <- c()
 risk_parity_sca <- c()
 mean_return_gen <- c()
@@ -379,7 +384,8 @@ colors <- c(alpha("blue", .5), alpha("red", .5))
 plot(risk_parity_sca, mean_return_sca, type = "b", pch=19, cex=.6, col = colors[1],
      xlab = "Risk Parity", ylab = "Mean Return",
      ylim = c(min(mean_return_sca, mean_return_gen), max(mean_return_sca, mean_return_gen)),
-     xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)))
+     xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)),
+     main = "Mean Return x Risk Parity for SCA and General Solver approaches")
 lines(risk_parity_gen, mean_return_gen, type = "b", pch=19, cex=.6, col = colors[2],
       xlab = "Risk Parity", ylab = "Mean Return")
 legend("bottomright", legend=c("SCA", "GenSolver"), col=colors, lty=c(1, 1, 1), cex=0.8)
