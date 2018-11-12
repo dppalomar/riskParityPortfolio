@@ -354,7 +354,13 @@ legend("topright", legend=c("alabama-solver-nograd",
 
 ## The Role of the Mean Return
 
-Now, let's explore the effects of having the mean return in the optimization problem:
+Now, let's explore the effects of having the mean return in the optimization problem.
+We recall that the optimization problem that include the mean return can be expressed as
+$$\begin{array}{ll}
+\underset{\mathbf{w},\theta}{\textsf{minimize}} &
+R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W}.
+\end{array}$$
 
 ```{r}
 library(scales)
@@ -385,7 +391,7 @@ plot(risk_parity_sca, mean_return_sca, type = "b", pch=19, cex=.6, col=colors[1]
      xlab = "Risk Parity", ylab = "Mean Return",
      ylim = c(min(mean_return_sca, mean_return_gen), max(mean_return_sca, mean_return_gen)),
      xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)),
-     main = "Mean Return x Risk Parity for SCA and General Solver approaches")
+     main = "Mean Return x Risk Parity for SCA and General Solver algorithms")
 lines(risk_parity_gen, mean_return_gen, type = "b", pch=19, cex=.6, col=colors[2])
 points(risk_parity_sca[1], mean_return_sca[1], pch=24)
 points(risk_parity_gen[1], mean_return_gen[1], pch=25)
