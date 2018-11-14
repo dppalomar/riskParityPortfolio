@@ -3,7 +3,7 @@ title: "Test for Alexis Nortier"
 author:
 - name: "Daniel P. Palomar"
   affiliation: "Hong Kong University of Science and Technology (HKUST)"
-date: "`r Sys.Date()`"
+date: "2018-10-11"
 output:
   bookdown::html_document2:
     base_format: prettydoc::html_pretty
@@ -97,7 +97,7 @@ $$\mathbf{w} = \left[
 # Formulation "rc double-index"
 Consider the risk expression:
 $$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2}.$$
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(PerformanceAnalytics)
 ```
 
