@@ -87,10 +87,13 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc vs b-times-var",
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
-                                   w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
+                                   w0 = NA,
                                    theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
                                    maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
+  if (is.na(w0))
+    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
@@ -180,11 +183,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
-  if (has_mu)
+  if (has_mu) {
     if (has_theta)
       fun_k <- fun_k - lambda * t(mu) %*% wk[1:N]
     else
       fun_k <- fun_k - lambda * t(mu) %*% wk
+  }
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
@@ -257,6 +261,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   portfolio_results$convergence <- sum(!(k == maxiter))
   return(portfolio_results)
 }
+
 
 
 #' @title Risk parity portfolio design using general constrained solvers
