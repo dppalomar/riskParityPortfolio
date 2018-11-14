@@ -9,10 +9,9 @@ riskParityPortfolioSCA(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
   formulation = c("rc-double-index", "rc-over-b-double-index",
   "rc-over-var vs b", "rc-over-var", "rc-over-sd vs b-times-sd",
-  "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"),
-  w0 = riskParityPortfolioDiagSigma(Sigma, b)$w, theta0 = NA,
-  gamma = 0.9, zeta = 1e-07, tau = NA, maxiter = 500,
-  ftol = 1e-06, wtol = 1e-06)
+  "rc vs b-times-var", "rc vs theta", "rc-over-b vs theta"), w0 = NA,
+  theta0 = NA, gamma = 0.9, zeta = 1e-07, tau = NA,
+  maxiter = 500, ftol = 1e-06, wtol = 1e-06)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}

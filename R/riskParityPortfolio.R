@@ -87,13 +87,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc vs b-times-var",
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
-                                   w0 = NA,
-                                   theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA,
-                                   maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
+                                   w0 = NA, theta0 = NA, gamma = .9, zeta = 1e-7,
+                                   tau = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (is.na(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-  
+
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
@@ -261,7 +260,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   portfolio_results$convergence <- sum(!(k == maxiter))
   return(portfolio_results)
 }
-
 
 
 #' @title Risk parity portfolio design using general constrained solvers
@@ -499,5 +497,50 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
   portfolio_results$convergence <- res$convergence
+  return(portfolio_results)
+}
+
+
+#' @export
+riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                maxiter = 50, tol = 1e-6) {
+  # define gradient and hessian of the convex objective function
+  F_grad <- function(Sigma, x_k, b) {
+    return(Sigma %*% x_k - b / x_k)
+  }
+  F_hess <- function(Sigma, x_k, b) {
+    return(Sigma + diag(b / (x_k * x_k)))
+  }
+  # define magic constant
+  lambda_star <- 0.3628677
+  # compute initial guesses
+  N <- length(b)
+  x_k <- sqrt(sum(b) / sum(Sigma)) * rep(1, N)
+  # damped phase
+  for (k in (1:maxiter)) {
+    # auxiliary quantities
+    u_k <- F_grad(Sigma, x_k, b)
+    H_k <- F_hess(Sigma, x_k, b)
+    Dx <- solve(H_k) %*% u_k
+    dx <- max(Dx / x_k)
+    lambda_k <- sqrt(t(u_k) %*% Dx)
+    # update
+    x_k <- x_k - Dx / (1 + dx)
+    if (lambda_k <= lambda_star)
+      break
+  }
+  # quadratic phase
+  for (k in (1:maxiter)) {
+    u_k <- F_grad(Sigma, x_k, b)
+    H_k <- F_hess(Sigma, x_k, b)
+    Dx <- solve(H_k) %*% u_k
+    lambda_k <- sqrt(t(u_k) %*% Dx)
+    x_k <- x_k - Dx
+    if (lambda_k <= tol)
+      break
+  }
+  portfolio_results <- list()
+  portfolio_results$w <- x_k / sum(x_k)
+  portfolio_results$risk_contribution <- x_k * (Sigma %*% x_k)
   return(portfolio_results)
 }
