@@ -19,11 +19,8 @@ Installation
 ------------
 
 ``` r
-# Installation from CRAN
-install.packages("riskParityPortfolio")
-
 # Installation from GitHub
-# install.packages("devtools")
+install.packages("devtools")
 devtools::install_github("dppalomar/riskParityPortfolio")
 
 # Getting help

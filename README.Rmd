@@ -38,11 +38,8 @@ pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219
 
 ## Installation
 ```{r, eval = FALSE}
-# Installation from CRAN
-install.packages("riskParityPortfolio")
-
 # Installation from GitHub
-# install.packages("devtools")
+install.packages("devtools")
 devtools::install_github("dppalomar/riskParityPortfolio")
 
 # Getting help

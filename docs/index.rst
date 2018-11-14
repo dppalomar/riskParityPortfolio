@@ -18,18 +18,15 @@ between approaches.
 Installation
 ------------
 
-The *stable* release of ``riskParityPortfolio`` can be installed from CRAN as simple as:
-
-.. highlight:: r
-
-::
-
-   > install.packages("riskParityPortfolio")
-
-whereas the *development* version can be installed from GitHub as follows:
+The *development* version can be installed from GitHub as follows:
 
 .. highlight:: r
 
 ::
 
    > devtools::install_github("dppalomar/riskParityPortfolio")
+
+Bug Reports
+-----------
+
+If you found a bug, please consider openning an issue ticket at our GitHub `repo <https://github.com/dppalomar/riskParityPortfolio/issues>`_.
