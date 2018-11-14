@@ -34,7 +34,7 @@ This package is based on the paper:
 
 Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
 Risk Parity Portfolio Design" _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
-pp. 5285-5300, Oct. 2015. (<add DOI>)
+pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219
 
 ## Installation
 ```{r, eval = FALSE}
@@ -64,6 +64,25 @@ For more detailed information, please check the vignette:
 
 
 ## Usage of `riskParityPortfolio`
+```{r, eval = FALSE}
+library(riskParityPortfolio)
+
+# Long-only portfolio design, Sigma is the covariance matrix.
+portfolio_long <- riskParityPortfolio(Sigma)
+# Long/short portfolio design using the successive convex approximation method.
+portfolio_sca <- riskParityPortfolioSCA(Sigma)
+# Long/short portfolio design using the general non-linear solvers.
+portfolio_gen <- riskParityPortfolioGenSolver(Sigma)
+```
+
+## Citation
+If you have used this package in your research, please consider citing the following papers:
+
+- Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
+  Risk Parity Portfolio Design" _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
+  pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219
+- F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
+  Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
 
 
 ## Links
