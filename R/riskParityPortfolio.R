@@ -519,12 +519,14 @@ riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   # compute initial guesses
   N <- length(b)
   x_k <- sqrt(sum(b) / sum(Sigma)) * rep(1, N)
+  #x_k <- sqrt(b / diag(Sigma))  # diagonal solution
   fun_k <- c(obj_fun(Sigma, x_k, b))
   # damped phase
   for (k in (1:maxiter)) {
     # auxiliary quantities
     u_k <- F_grad(Sigma, x_k, b)
     H_k <- F_hess(Sigma, x_k, b)
+    # y_k <- solve(H_k, u_k)
     Dx <- chol2inv(chol(H_k)) %*% u_k
     dx <- max(Dx / x_k)
     lambda_k <- sqrt(sum(u_k * Dx))
