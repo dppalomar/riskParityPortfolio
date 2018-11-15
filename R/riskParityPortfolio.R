@@ -511,21 +511,26 @@ riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   F_hess <- function(Sigma, x_k, b) {
     return(Sigma + diag(b / (x_k * x_k)))
   }
+  obj_fun <- function(Sigma, x_k, b) {
+    return(.5 * t(x_k) %*% Sigma %*% x_k - sum(b * log(x_k)))
+  }
   # define magic constant
   lambda_star <- 0.3628677
   # compute initial guesses
   N <- length(b)
   x_k <- sqrt(sum(b) / sum(Sigma)) * rep(1, N)
+  fun_k <- c(obj_fun(Sigma, x_k, b))
   # damped phase
   for (k in (1:maxiter)) {
     # auxiliary quantities
     u_k <- F_grad(Sigma, x_k, b)
     H_k <- F_hess(Sigma, x_k, b)
-    Dx <- solve(H_k) %*% u_k
+    Dx <- chol2inv(chol(H_k)) %*% u_k
     dx <- max(Dx / x_k)
-    lambda_k <- sqrt(t(u_k) %*% Dx)
+    lambda_k <- sqrt(sum(u_k * Dx))
     # update
     x_k <- x_k - Dx / (1 + dx)
+    fun_k <- c(fun_k, obj_fun(Sigma, x_k, b))
     if (lambda_k <= lambda_star)
       break
   }
@@ -533,14 +538,16 @@ riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   for (k in (1:maxiter)) {
     u_k <- F_grad(Sigma, x_k, b)
     H_k <- F_hess(Sigma, x_k, b)
-    Dx <- solve(H_k) %*% u_k
-    lambda_k <- sqrt(t(u_k) %*% Dx)
+    Dx <- chol2inv(chol(H_k)) %*% u_k
+    lambda_k <- sqrt(sum(u_k * Dx))
     x_k <- x_k - Dx
+    fun_k <- c(fun_k, obj_fun(Sigma, x_k, b))
     if (lambda_k <= tol)
       break
   }
   portfolio_results <- list()
   portfolio_results$w <- x_k / sum(x_k)
   portfolio_results$risk_contribution <- x_k * (Sigma %*% x_k)
+  portfolio_results$obj_fun <- fun_k
   return(portfolio_results)
 }
