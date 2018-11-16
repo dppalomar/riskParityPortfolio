@@ -519,19 +519,17 @@ riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   # compute initial guesses
   N <- length(b)
   x_k <- sqrt(sum(b) / sum(Sigma)) * rep(1, N)
-  #x_k <- sqrt(b / diag(Sigma))  # diagonal solution
   fun_k <- c(obj_fun(Sigma, x_k, b))
   # damped phase
   for (k in (1:maxiter)) {
     # auxiliary quantities
     u_k <- F_grad(Sigma, x_k, b)
     H_k <- F_hess(Sigma, x_k, b)
-    # y_k <- solve(H_k, u_k)
-    Dx <- chol2inv(chol(H_k)) %*% u_k
-    dx <- max(Dx / x_k)
-    lambda_k <- sqrt(sum(u_k * Dx))
+    d <- u_k / diag(H_k)
+    dx <- max(d / x_k)
+    lambda_k <- sqrt(sum(u_k * d))
     # update
-    x_k <- x_k - Dx / (1 + dx)
+    x_k <- x_k - d / (1 + dx)
     fun_k <- c(fun_k, obj_fun(Sigma, x_k, b))
     if (lambda_k <= lambda_star)
       break
@@ -540,16 +538,17 @@ riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   for (k in (1:maxiter)) {
     u_k <- F_grad(Sigma, x_k, b)
     H_k <- F_hess(Sigma, x_k, b)
-    Dx <- chol2inv(chol(H_k)) %*% u_k
-    lambda_k <- sqrt(sum(u_k * Dx))
-    x_k <- x_k - Dx
+    d <- u_k / diag(H_k)
+    lambda_k <- sqrt(sum(u_k * d))
+    x_k <- x_k - d
     fun_k <- c(fun_k, obj_fun(Sigma, x_k, b))
     if (lambda_k <= tol)
       break
   }
+  w <- x_k / sum(x_k)
   portfolio_results <- list()
-  portfolio_results$w <- x_k / sum(x_k)
-  portfolio_results$risk_contribution <- x_k * (Sigma %*% x_k)
+  portfolio_results$w <- w
+  portfolio_results$risk_contribution <- w * (Sigma %*% w)
   portfolio_results$obj_fun <- fun_k
   return(portfolio_results)
 }
