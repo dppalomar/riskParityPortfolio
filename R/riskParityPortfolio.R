@@ -502,53 +502,11 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
 
 #' @export
-riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                maxiter = 50, tol = 1e-6) {
-  # define gradient and hessian of the convex objective function
-  F_grad <- function(Sigma, x_k, b) {
-    return(Sigma %*% x_k - b / x_k)
-  }
-  F_hess <- function(Sigma, x_k, b) {
-    return(Sigma + diag(b / (x_k * x_k)))
-  }
-  obj_fun <- function(Sigma, x_k, b) {
-    return(.5 * t(x_k) %*% Sigma %*% x_k - sum(b * log(x_k)))
-  }
-  # define magic constant
-  lambda_star <- 0.3628677
-  # compute initial guesses
-  N <- length(b)
-  x_k <- sqrt(sum(b) / sum(Sigma)) * rep(1, N)
-  fun_k <- c(obj_fun(Sigma, x_k, b))
-  # damped phase
-  for (k in (1:maxiter)) {
-    # auxiliary quantities
-    u_k <- F_grad(Sigma, x_k, b)
-    H_k <- F_hess(Sigma, x_k, b)
-    d <- u_k / diag(H_k)
-    dx <- max(d / x_k)
-    lambda_k <- sqrt(sum(u_k * d))
-    # update
-    x_k <- x_k - d / (1 + dx)
-    fun_k <- c(fun_k, obj_fun(Sigma, x_k, b))
-    if (lambda_k <= lambda_star)
-      break
-  }
-  # quadratic phase
-  for (k in (1:maxiter)) {
-    u_k <- F_grad(Sigma, x_k, b)
-    H_k <- F_hess(Sigma, x_k, b)
-    d <- u_k / diag(H_k)
-    lambda_k <- sqrt(sum(u_k * d))
-    x_k <- x_k - d
-    fun_k <- c(fun_k, obj_fun(Sigma, x_k, b))
-    if (lambda_k <= tol)
-      break
-  }
-  w <- x_k / sum(x_k)
+riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                      maxiter = 50, tol = 1e-6) {
+  w <- risk_parity_portfolio_nn(Sigma, b, tol, maxiter)
   portfolio_results <- list()
   portfolio_results$w <- w
   portfolio_results$risk_contribution <- w * (Sigma %*% w)
-  portfolio_results$obj_fun <- fun_k
   return(portfolio_results)
 }
