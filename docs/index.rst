@@ -13,7 +13,7 @@ for simple risk parity design proposed by `Spinu (2013) <https://papers.ssrn.com
 and 3) the successive convex approximation (SCA) proposed by
 `Feng & Palomar (2016) <http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf>`_.
 
-See the `Getting started <_static/getting_started.html>`_ tutorial for a comparison
+See the `Getting started <pages/getting_started.html>`_ tutorial for a comparison
 between approaches.
 
 Installation
