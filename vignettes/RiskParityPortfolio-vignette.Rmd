@@ -138,8 +138,6 @@ A simple example on how to use those functions is as follows:
 
 ```{r, message = FALSE}
 library(riskParityPortfolio)
-#library(xts)
-#library(quantmod)
 library(PerformanceAnalytics)
 
 # generate synthetic data
@@ -188,6 +186,7 @@ N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 mu <- runif(N)
+w0 <- riskParityPortfolioNewton(Sigma)$w
 
 lambdas <- c(0, 10 ^ (seq(-5, 2, .25)))
 mean_return_sca <- c()
@@ -196,8 +195,8 @@ mean_return_gen <- c()
 risk_parity_gen <- c()
 
 for (lmd in lambdas) {
-  rpp_sca <- riskParityPortfolioSCA(Sigma, mu = mu, lambda = lmd)
-  rpp_gen <- riskParityPortfolioGenSolver(Sigma, mu = mu, lambda = lmd)
+  rpp_sca <- riskParityPortfolioSCA(Sigma, w0 = w0, mu = mu, lambda = lmd)
+  rpp_gen <- riskParityPortfolioGenSolver(Sigma, w0 = w0, mu = mu, lambda = lmd)
   mean_return_sca <- c(mean_return_sca, rpp_sca$mean_return)
   risk_parity_sca <- c(risk_parity_sca, rpp_sca$risk)
   mean_return_gen <- c(mean_return_gen, rpp_gen$mean_return)
