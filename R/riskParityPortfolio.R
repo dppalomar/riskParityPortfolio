@@ -90,7 +90,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    w0 = NA, theta0 = NA, gamma = .9, zeta = 1e-7,
                                    tau = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (is.na(w0))
+  if (anyNA(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
   formulation <- match.arg(formulation)
