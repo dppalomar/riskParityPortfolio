@@ -269,6 +269,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
+#' @param mu vector of expected returns
 #' @param budget boolean indicating whether to consider sum(w) = 1 as a
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
@@ -324,9 +325,12 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                                          "rc-over-b vs theta"),
                                          method = c("slsqp", "alabama"),
                                          use_gradient = TRUE,
-                                         w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
+                                         w0 = NA,
                                          theta0 = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
+  if(anyNA(w0))
+    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+
   formulation <- match.arg(formulation)
   # set initial value for theta
   has_theta <- grepl("theta", formulation)
@@ -500,6 +504,18 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   return(portfolio_results)
 }
 
+#' @title Fast vanilla risk parity portfolio design using the Newton method
+#'
+#' @description Risk parity portfolio optimization using the Newton method
+#'              proposed by Spinu (2013)
+#'
+#' @param Sigma covariance or correlation matrix
+#' @param b budget vector
+#' @param maxiter maximum number of iterations of both damped and quadratic phases
+#' @param tol tolerance of the stopping criteria
+#' @return a list containing the following elements:
+#' \item{\code{w}}{optimal portfolio vector}
+#' \item{\code{risk_contribution}}{the risk contribution of every asset}
 
 #' @export
 riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
