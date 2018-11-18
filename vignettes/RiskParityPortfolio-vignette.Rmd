@@ -51,24 +51,25 @@ knit_hooks$set(pngquant = hook_pngquant)
 -----------
 This vignette illustrates the design of risk-parity portfolios, widely
 used by practitioners in the financial industry, with the package
-`riskParityPortfolio` and gives a description of the algorithms used.
+`riskParityPortfolio`, gives a description of the algorithms used, and
+compares the performance against existing packages such as `cccp` and `FinCovRegularization`.
 
 # Vanilla risk parity portfolio
 
 A risk parirty portfolio denotes a class of portfolios whose assets verify the following equalities
 $$\begin{equation}
-w_i \dfrac{\partial f(\mathbf{w})}{\partial w_i} = w_j \dfrac{\partial f(\mathbf{w})}{\partial w_j}, \forall i, j,
+w_i \dfrac{\partial f(\mathbf{w})}{\partial w_i} = w_j \dfrac{\partial f(\mathbf{w})}{\partial w_j}, \forall ~i, j,
 \end{equation}
 $$
-where $f$ is a positively homogenous function of degree one that measures the total risk of the portfolio.
+where $f$ is a positively homogeneous function of degree one that measures the total risk of the portfolio.
 In other words, the marginal risk contributions for every asset in a risk parity portfolio are equal.
-A common choice for $f$, for instance, is the standard deviation of the portfolio (usually called volatility), i.e.,
-$f = \sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}$.
+A common choice for $f$, for instance, is the standard deviation of the portfolio,
+which is usually called volatility, i.e., $f(\mathbf{w}) = \sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}$.
 
-With that particular choice of $f$, then the risk parity requirements become
+With that particular choice of $f$, the risk parity requirements become
 $$
 \begin{equation}
-w_i(\Sigma \mathbf{w})_{i} = w_j(\Sigma \mathbf{w})_{j}, \forall i, j.
+w_i(\Sigma \mathbf{w})_{i} = w_j(\Sigma \mathbf{w})_{j}, \forall~i, j.
 \end{equation}
 $$
 
@@ -76,7 +77,7 @@ A natural extension of the risk parity portfolio is the so called risk budget po
 the marginal risk contributions match preassigned quantities. Mathematically,
 $$
 \begin{equation}
-(\Sigma \mathbf{w})_i w_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \forall i,
+(\Sigma \mathbf{w})_i w_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \forall ~i,
 \end{equation}
 $$
 where $\mathbf{b} \triangleq (b_1, b_2, ..., b_N)$ is the vector of desired
@@ -91,17 +92,16 @@ $$\begin{array}{ll}
 \end{array}$$
 
 It turns out, as shown in [@Spinu2013], that the unique solution for the optimization problem
-stated above suffices the risk budget equalities. Such solution can be computed using convex
-optimization softwares, such as CVXR, but a faster implementation of a Newton algorithm proposed
-by [@Spinu2013] is avaiable in this package.
+stated above attains the risk budget requirements in an exact fashion. Such solution can be
+computed using convex optimization packages, such as CVXR, but a faster implementation of a
+Newton algorithm, also proposed by [@Spinu2013], is implemented in this package.
 
 Let's see a comparison, in terms of computational time, of our Newton implementation
 against the `rp()` function from the `cccp` package. For a fair comparison, we
 implement the core algorithm in `risk_parity_portfolio_nn()`, which only computes the
 risk parity weights, just like `rp()`. However, users are advised to use the function
 `riskParityPortfolioNewton`, which contains more information such as objective function
-value and the individual risk contributions of each asset.
-
+value and the individual risk contributions associated with each asset.
 
 ```{r}
 library(microbenchmark)
@@ -113,6 +113,7 @@ V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 b <- rep(1/N, N)
 
+# use risk_parity_portfolio_nn with default values of tolerance and number of iterations
 op <- microbenchmark(rp_ccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
                      newton = risk_parity_portfolio_nn(Sigma, b, 1e-6, 50),
                      times = 10L)
@@ -121,21 +122,24 @@ par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
+As it can be observed, our implementation is quite faster than the interior-point method
+used by `cccp`. We suggest the interested reader to check out chapter 11 of reference [@BoydCVXBook]
+for a thorough explanation on interior-point methods.
+
 # Modern risk parity portfolio
 The design of risk parity portfolios as solved by [@Spinu2013] is of paramount importance
 both for academia and industry. However, practitioners would like the ability to include
-additional constraints and terms needed in practice, such as the mean return term, box constraints, etc,
-that often given rise to non-convex problems.
+additional constraints and terms desired in practice, such as the mean return, box constraints, etc,
+that often give rise to non-convex formulations.
 
 Towards the design of risk parity portfolios with more practical applicability,
 this package provides two functions: `riskParityPortfolioSCA()` and
 `riskParityPortfolioGenSolver()`. The first one makes use of the successive convex approximation (SCA)
-framework in order to optimize the portfolio weights, and it is based on the works of Feng & Palomar
+framework in order to optimize the portfolio weights, which is based on the works of Feng & Palomar
 [@FengPal2016monograph][@FengPal2015riskparity], whereas `riskParityPortfolioGenSolver()` uses general
 solvers widely used by the R community such as `slsqp` and `alabama`.
 
 A simple example on how to use those functions is as follows:
-
 ```{r, message = FALSE}
 library(riskParityPortfolio)
 library(PerformanceAnalytics)
@@ -164,8 +168,8 @@ barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contr
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:4], legend = c("sca", "slsqp", "alabama", "newton"))
 ```
-As we can observe, the risk parity portfolios are designed in such a way as to ensure equal risk
-contribution from the assests.
+As presented earlier, the risk parity portfolios are designed in
+such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
 
 Many more parameters are available in both `riskParityPortfolioSCA()` and `riskParityPortfolioGenSolver()`,
 please, check the documentation for their full description.
@@ -175,7 +179,7 @@ We recall that the optimization problem that include the mean return can be expr
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W}.
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1.
 \end{array}$$
 
 ```{r}
@@ -205,16 +209,21 @@ for (lmd in lambdas) {
 
 colors <- c(alpha("blue", .5), alpha("red", .5))
 plot(risk_parity_sca, mean_return_sca, type = "b", pch=19, cex=.6, col=colors[1],
-     xlab = "Risk Parity", ylab = "Mean Return",
+     xlab = "Risk", ylab = "Expected Return",
      ylim = c(min(mean_return_sca, mean_return_gen), max(mean_return_sca, mean_return_gen)),
      xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)),
-     main = "Mean Return x Risk Parity for SCA and General Solver algorithms")
+     main = "Expected Return x Risk for SCA and General Solver algorithms")
 lines(risk_parity_gen, mean_return_gen, type = "b", pch=19, cex=.6, col=colors[2])
 points(risk_parity_sca[1], mean_return_sca[1], pch=24)
 points(risk_parity_gen[1], mean_return_gen[1], pch=25)
 legend("bottomright", legend=c("SCA", "GenSolver", TeX("SCA w/ $\\lambda = 0$"), TeX("GenSolver w/ $\\lambda = 0$")),
        col=c(colors, "black", "black"), pch = c(19, 19, 24, 25))
 ```
+
+It can be noted that both algorithms give almost the same results.
+Additionally, note that we have initialized them with the solution
+given by `riskParityPortfolioNewton()`, since it gives the exact and unique
+solution when $\lambda = 0$.
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
@@ -259,7 +268,9 @@ barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contr
 ```
 
 Apart from the `RiskParity` function from the `FinCovRegularization` package,
-all the other functions perform the same.
+all the other functions perform the same. `FinCovRegularization` uses a general
+solver with a hard coded initial guess for the portfolio weights. We conjecture
+that its poor initialization might be the reason for the convergence to a local solution.
 
 # Formulations
 In general, exact parity cannot be achieved and one needs to define a risk term to be
@@ -267,34 +278,46 @@ minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\rig
 A double-index summation can also be used:
 $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$.
 
-We condiser the following formulations (the numbers correspond to equations
-from [@FengPal2015riskparity]):
+We condiser the risk formulations as presented in [@FengPal2015riskparity].
+They can be passed through the keyword argument `formulation` in the functions
+`riskParityPortfolioSCA` and `riskParityPortfolioGenSolver`.
 
-- (16): rc double-index
-- (17): rc-vs-theta
-- (18): rc-over-var-vs-b
-- (19): rc-over-b double-index
-- (20): rc-vs-b-times-var
-- (21): rc-over-sd vs b-times-sd
-- (22): rc-over-b vs theta
-- (24): rc-over-var
+The name of the formulations and their mathematical expressions are presented as follows.
 
-One of the earliest risk-parity portfolio formulations is
-$$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W},
-\end{array}$$
-which corresponds to $g_{i,j}(\mathbf{w})=\mathbf{w}^T(\mathbf{M}_i-\mathbf{M}_j)\mathbf{w}$ (with $\mathcal{W}$ denoting some other constraints).
-
-Another similar formulation is
-$$\begin{array}{ll}
-\underset{\mathbf{w},\theta}{\textsf{minimize}} & \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i} - \theta\right)^{2}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,\quad\mathbf{w}\in\mathcal{W}.
-\end{array}$$
-which corresponds to $g_i(\mathbf{w})=\mathbf{w}^T\mathbf{M}_i\mathbf{w}-\theta$.
+## Formulation "rc-double-index"
+$$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w    }\right)_{j}\right)^{2}
+$$
+## Formulation "rc-vs-theta"
+$$
+R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - \theta \right)^{2}
+$$
+## Formulation "rc-over-var-vs-b"
+$$
+R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2}
+$$
+## Formulation "rc-over-b double-index"
+$$
+R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \frac{w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j}{b_j}\right)^{2}
+$$
+## Formulation "rc-vs-b-times-var"
+$$
+R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}
+$$
+## Formulation "rc-over-sd vs b-times-sd"
+$$
+R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
+$$
+## Formulation "rc-over-b vs theta"
+$$
+R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \theta \right)^{2}
+$$
+## Formulation "rc-over-var"
+$$
+R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
+$$
 
 In the subsections that follows we explore the computational time required by
-`riskParityPortfolioGenSolver` and `riskParityPortfolioSCA` for different formulations.
+`riskParityPortfolioGenSolver` and `riskParityPortfolioSCA` for some of the formulations presented above.
 Additionally, we compare `riskParityPortfolioGenSolver` without using the gradient of the objective function.
 
 ## Formulation "rc-over-var vs b"
@@ -462,8 +485,9 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-As expected the SCA method performs much faster than the methods using general solvers,
-even when those methods are provided with gradient information.
+It can be noted that the general solvers greatly benefit from the additional gradient
+information. Despite that fact, the SCA method still performs faster. Additionally,
+in some cases, the SCA method attains a better solution than the other methods.
 
 # Conclusions
 This package provides fast implementations for both vanilla risk parity and more
