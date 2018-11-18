@@ -15,11 +15,13 @@ therefore a unique solution is available. For general, usually nonconvex
 formulations, we implement the successive convex approximation method
 proposed by Feng & Palomar (2015).
 
-This package is based on the papers: - Y. Feng, and D. P. Palomar,
+This package is based on the papers:
+
+- Y. Feng, and D. P. Palomar,
 “SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio
 Design” *IEEE Trans. on Signal Processing*, vol. 63, no. 19,
-pp. 5285-5300, Oct. 2015. <doi:10.1109/TSP.2015.2452219> - F. Spinu, “An
-Algorithm for Computing Risk Parity Weights” (July 30, 2013). Available
+pp. 5285-5300, Oct. 2015. <doi:10.1109/TSP.2015.2452219>
+- F. Spinu, “An Algorithm for Computing Risk Parity Weights” (July 30, 2013). Available
 at SSRN: <https://ssrn.com/abstract=2297383> or
 <http://dx.doi.org/10.2139/ssrn.2297383>
 
