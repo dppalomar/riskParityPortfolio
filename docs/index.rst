@@ -27,6 +27,17 @@ The *development* version can be installed from GitHub as follows:
 
    > devtools::install_github("dppalomar/riskParityPortfolio")
 
+Citation
+--------
+
+If you made use of this package on your research, please cite the following works:
+
+- Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
+  Risk Parity Portfolio Design". IEEE Trans. on Signal Processing, vol. 63, no. 19,
+  pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219
+- F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
+  Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+
 Bug Reports
 -----------
 
