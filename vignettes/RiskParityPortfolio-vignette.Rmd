@@ -12,7 +12,7 @@ output:
     fig_caption: yes
     number_sections: no
     toc: yes
-    toc_depth: 2
+    toc_depth: 1
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
