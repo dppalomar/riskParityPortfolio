@@ -36,9 +36,9 @@ If you made use of this package on your research, please cite the following work
   Risk Parity Portfolio Design". IEEE Trans. on Signal Processing, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
-  Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+  Available at SSRN: http://dx.doi.org/10.2139/ssrn.2297383
 
 Bug Reports
 -----------
 
-If you found a bug, please consider openning an issue ticket at our GitHub `repo <https://github.com/dppalomar/riskParityPortfolio/issues>`_.
+If you found a bug, please consider opening an issue ticket at our GitHub `repo <https://github.com/dppalomar/riskParityPortfolio/issues>`_.
