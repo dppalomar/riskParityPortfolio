@@ -287,30 +287,37 @@ The name of the formulations and their mathematical expressions are presented as
 ## Formulation "rc-double-index"
 $$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w    }\right)_{j}\right)^{2}
 $$
+
 ## Formulation "rc-vs-theta"
 $$
 R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - \theta \right)^{2}
 $$
+
 ## Formulation "rc-over-var-vs-b"
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2}
 $$
+
 ## Formulation "rc-over-b double-index"
 $$
 R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \frac{w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j}{b_j}\right)^{2}
 $$
+
 ## Formulation "rc-vs-b-times-var"
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}
 $$
+
 ## Formulation "rc-over-sd vs b-times-sd"
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
 $$
+
 ## Formulation "rc-over-b vs theta"
 $$
 R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \theta \right)^{2}
 $$
+
 ## Formulation "rc-over-var"
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
@@ -320,7 +327,7 @@ In the subsections that follows we explore the computational time required by
 `riskParityPortfolioGenSolver` and `riskParityPortfolioSCA` for some of the formulations presented above.
 Additionally, we compare `riskParityPortfolioGenSolver` without using the gradient of the objective function.
 
-## Formulation "rc-over-var vs b"
+## Experiment: formulation "rc-over-var vs b"
 ```{r}
 set.seed(123)
 N <- 100
@@ -364,7 +371,7 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-## Formulation "rc vs b-times-var"
+## Experiment: formulation "rc vs b-times-var"
 ```{r}
 res_slsqp <- riskParityPortfolioGenSolver(Sigma,
                                           formulation = "rc vs b-times-var",
@@ -403,7 +410,7 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-## Formulation "rc-over-sd vs b-times-sd"
+## Experiment: formulation "rc-over-sd vs b-times-sd"
 ```{r}
 res_slsqp <- riskParityPortfolioGenSolver(Sigma,
                                           formulation = "rc-over-sd vs b-times-sd",
