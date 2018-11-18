@@ -7,13 +7,13 @@ Welcome to riskParityPortfolio!
 ===============================
 
 ``riskParityPortfolio`` allows users to design portfolios that meet the risk parity criteria.
-We solve the underlying optimization problem using three approaches: 1) a Newton method
+We solve the underlying optimization problem using three algorithms: 1) a Newton method
 for simple risk parity design proposed by `Spinu (2013) <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383>`_,
 2) general purpose non-linear constrained optimization solvers such as ``alabama`` and ``slsqp``,
 and 3) the successive convex approximation (SCA) proposed by
 `Feng & Palomar (2016) <http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf>`_.
 
-See the `Getting started <pages/getting_started.html>`_ tutorial for a comparison
+See the `Getting started <_static/getting_started.html>`_ tutorial for a comparison
 between approaches.
 
 Installation
