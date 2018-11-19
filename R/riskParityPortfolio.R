@@ -504,6 +504,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   return(portfolio_results)
 }
 
+
 #' @title Fast vanilla risk parity portfolio design using the Newton method
 #'
 #' @description Risk parity portfolio optimization using the Newton method
@@ -522,4 +523,69 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
                                       maxiter = 50, tol = 1e-6) {
   w <- risk_parity_portfolio_nn(Sigma, b, tol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
+}
+
+
+#' @title Fast risk parity portfolio design using Newton method
+#'        combined with the successive convex approximation
+#'
+#' @description This functions uses the vanilla (Newton) risk parity portfolio
+#'              in order to initialize the SCA method. This convenience function
+#'              helps to put together the advantages of both methods.
+#'
+#' @param Sigma covariance or correlation matrix
+#' @param b budget vector, aka, risk budgeting targets
+#' @param mu vector of expected returns
+#' @param lambda scalar the controls the importance of the expected return term
+#' @param budget boolean indicating whether to consider sum(w) = 1 as a
+#'        constraint
+#' @param shortselling boolean indicating whether to allow short-selling, i.e.,
+#'        w < 0
+#' @param formulation string indicating the formulation to be used for the risk
+#'        parity optimization problem. It must be one of: "rc-double-index",
+#'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
+#'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
+#'        "rc-over-b vs theta". If formulation is NA and no additional terms
+#'        or constraints are set, such as expected return or shortselling, then
+#'        the vanilla risk parity portfolio will be returned.
+#' @param w0 initial value for the portfolio wieghts. Default is the optimum
+#'        portfolio weights for the case when Sigma is diagonal.
+#' @param theta0 initial value for theta. If NA, the optimum solution for a fixed
+#'        vector of portfolio weights will be used
+#' @param gamma learning rate
+#' @param zeta factor used to decrease the learning rate at each iteration
+#' @param tau regularization factor. If NA, a meaningful value will be used
+#' @param maxiter maximum number of iterations for the SCA loop
+#' @param ftol convergence tolerance on the value of the objective function
+#' @param wtol convergence tolerance on the values of the parameters
+#' @return a list containing possibly the following elements:
+#' \item{\code{w}}{optimal portfolio vector}
+#' \item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
+#' \item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
+#' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+#' \item{\code{convergence}}{flag to indicate whether or not the optimization converged.
+#' The value `1` means it has converged, and `0` otherwise.}
+#' \item{\code{risk_contribution}}{the risk contribution of every asset}
+#'
+#' @author Daniel Palomar and Ze Vinicius
+#' @export
+riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                mu = NA, lambda = 1e-4, budget = TRUE, shortselling = FALSE,
+                                formulation = NA, w0 = NA, theta0 = NA, gamma = .9, zeta = 1e-7,
+                                tau = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
+  formulations <- c("rc-double-index", "rc-over-b-double-index",
+                    "rc-over-var vs b", "rc-over-var",
+                    "rc-over-sd vs b-times-sd", "rc vs b-times-var",
+                    "rc vs theta", "rc-over-b vs theta")
+  portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
+  has_mu <- !anyNA(mu)
+  has_theta <- !anyNA(theta0)
+  has_formulation <- !anyNA(formulation)
+  if(has_mu || has_theta || shortselling || (!budget) || has_formulation)
+    portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lambda = lambda,
+                                        budget = budget, shortselling = shortselling,
+                                        formulation = formulation, w0 = portfolio$w,
+                                        theta0 = theta0, gamma = gamma, zeta = zeta,
+                                        tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol)
+  return(portfolio)
 }
