@@ -170,7 +170,7 @@ We recall that the optimization problem that include the expected return can be 
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
 \end{array}$$
 in which $R$ is the risk concentration function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return,
 and $\lambda$ is a trade-off parameter.
