@@ -56,9 +56,9 @@ compares the performance against existing packages such as `cccp` and `FinCovReg
 
 # Vanilla risk parity portfolio
 
-A risk parirty portfolio denotes a class of portfolios whose assets verify the following equalities
+A risk parirty portfolio denotes a class of portfolios whose assets verify the following equalities:
 $$\begin{equation}
-w_i \dfrac{\partial f(\mathbf{w})}{\partial w_i} = w_j \dfrac{\partial f(\mathbf{w})}{\partial w_j}, \forall ~i, j,
+w_i \dfrac{\partial f(\mathbf{w})}{\partial w_i} = w_j \dfrac{\partial f(\mathbf{w})}{\partial w_j}, \forall i, j,
 \end{equation}
 $$
 where $f$ is a positively homogeneous function of degree one that measures the total risk of the portfolio.
@@ -69,7 +69,7 @@ which is usually called volatility, i.e., $f(\mathbf{w}) = \sqrt{\mathbf{w}^{T}\
 With that particular choice of $f$, the risk parity requirements become
 $$
 \begin{equation}
-w_i(\Sigma \mathbf{w})_{i} = w_j(\Sigma \mathbf{w})_{j}, \forall~i, j.
+w_i(\Sigma \mathbf{w})_{i} = w_j(\Sigma \mathbf{w})_{j}, \forall i, j.
 \end{equation}
 $$
 
@@ -77,14 +77,14 @@ A natural extension of the risk parity portfolio is the so called risk budget po
 the marginal risk contributions match preassigned quantities. Mathematically,
 $$
 \begin{equation}
-(\Sigma \mathbf{w})_i w_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \forall ~i,
+(\Sigma \mathbf{w})_i w_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \forall i,
 \end{equation}
 $$
 where $\mathbf{b} \triangleq (b_1, b_2, ..., b_N)$ is the vector of desired
 marginal risk contributions.
 
-With the goal of designing risk budget portfolios, [@Spinu2013] proposed to solve the
-following convex optimization problem
+With the goal of designing risk budget portfolios, Spinu proposed in [@Spinu2013] to solve the
+following convex optimization problem:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} & \frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w} - \sum_{i=1}^{N}b_i\log(w_i)\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1\\
@@ -100,7 +100,7 @@ Let's see a comparison, in terms of computational time, of our Newton implementa
 against the `rp()` function from the `cccp` package. For a fair comparison, we
 implement the core algorithm in `risk_parity_portfolio_nn()`, which only computes the
 risk parity weights, just like `rp()`. However, users are advised to use the function
-`riskParityPortfolioNewton`, which contains more information such as objective function
+`riskParityPortfolioNewton()`, which contains more information such as objective function
 value and the individual risk contributions associated with each asset.
 
 ```{r}
@@ -109,12 +109,12 @@ library(cccp)
 library(riskParityPortfolio)
 
 N <- 100
-V <- matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- V %*% t(V)
 b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
-op <- microbenchmark(rp_ccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
+op <- microbenchmark(rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
                      newton = risk_parity_portfolio_nn(Sigma, b, 1e-6, 50),
                      times = 10L)
 print(op)
@@ -122,14 +122,14 @@ par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
-As it can be observed, our implementation is quite faster than the interior-point method
+As it can be observed, our implementation is quite faster (a factor of ~3x) than the interior-point method
 used by `cccp`. We suggest the interested reader to check out chapter 11 of reference [@BoydCVXBook]
 for a thorough explanation on interior-point methods.
 
 # Modern risk parity portfolio
 The design of risk parity portfolios as solved by [@Spinu2013] is of paramount importance
 both for academia and industry. However, practitioners would like the ability to include
-additional constraints and terms desired in practice, such as the mean return, box constraints, etc,
+additional constraints and objective terms desired in practice, such as the mean return, box constraints, etc.,
 that often give rise to non-convex formulations.
 
 Towards the design of risk parity portfolios with more practical applicability,
@@ -147,7 +147,7 @@ library(PerformanceAnalytics)
 # generate synthetic data
 set.seed(123)
 N <- 10
-V <- matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- V %*% t(V)
 
 # uniform initial guess for the portfolio weights
@@ -172,7 +172,7 @@ As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
 
 Many more parameters are available in both `riskParityPortfolioSCA()` and `riskParityPortfolioGenSolver()`,
-please, check the documentation for their full description.
+please check the documentation for their full description.
 
 Now, let's explore the effects of having the mean return in the optimization problem.
 We recall that the optimization problem that include the mean return can be expressed as
@@ -182,7 +182,7 @@ R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1.
 \end{array}$$
 
-```{r}
+```{r, message=FALSE}
 library(scales)
 library(latex2exp)
 
@@ -190,15 +190,15 @@ N <- 100
 V <- matrix(rnorm(N ^ 2), nrow = N)
 Sigma <- V %*% t(V)
 mu <- runif(N)
-w0 <- riskParityPortfolioNewton(Sigma)$w
+w0 <- riskParityPortfolioNewton(Sigma)$w  # vanilla solution as starting point
 
-lambdas <- c(0, 10 ^ (seq(-5, 2, .25)))
+lmd_sweep <- c(0, 10 ^ (seq(-5, 2, .25)))
 mean_return_sca <- c()
 risk_parity_sca <- c()
 mean_return_gen <- c()
 risk_parity_gen <- c()
 
-for (lmd in lambdas) {
+for (lmd in lmd_sweep) {
   rpp_sca <- riskParityPortfolioSCA(Sigma, w0 = w0, mu = mu, lambda = lmd)
   rpp_gen <- riskParityPortfolioGenSolver(Sigma, w0 = w0, mu = mu, lambda = lmd)
   mean_return_sca <- c(mean_return_sca, rpp_sca$mean_return)
@@ -212,7 +212,7 @@ plot(risk_parity_sca, mean_return_sca, type = "b", pch=19, cex=.6, col=colors[1]
      xlab = "Risk", ylab = "Expected Return",
      ylim = c(min(mean_return_sca, mean_return_gen), max(mean_return_sca, mean_return_gen)),
      xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)),
-     main = "Expected Return x Risk for SCA and General Solver algorithms")
+     main = "Expected Return vs Risk for SCA and General Solver algorithms")
 lines(risk_parity_gen, mean_return_gen, type = "b", pch=19, cex=.6, col=colors[2])
 points(risk_parity_sca[1], mean_return_sca[1], pch=24)
 points(risk_parity_gen[1], mean_return_gen[1], pch=25)
@@ -224,6 +224,7 @@ It can be noted that both algorithms give almost the same results.
 Additionally, note that we have initialized them with the solution
 given by `riskParityPortfolioNewton()`, since it gives the exact and unique
 solution when $\lambda = 0$.
+
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
@@ -249,14 +250,14 @@ slsqp <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "slsqp")
 alabama <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "alabama")
 newton <- riskParityPortfolioNewton(Sigma)
 
-fincov <- RiskParity(Sigma)
-fincov_risk_contribution <- c(fincov * (Sigma %*% fincov))
+fincov_w <- RiskParity(Sigma)
+fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
 # The list of arguments is the following: 1) the initial guess for the portfolio weights,
 # 2) the covariance matrix of the asset returns, 3) the marginal risk contributions
-cccp_rp <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
-cccp_risk_contribution <- c(cccp_rp * (Sigma %*% cccp_rp))
+cccp_w <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
+cccp_risk_contribution <- c(cccp_w * (Sigma %*% cccp_w))
 
-barplot(rbind(sca$w, slsqp$w, alabama$w, newton$w, fincov, cccp_rp),
+barplot(rbind(sca$w, slsqp$w, alabama$w, newton$w, fincov_w, cccp_w),
         main = "Portfolios Weights", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:6],
         legend = c("sca", "slsqp", "alabama", "newton", "fincov", "cccp"))
@@ -273,65 +274,65 @@ solver with a hard coded initial guess for the portfolio weights. We conjecture
 that its poor initialization might be the reason for the convergence to a local solution.
 
 # Formulations
-In general, exact parity cannot be achieved and one needs to define a risk term to be
-minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$.
+In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
+minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
 A double-index summation can also be used:
 $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$.
 
 We condiser the risk formulations as presented in [@FengPal2015riskparity].
 They can be passed through the keyword argument `formulation` in the functions
-`riskParityPortfolioSCA` and `riskParityPortfolioGenSolver`.
+`riskParityPortfolioSCA()` and `riskParityPortfolioGenSolver()`.
 
 The name of the formulations and their mathematical expressions are presented as follows.
 
-## Formulation "rc-double-index"
+**Formulation "rc-double-index"**:
 $$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w    }\right)_{j}\right)^{2}
 $$
 
-## Formulation "rc-vs-theta"
+**Formulation "rc-vs-theta"**:
 $$
 R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - \theta \right)^{2}
 $$
 
-## Formulation "rc-over-var-vs-b"
+**Formulation "rc-over-var-vs-b"**:
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2}
 $$
 
-## Formulation "rc-over-b double-index"
+**Formulation "rc-over-b double-index"**:
 $$
 R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \frac{w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j}{b_j}\right)^{2}
 $$
 
-## Formulation "rc-vs-b-times-var"
+**Formulation "rc-vs-b-times-var"**:
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}
 $$
 
-## Formulation "rc-over-sd vs b-times-sd"
+**Formulation "rc-over-sd vs b-times-sd"**:
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
 $$
 
-## Formulation "rc-over-b vs theta"
+**Formulation "rc-over-b vs theta"**:
 $$
 R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \theta \right)^{2}
 $$
 
-## Formulation "rc-over-var"
+**Formulation "rc-over-var"**:
 $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
 $$
 
 In the subsections that follows we explore the computational time required by
-`riskParityPortfolioGenSolver` and `riskParityPortfolioSCA` for some of the formulations presented above.
-Additionally, we compare `riskParityPortfolioGenSolver` without using the gradient of the objective function.
+`riskParityPortfolioGenSolver()` and `riskParityPortfolioSCA()` for some of the formulations presented above.
+Additionally, we compare `riskParityPortfolioGenSolver()` without using the gradient of the objective function.
 
 ## Experiment: formulation "rc-over-var vs b"
 ```{r}
 set.seed(123)
 N <- 100
-V <- matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- V %*% t(V)
 
 res_slsqp <- riskParityPortfolioGenSolver(Sigma, 
@@ -449,7 +450,7 @@ legend("topright", legend=c("alabama-solver-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-## Experiment with real data
+## Experiment with real market data
 ```{r}
 library(sparseIndexTracking)
 library(xts)

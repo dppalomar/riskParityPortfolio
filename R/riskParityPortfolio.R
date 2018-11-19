@@ -521,8 +521,5 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                       maxiter = 50, tol = 1e-6) {
   w <- risk_parity_portfolio_nn(Sigma, b, tol, maxiter)
-  portfolio_results <- list()
-  portfolio_results$w <- w
-  portfolio_results$risk_contribution <- c(w * (Sigma %*% w))
-  return(portfolio_results)
+  return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }

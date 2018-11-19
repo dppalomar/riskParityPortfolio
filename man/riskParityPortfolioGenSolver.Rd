@@ -10,13 +10,15 @@ riskParityPortfolioGenSolver(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
   "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta",
   "rc-over-b vs theta"), method = c("slsqp", "alabama"),
-  use_gradient = TRUE, w0 = riskParityPortfolioDiagSigma(Sigma, b)$w,
-  theta0 = NA, maxiter = 500, ftol = 1e-06, wtol = 1e-06)
+  use_gradient = TRUE, w0 = NA, theta0 = NA, maxiter = 500,
+  ftol = 1e-06, wtol = 1e-06)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
 
 \item{b}{budget vector, aka, risk budgeting targets}
+
+\item{mu}{vector of expected returns}
 
 \item{budget}{boolean indicating whether to consider sum(w) = 1 as a
 constraint}
