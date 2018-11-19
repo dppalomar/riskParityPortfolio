@@ -56,15 +56,17 @@ compares the performance against existing packages such as `cccp` and `FinCovReg
 
 # Vanilla risk parity portfolio
 
-A risk parirty portfolio denotes a class of portfolios whose assets verify the following equalities:
+A risk parity portfolio denotes a class of portfolios whose assets verify the following equalities:
 $$\begin{equation}
 w_i \dfrac{\partial f(\mathbf{w})}{\partial w_i} = w_j \dfrac{\partial f(\mathbf{w})}{\partial w_j}, \forall i, j,
 \end{equation}
 $$
-where $f$ is a positively homogeneous function of degree one that measures the total risk of the portfolio.
+where $f$ is a positively homogeneous function of degree one that measures the total risk of the portfolio
+and $\mathbf{w}$ is the portfolio weight vector.
 In other words, the marginal risk contributions for every asset in a risk parity portfolio are equal.
 A common choice for $f$, for instance, is the standard deviation of the portfolio,
-which is usually called volatility, i.e., $f(\mathbf{w}) = \sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}$.
+which is usually called volatility, i.e., $f(\mathbf{w}) = \sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$,
+where $\boldsymbol{\Sigma}$ is the covariance matrix of the assets.
 
 With that particular choice of $f$, the risk parity requirements become
 $$
@@ -96,12 +98,36 @@ stated above attains the risk budget requirements in an exact fashion. Such solu
 computed using convex optimization packages, such as CVXR, but a faster implementation of a
 Newton algorithm, also proposed by [@Spinu2013], is implemented in this package.
 
-Let's see a comparison, in terms of computational time, of our Newton implementation
+A simple code example on how to design a risk parity portfolio is as follows:
+```{r, message = FALSE}
+library(riskParityPortfolio)
+library(PerformanceAnalytics)
+
+# generate synthetic data
+set.seed(123)
+N <- 10
+V <- matrix(rnorm(N^2), nrow = N)
+Sigma <- cov(V)
+# compute risk parity portfolio
+portfolio <- riskParityPortfolio(Sigma)
+# plot the portfolio designed by each method
+barplot(portfolio$w, main = "Portfolio Weights", xlab = "stocks", ylab = "dollars",
+        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"))
+# plot the risk contributions
+barplot(portfolio$risk_contribution,
+        main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
+        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"))
+```
+
+As presented earlier, the risk parity portfolios are designed in
+such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
+
+Now, let's see a comparison, in terms of computational time, of our Newton implementation
 against the `rp()` function from the `cccp` package. For a fair comparison, we
 implement the core algorithm in `risk_parity_portfolio_nn()`, which only computes the
-risk parity weights, just like `rp()`. However, users are advised to use the function
-`riskParityPortfolioNewton()`, which contains more information such as objective function
-value and the individual risk contributions associated with each asset.
+risk parity weights, just like `rp()`. However, users are advised to use the functions
+`riskParityPortfolioNewton()` or `riskParityPortfolio()`, which contains more information
+such as objective function value and the individual risk contributions associated with each asset.
 
 ```{r}
 library(microbenchmark)
@@ -122,8 +148,8 @@ par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
-As it can be observed, our implementation is quite faster (a factor of ~3x) than the interior-point method
-used by `cccp`. We suggest the interested reader to check out chapter 11 of reference [@BoydCVXBook]
+As it can be observed, our implementation is quite faster (a factor of ~6x) than the interior-point method
+used by `cccp`. We suggest the interested reader to check out Chapter 11 of reference [@BoydCVXBook]
 for a thorough explanation on interior-point methods.
 
 # Modern risk parity portfolio
@@ -139,55 +165,26 @@ framework in order to optimize the portfolio weights, which is based on the work
 [@FengPal2016monograph][@FengPal2015riskparity], whereas `riskParityPortfolioGenSolver()` uses general
 solvers widely used by the R community such as `slsqp` and `alabama`.
 
-A simple example on how to use those functions is as follows:
-```{r, message = FALSE}
-library(riskParityPortfolio)
-library(PerformanceAnalytics)
-
-# generate synthetic data
-set.seed(123)
-N <- 10
-V <- matrix(rnorm(N^2), nrow = N)
-Sigma <- V %*% t(V)
-
-# uniform initial guess for the portfolio weights
-w0 <- rep(1/N, N)
-
-# compute risk parity portfolios using different methods
-sca <- riskParityPortfolioSCA(Sigma, w0 = w0)
-slsqp <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "slsqp")
-alabama <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "alabama")
-newton <- riskParityPortfolioNewton(Sigma)
-
-# plot the portfolio designed by each method
-barplot(rbind(sca$w, slsqp$w, alabama$w, newton$w),
-        main = "Portfolio Weights", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:4], legend = c("sca", "slsqp", "alabama", "newton"))
-# plot the risk contribution associated with each portfolio
-barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contribution, newton$risk_contribution),
-        main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:4], legend = c("sca", "slsqp", "alabama", "newton"))
-```
-As presented earlier, the risk parity portfolios are designed in
-such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
-
-Many more parameters are available in both `riskParityPortfolioSCA()` and `riskParityPortfolioGenSolver()`,
-please check the documentation for their full description.
-
-Now, let's explore the effects of having the mean return in the optimization problem.
-We recall that the optimization problem that include the mean return can be expressed as
+Let's explore, for instance, the effects of having the expected return in the optimization problem.
+We recall that the optimization problem that include the expected return can be expressed as
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1.
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,
 \end{array}$$
+in which $R$ is the risk concentration function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return,
+and $\lambda$ is a trade-off parameter.
+
+The code below designes portfolios using both `riskParityPortfolioSCA()` and
+`riskParityPortfolioGenSolver()` and compares their results in terms of
+risk versus versus expected return.
 
 ```{r, message=FALSE}
 library(scales)
 library(latex2exp)
 
 N <- 100
-V <- matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- V %*% t(V)
 mu <- runif(N)
 w0 <- riskParityPortfolioNewton(Sigma)$w  # vanilla solution as starting point
@@ -225,6 +222,30 @@ Additionally, note that we have initialized them with the solution
 given by `riskParityPortfolioNewton()`, since it gives the exact and unique
 solution when $\lambda = 0$.
 
+Let's also compare the computational time between `riskParityPortfolioSCA()`
+and `riskParityPortfolioGenSolver()`:
+
+```{r}
+library(microbenchmark)
+library(cccp)
+library(riskParityPortfolio)
+
+N <- 100
+V <- matrix(rnorm(N^2), nrow = N)
+Sigma <- V %*% t(V)
+mu <- runif(N)
+w0 <- riskParityPortfolioNewton(Sigma)$w  # vanilla solution as starting point
+
+op <- microbenchmark(sca = riskParityPortfolioSCA(Sigma, w0 = w0, mu = mu, lambda = .5),
+                     gensolver = riskParityPortfolioGenSolver(Sigma, w0 = w0, mu = mu, lambda = .5),
+                     times = 10L)
+print(op)
+par(mar = c(7, 4, 4, 2))
+boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
+```
+
+The SCA method turns out to be faster, which might be explained by the fact that
+it solves quadratric programming problems, which are computationally cheap, at every iteration.
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
@@ -273,7 +294,18 @@ all the other functions perform the same. `FinCovRegularization` uses a general
 solver with a hard coded initial guess for the portfolio weights. We conjecture
 that its poor initialization might be the reason for the convergence to a local solution.
 
-# Formulations
+# Conclusions
+This package provides fast implementations for both vanilla risk parity and more
+general usually non-convex formulations. From the experiments performed in this vignette,
+we advise users to use `riskParityPortfolioNewton()` for the former case
+and `riskParityPortfolioSCA()` for the latter.
+
+We also provide a general function called `riskParityPortfolio()` which returns either the result
+of `riskParityPortfolioSCA()` initilizaed by the solution of `riskParityPortfolioNewton()`, in case
+the expected return or additional constraints are desired, or the solution of
+`riskParityPortfolioNewton()` itself for the vanilla formulation.
+
+# Appendix: Risk concentration formulations
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
 minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
 A double-index summation can also be used:
@@ -497,11 +529,6 @@ It can be noted that the general solvers greatly benefit from the additional gra
 information. Despite that fact, the SCA method still performs faster. Additionally,
 in some cases, the SCA method attains a better solution than the other methods.
 
-# Conclusions
-This package provides fast implementations for both vanilla risk parity and more
-general usually non-convex formulations. From the experiments performed in this vignette,
-we advise users to use `riskParityPortfolioNewton()` for the former case
-and `riskParityPortfolioSCA()` for the latter.
 
 # References {-}
 \setlength{\parindent}{-0.2in}
