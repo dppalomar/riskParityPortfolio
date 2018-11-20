@@ -123,12 +123,9 @@ As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
 
 Now, let's see a comparison, in terms of computational time, of our Newton implementation
-against the `rp()` function from the `cccp` package. For a fair comparison, we
-implement the core algorithm in `risk_parity_portfolio_nn()`, which only computes the
-risk parity weights, just like `rp()`. However, users are advised to use the functions
-`riskParityPortfolioNewton()` or `riskParityPortfolio()`, which contains more information
-such as objective function value and the individual risk contributions associated with each asset.
-
+against the `rp()` function from the `cccp` package. (For a fair comparison, instead of calling our function
+`riskParityPortfolio()`, we call direclty the core internal function `risk_parity_portfolio_nn()`, which only computes the
+risk parity weights, just like `rp()`.)
 ```{r}
 library(microbenchmark)
 library(cccp)
@@ -223,7 +220,7 @@ given by `riskParityPortfolioNewton()`, since it gives the exact and unique
 solution when $\lambda = 0$.
 
 Let's also compare the computational time between `riskParityPortfolioSCA()`
-and `riskParityPortfolioGenSolver()`:
+and `riskParityPortfolioGenSolver()`c
 
 ```{r}
 library(microbenchmark)
@@ -245,7 +242,7 @@ boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = F
 ```
 
 The SCA method turns out to be faster, which might be explained by the fact that
-it solves quadratric programming problems, which are computationally cheap, at every iteration.
+it solves a sequence of quadratic convex problems, which are computationally cheap.
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
