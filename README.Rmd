@@ -37,7 +37,7 @@ method proposed by Feng & Palomar (2015).
 
 This package is based on the papers:
 - Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
-  Risk Parity Portfolio Design" _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
+  Risk Parity Portfolio Design," _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.2452219)
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
   Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
@@ -59,7 +59,7 @@ citation("riskParityPortfolio")
 ```
 
 ## Usage of `riskParityPortfolio`
-```{r, eval = FALSE}
+```{r}
 library(riskParityPortfolio)
 
 # create covariance matrix
@@ -86,7 +86,7 @@ For more detailed information, please check the vignette [here](https://session.
 If you have used this package in your research, please consider citing the following papers:
 
 - Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
-  Risk Parity Portfolio Design" _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
+  Risk Parity Portfolio Design," _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015.  (https://doi.org/10.1109/TSP.2015.2452219)
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
   Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383

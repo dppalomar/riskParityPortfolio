@@ -6,12 +6,12 @@ install.packages(file.choose(), repos = NULL, type="source")
 # Installation from GitHub
 devtools::install_github("dppalomar/riskParityPortfolio")
 # Installation from CRAN
-install.packages("spectralGraphTopology")
+install.packages("riskParityPortfolio")
 # Getting help
 library(riskParityPortfolio)
-help(package="riskParityPortfolio")
+help(package = "riskParityPortfolio")
 package?riskParityPortfolio
-?riskParityPortfolioSCA
+?riskParityPortfolio
 
 
 ##
@@ -24,11 +24,11 @@ library(riskParityPortfolio)
 
 # Documentation
 devtools::document()  #to generate all documentation via roxygen
-?riskParityPortfolioSCA
+?riskParityPortfolio
 
 
 # Code tests
 #devtools::use_testthat()  # the first time
 devtools::test()
-covr::package_coverage()  #coverage of tests
+#covr::package_coverage()  #coverage of tests
 #goodpractice::gp()  # overall checks

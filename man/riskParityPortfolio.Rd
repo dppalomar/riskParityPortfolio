@@ -2,7 +2,7 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolio}
 \alias{riskParityPortfolio}
-\title{Fast risk parity portfolio design}
+\title{Design of Risk Parity Portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
