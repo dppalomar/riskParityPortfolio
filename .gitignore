@@ -8,3 +8,5 @@ README_cache
 *.log
 RiskParityPortfolio-vignette_cache/
 RiskParityPortfolio-vignette_files/
+src/*.so
+src/*.o
