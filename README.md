@@ -12,7 +12,7 @@ method proposed by Feng & Palomar (2015).
 
 This package is based on the papers:
 - Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
-  Risk Parity Portfolio Design" _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
+  Risk Parity Portfolio Design," _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.2452219)
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
   Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
@@ -47,13 +47,18 @@ Sigma <- cov(V)
 # risk-parity portfolio
 res <- riskParityPortfolio(Sigma)
 names(res)
+#> [1] "w"                 "risk_contribution"
 res$w
+#> [1] 0.27021817 0.21825439 0.34272617 0.14919325 0.01960802
 res$risk_contribution
+#> [1] 0.0006298104 0.0006298104 0.0006298104 0.0006298104 0.0006298104
 c(res$w * (Sigma %*% res$w))
+#> [1] 0.0006298104 0.0006298104 0.0006298104 0.0006298104 0.0006298104
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$risk_contribution/sum(res$risk_contribution)
+#> [1] 0.40 0.40 0.10 0.05 0.05
 ```
 
 ## Vignette
@@ -63,7 +68,7 @@ For more detailed information, please check the vignette [here](https://session.
 If you have used this package in your research, please consider citing the following papers:
 
 - Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
-  Risk Parity Portfolio Design" _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
+  Risk Parity Portfolio Design," _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015.  (https://doi.org/10.1109/TSP.2015.2452219)
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
   Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
