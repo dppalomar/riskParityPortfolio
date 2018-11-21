@@ -58,13 +58,6 @@ package?riskParityPortfolio
 citation("riskParityPortfolio")
 ```
 
-
-## Vignette
-For more detailed information, please check the vignette:
-[GitHub-html-vignette](https://rawgit.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio-vignette.html),
-[GitHub-pdf-vignette](https://rawgit.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio-vignette.pdf).
-
-
 ## Usage of `riskParityPortfolio`
 ```{r, eval = FALSE}
 library(riskParityPortfolio)
@@ -85,6 +78,9 @@ c(res$w * (Sigma %*% res$w))
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$risk_contribution/sum(res$risk_contribution)
 ```
+
+## Vignette
+For more detailed information, please check the vignette [here](https://session.run/riskParityPortfolio/_static/getting_started.html).
 
 ## Citation
 If you have used this package in your research, please consider citing the following papers:

@@ -330,10 +330,6 @@ package?riskParityPortfolio
 # Citing this work
 citation(&quot;riskParityPortfolio&quot;)</code></pre>
 </div>
-<div id="vignette" class="section level2">
-<h2>Vignette</h2>
-<p>For more detailed information, please check the vignette: <a href="https://rawgit.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio-vignette.html">GitHub-html-vignette</a>, <a href="https://rawgit.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio-vignette.pdf">GitHub-pdf-vignette</a>.</p>
-</div>
 <div id="usage-of-riskparityportfolio" class="section level2">
 <h2>Usage of <code>riskParityPortfolio</code></h2>
 <pre class="r"><code>library(riskParityPortfolio)
@@ -353,6 +349,10 @@ c(res$w * (Sigma %*% res$w))
 # risk budggeting portfolio
 res &lt;- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$risk_contribution/sum(res$risk_contribution)</code></pre>
+</div>
+<div id="vignette" class="section level2">
+<h2>Vignette</h2>
+<p>For more detailed information, please check the vignette <a href="https://session.run/riskParityPortfolio/_static/getting_started.html">here</a>.</p>
 </div>
 <div id="citation" class="section level2">
 <h2>Citation</h2>

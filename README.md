@@ -1,8 +1,8 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
-
 # riskParityPortfolio
+
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/riskParityPotfolio)](http://cran.r-project.org/package=riskParityPortfolio)
+[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/riskParityPortfolio)](http://cran.r-project.org/package=riskParityPortfolio)
+![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
 
 This package provides tools to design portfolios that follow the risk parity criteria.
 More precisely we implement a Newton method proposed by Spinu (2013), which formulates
@@ -34,13 +34,6 @@ package?riskParityPortfolio
 citation("riskParityPortfolio")
 ```
 
-
-## Vignette
-For more detailed information, please check the vignette:
-[GitHub-html-vignette](https://rawgit.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio-vignette.html),
-[GitHub-pdf-vignette](https://rawgit.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio-vignette.pdf).
-
-
 ## Usage of `riskParityPortfolio`
 
 ```r
@@ -62,6 +55,9 @@ c(res$w * (Sigma %*% res$w))
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$risk_contribution/sum(res$risk_contribution)
 ```
+
+## Vignette
+For more detailed information, please check the vignette [here](https://session.run/riskParityPortfolio/_static/getting_started.html).
 
 ## Citation
 If you have used this package in your research, please consider citing the following papers:
