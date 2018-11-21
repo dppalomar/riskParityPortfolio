@@ -2,21 +2,21 @@ citHeader("To cite 'riskParityPortfolio' in publications, please use:")
 
 citEntry(entry = "Manual",
          title        = "riskParityPortfolio: Design of Risk Parity Portfolios",
-         author       = personList(as.person("V. Ze"),
+         author       = personList(as.person("J. V. de M. Cardoso"),
                                    as.person("D. P. Palomar")),
          note         = "R package version 0.1.0",
          year         = "2018",
          url          = "https://CRAN.R-project.org/package=sparseIndexTracking",
 
          textVersion  =
-           paste("V. Ze and D. P. Palomar (2018).",
+           paste("J. V. de M. Cardoso and D. P. Palomar (2018).",
                  "riskParityPortfolio: Design of Risk Parity Portfolios.",
                  "R package version 0.1.0.",
                  "https://CRAN.R-project.org/package=riskParityPortfolio")
 )
 
 citEntry(entry = "Article",
-         title        = "SCRIP: Successive Convex Optimization Methods 
+         title        = "SCRIP: Successive Convex Optimization Methods
     for Risk Parity Portfolio Design",
          author       = personList(as.person("Y. Feng"),
                                    as.person("D. P. Palomar")),
@@ -29,7 +29,7 @@ citEntry(entry = "Article",
 
          textVersion  =
            paste("Y. Feng and D. P. Palomar,",
-                 "\"SCRIP: Successive Convex Optimization Methods 
+                 "\"SCRIP: Successive Convex Optimization Methods
     for Risk Parity Portfolio Design,\"",
                  "IEEE Transactions on Signal Processing,",
                  "vol. 63, no. 19, pp. 5285-5300, Oct. 2015.")
