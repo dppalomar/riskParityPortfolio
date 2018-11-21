@@ -122,10 +122,11 @@ barplot(portfolio$risk_contribution,
 As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
 
-Now, let's see a comparison, in terms of computational time, of our Newton implementation
-against the `rp()` function from the `cccp` package. (For a fair comparison, instead of calling our function
-`riskParityPortfolio()`, we call direclty the core internal function `risk_parity_portfolio_nn()`, which only computes the
-risk parity weights, just like `rp()`.)
+Now, let's see a comparison, in terms of computational time, of our Newton
+implementation against the `rp()` function from the `cccp` package. (For a fair
+comparison, instead of calling our function `riskParityPortfolio()`, we call
+directly the core internal function `risk_parity_portfolio_nn()`, which only
+computes the risk parity weights, just like `rp()`.)
 ```{r}
 library(microbenchmark)
 library(cccp)
@@ -138,7 +139,7 @@ b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
 op <- microbenchmark(rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-                     newton = risk_parity_portfolio_nn(Sigma, b, 1e-6, 50),
+                     newton = riskParityPortfolio:::risk_parity_portfolio_nn(Sigma, b, 1e-6, 50),
                      times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
@@ -153,14 +154,7 @@ for a thorough explanation on interior-point methods.
 The design of risk parity portfolios as solved by [@Spinu2013] is of paramount importance
 both for academia and industry. However, practitioners would like the ability to include
 additional constraints and objective terms desired in practice, such as the mean return, box constraints, etc.,
-that often give rise to non-convex formulations.
-
-Towards the design of risk parity portfolios with more practical applicability,
-this package provides two functions: `riskParityPortfolioSCA()` and
-`riskParityPortfolioGenSolver()`. The first one makes use of the successive convex approximation (SCA)
-framework in order to optimize the portfolio weights, which is based on the works of Feng & Palomar
-[@FengPal2016monograph][@FengPal2015riskparity], whereas `riskParityPortfolioGenSolver()` uses general
-solvers widely used by the R community such as `slsqp` and `alabama`.
+that often give rise to nonconvex formulations.
 
 Let's explore, for instance, the effects of having the expected return in the optimization problem.
 We recall that the optimization problem that include the expected return can be expressed as
@@ -172,9 +166,6 @@ R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
 in which $R$ is the risk concentration function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return,
 and $\lambda$ is a trade-off parameter.
 
-The code below designes portfolios using both `riskParityPortfolioSCA()` and
-`riskParityPortfolioGenSolver()` and compares their results in terms of
-risk versus versus expected return.
 
 ```{r, message=FALSE}
 library(scales)
@@ -182,67 +173,29 @@ library(latex2exp)
 
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
-Sigma <- V %*% t(V)
+Sigma <- cov(V)
 mu <- runif(N)
-w0 <- riskParityPortfolioNewton(Sigma)$w  # vanilla solution as starting point
+w0 <- riskParityPortfolio(Sigma)$w  # vanilla solution as starting point
 
 lmd_sweep <- c(0, 10 ^ (seq(-5, 2, .25)))
-mean_return_sca <- c()
-risk_parity_sca <- c()
-mean_return_gen <- c()
-risk_parity_gen <- c()
+mean_return <- c()
+risk_parity <- c()
 
 for (lmd in lmd_sweep) {
-  rpp_sca <- riskParityPortfolioSCA(Sigma, w0 = w0, mu = mu, lambda = lmd)
-  rpp_gen <- riskParityPortfolioGenSolver(Sigma, w0 = w0, mu = mu, lambda = lmd)
-  mean_return_sca <- c(mean_return_sca, rpp_sca$mean_return)
-  risk_parity_sca <- c(risk_parity_sca, rpp_sca$risk)
-  mean_return_gen <- c(mean_return_gen, rpp_gen$mean_return)
-  risk_parity_gen <- c(risk_parity_gen, rpp_gen$risk)
+  rpp <- riskParityPortfolio(Sigma, w0 = w0, mu = mu, lambda = lmd,
+                             formulation = "rc-double-index")
+  mean_return <- c(mean_return, rpp$mean_return)
+  risk_parity <- c(risk_parity, rpp$risk)
 }
 
-colors <- c(alpha("blue", .5), alpha("red", .5))
-plot(risk_parity_sca, mean_return_sca, type = "b", pch=19, cex=.6, col=colors[1],
+plot(risk_parity, mean_return, type = "b", pch=19, cex=.6, col=alpha("blue", .5),
      xlab = "Risk", ylab = "Expected Return",
-     ylim = c(min(mean_return_sca, mean_return_gen), max(mean_return_sca, mean_return_gen)),
-     xlim = c(min(risk_parity_sca, risk_parity_gen), max(risk_parity_sca, risk_parity_gen)),
-     main = "Expected Return vs Risk for SCA and General Solver algorithms")
-lines(risk_parity_gen, mean_return_gen, type = "b", pch=19, cex=.6, col=colors[2])
-points(risk_parity_sca[1], mean_return_sca[1], pch=24)
-points(risk_parity_gen[1], mean_return_gen[1], pch=25)
-legend("bottomright", legend=c("SCA", "GenSolver", TeX("SCA w/ $\\lambda = 0$"), TeX("GenSolver w/ $\\lambda = 0$")),
-       col=c(colors, "black", "black"), pch = c(19, 19, 24, 25))
+     ylim = c(min(mean_return), max(mean_return)),
+     xlim = c(min(risk_parity), max(risk_parity)),
+     main = "Expected Return vs Risk")
+points(risk_parity[1], mean_return[1], pch=24)
+legend("bottomright", legend=TeX("$\\lambda = 0$"), col="black", pch = 24)
 ```
-
-It can be noted that both algorithms give almost the same results.
-Additionally, note that we have initialized them with the solution
-given by `riskParityPortfolioNewton()`, since it gives the exact and unique
-solution when $\lambda = 0$.
-
-Let's also compare the computational time between `riskParityPortfolioSCA()`
-and `riskParityPortfolioGenSolver()`c
-
-```{r}
-library(microbenchmark)
-library(cccp)
-library(riskParityPortfolio)
-
-N <- 100
-V <- matrix(rnorm(N^2), nrow = N)
-Sigma <- V %*% t(V)
-mu <- runif(N)
-w0 <- riskParityPortfolioNewton(Sigma)$w  # vanilla solution as starting point
-
-op <- microbenchmark(sca = riskParityPortfolioSCA(Sigma, w0 = w0, mu = mu, lambda = .5),
-                     gensolver = riskParityPortfolioGenSolver(Sigma, w0 = w0, mu = mu, lambda = .5),
-                     times = 10L)
-print(op)
-par(mar = c(7, 4, 4, 2))
-boxplot(op, ylab = "Time in Milliseconds", xlab = NULL, unit = "ms", outline = FALSE, las = 2)
-```
-
-The SCA method turns out to be faster, which might be explained by the fact that
-it solves a sequence of quadratic convex problems, which are computationally cheap.
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
@@ -257,17 +210,13 @@ library(cccp)
 set.seed(123)
 N <- 10
 V <- matrix(rnorm(N ^ 2), nrow = N)
-Sigma <- V %*% t(V)
+Sigma <- cov(V)
 
 # uniform initial guess for the portfolio weights
 w0 <- rep(1/N, N)
 
 # compute risk parity portfolios using different methods
-sca <- riskParityPortfolioSCA(Sigma, w0 = w0)
-slsqp <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "slsqp")
-alabama <- riskParityPortfolioGenSolver(Sigma, w0 = w0, method = "alabama")
-newton <- riskParityPortfolioNewton(Sigma)
-
+rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
 fincov_w <- RiskParity(Sigma)
 fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
 # The list of arguments is the following: 1) the initial guess for the portfolio weights,
@@ -275,15 +224,14 @@ fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
 cccp_w <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
 cccp_risk_contribution <- c(cccp_w * (Sigma %*% cccp_w))
 
-barplot(rbind(sca$w, slsqp$w, alabama$w, newton$w, fincov_w, cccp_w),
+barplot(rbind(rpp$w, fincov_w, cccp_w),
         main = "Portfolios Weights", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:6],
-        legend = c("sca", "slsqp", "alabama", "newton", "fincov", "cccp"))
-barplot(rbind(sca$risk_contribution, slsqp$risk_contribution, alabama$risk_contribution,
-              newton$risk_contribution, fincov_risk_contribution, cccp_risk_contribution),
+        beside = TRUE, col = rainbow8equal[1:3],
+        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp"))
+barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:6],
-        legend = c("sca", "slsqp", "alabama", "newton", "fincov", "cccp"))
+        beside = TRUE, col = rainbow8equal[1:3],
+        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp"))
 ```
 
 Apart from the `RiskParity` function from the `FinCovRegularization` package,
@@ -291,26 +239,15 @@ all the other functions perform the same. `FinCovRegularization` uses a general
 solver with a hard coded initial guess for the portfolio weights. We conjecture
 that its poor initialization might be the reason for the convergence to a local solution.
 
-# Conclusions
-This package provides fast implementations for both vanilla risk parity and more
-general usually non-convex formulations. From the experiments performed in this vignette,
-we advise users to use `riskParityPortfolioNewton()` for the former case
-and `riskParityPortfolioSCA()` for the latter.
-
-We also provide a general function called `riskParityPortfolio()` which returns either the result
-of `riskParityPortfolioSCA()` initilizaed by the solution of `riskParityPortfolioNewton()`, in case
-the expected return or additional constraints are desired, or the solution of
-`riskParityPortfolioNewton()` itself for the vanilla formulation.
-
-# Appendix: Risk concentration formulations
+# Appendix I: Risk concentration formulations
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
 minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
 A double-index summation can also be used:
 $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$.
 
-We condiser the risk formulations as presented in [@FengPal2015riskparity].
-They can be passed through the keyword argument `formulation` in the functions
-`riskParityPortfolioSCA()` and `riskParityPortfolioGenSolver()`.
+We consider the risk formulations as presented in [@FengPal2015riskparity].
+They can be passed through the keyword argument `formulation` in the function
+`riskParityPortfolio`.
 
 The name of the formulations and their mathematical expressions are presented as follows.
 
@@ -353,9 +290,12 @@ $$
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
 $$
 
+# Appendix II: Computational time
+
 In the subsections that follows we explore the computational time required by
-`riskParityPortfolioGenSolver()` and `riskParityPortfolioSCA()` for some of the formulations presented above.
-Additionally, we compare `riskParityPortfolioGenSolver()` without using the gradient of the objective function.
+`method="sca"`, `method="alabama"`, and `method="slsqp"` for some of the formulations presented above.
+Additionally, we compare `method="alabama"` and `method="slsqp"` without using the
+gradient of the objective function.
 
 ## Experiment: formulation "rc-over-var vs b"
 ```{r}
@@ -363,22 +303,15 @@ set.seed(123)
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- V %*% t(V)
+w0 <- riskParityPortfolio(Sigma, formulation = "diag")$w
 
-res_slsqp <- riskParityPortfolioGenSolver(Sigma, 
-                                          formulation = "rc-over-var vs b",
-                                          method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var vs b",
-                                                 method = "slsqp",
-                                                 use_gradient = FALSE)
-res_alabama <- riskParityPortfolioGenSolver(Sigma,
-                                            formulation = "rc-over-var vs b",
-                                            method = "alabama")
-res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                   formulation = "rc-over-var vs b",
-                                                   method = "alabama",
-                                                   use_gradient = FALSE)
-res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var vs b")
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "slsqp")
+res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                        method = "slsqp", use_gradient = FALSE)
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "alabama")
+res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                          method = "alabama", use_gradient = FALSE)
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "sca")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -393,31 +326,23 @@ lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
       col = "black")
 
-legend("topright", legend=c("alabama-solver-nograd",
-                            "alabama-solver",
-                            "slsqp-solver-nograd",
-                            "slsqp-solver",
+legend("topright", legend=c("alabama-nograd",
+                            "alabama",
+                            "slsqp-nograd",
+                            "slsqp",
                             "sca"),
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
 ## Experiment: formulation "rc vs b-times-var"
 ```{r}
-res_slsqp <- riskParityPortfolioGenSolver(Sigma,
-                                          formulation = "rc vs b-times-var",
-                                          method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc vs b-times-var",
-                                                 method = "slsqp",
-                                                 use_gradient = FALSE)
-res_alabama <- riskParityPortfolioGenSolver(Sigma,
-                                            formulation = "rc vs b-times-var",
-                                            method = "alabama")
-res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                   formulation = "rc vs b-times-var",
-                                                   method = "alabama",
-                                                   use_gradient = FALSE)
-res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc vs b-times-var")
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var", method = "slsqp")
+res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
+                                        method = "slsqp", use_gradient = FALSE)
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var", method = "alabama")
+res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
+                                          method = "alabama", use_gradient = FALSE)
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var", method = "sca")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -432,31 +357,23 @@ lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
       col = "black")
 
-legend("topright", legend=c("alabama-solver-nograd",
-                            "alabama-solver",
-                            "slsqp-solver-nograd",
-                            "slsqp-solver",
+legend("topright", legend=c("alabama-nograd",
+                            "alabama",
+                            "slsqp-nograd",
+                            "slsqp",
                             "sca"),
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
 ## Experiment: formulation "rc-over-sd vs b-times-sd"
 ```{r}
-res_slsqp <- riskParityPortfolioGenSolver(Sigma,
-                                          formulation = "rc-over-sd vs b-times-sd",
-                                          method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-sd vs b-times-sd",
-                                                 method = "slsqp",
-                                                 use_gradient = FALSE)
-res_alabama <- riskParityPortfolioGenSolver(Sigma,
-                                            formulation = "rc-over-sd vs b-times-sd",
-                                            method = "alabama")
-res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                   formulation = "rc-over-sd vs b-times-sd",
-                                                   method = "alabama",
-                                                   use_gradient = FALSE)
-res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-sd vs b-times-sd")
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd", method = "slsqp")
+res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
+                                        method = "slsqp", use_gradient = FALSE)
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd", method = "alabama")
+res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
+                                          method = "alabama", use_gradient = FALSE)
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd", method = "sca")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -471,36 +388,33 @@ lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
       col = "black")
 
-legend("topright", legend=c("alabama-solver-nograd",
-                            "alabama-solver",
-                            "slsqp-solver-nograd",
-                            "slsqp-solver",
+legend("topright", legend=c("alabama-nograd",
+                            "alabama",
+                            "slsqp-nograd",
+                            "slsqp",
                             "sca"),
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
 ## Experiment with real market data
+Now, let's query some real market data using the package `sparseIndexTracking`
+and check the performance of the different methods.
+
 ```{r}
 library(sparseIndexTracking)
 library(xts)
 data(INDEX_2010)
 Sigma <- cov(INDEX_2010$X)
+N <- nrow(Sigma)
+w0 <- rep(1/N, N)
 
-res_slsqp <- riskParityPortfolioGenSolver(Sigma,
-                                          formulation = "rc-over-var vs b",
-                                          method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                 formulation = "rc-over-var vs b",
-                                                 method = "slsqp",
-                                                 use_gradient = FALSE)
-res_alabama <- riskParityPortfolioGenSolver(Sigma,
-                                            formulation = "rc-over-var vs b",
-                                            method = "alabama")
-res_alabama_nograd <- riskParityPortfolioGenSolver(Sigma,
-                                                   formulation = "rc-over-var vs b",
-                                                   method = "alabama",
-                                                   use_gradient = FALSE)
-res_sca <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var vs b")
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "slsqp")
+res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                        method = "slsqp", use_gradient = FALSE)
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "alabama")
+res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                          method = "alabama", use_gradient = FALSE)
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "sca")
 
 plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
@@ -514,17 +428,17 @@ lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
 lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
       col = "black")
 
-legend("topright", legend=c("alabama-solver-nograd",
-                            "alabama-solver",
-                            "slsqp-solver-nograd",
-                            "slsqp-solver",
+legend("topright", legend=c("alabama-nograd",
+                            "alabama",
+                            "slsqp-nograd",
+                            "slsqp",
                             "sca"),
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
-It can be noted that the general solvers greatly benefit from the additional gradient
-information. Despite that fact, the SCA method still performs faster. Additionally,
-in some cases, the SCA method attains a better solution than the other methods.
+It can be noted that the `"alabama"` and `"slsqp"` greatly benefit from the additional gradient
+information. Despite that fact, the `"sca"` method still performs faster. Additionally,
+in some cases, the `"sca"` method attains a better solution than the other methods.
 
 
 # References {-}

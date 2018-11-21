@@ -6,18 +6,3 @@ risk_parity_portfolio_nn <- function(Sigma, b, tol, maxiter) {
     .Call('_riskParityPortfolio_risk_parity_portfolio_nn', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
 }
 
-#' @export
-gradient_log_formulation <- function(Sigma, xk, b) {
-    .Call('_riskParityPortfolio_gradient_log_formulation', PACKAGE = 'riskParityPortfolio', Sigma, xk, b)
-}
-
-#' @export
-hessian_log_formulation <- function(Sigma, xk, b) {
-    .Call('_riskParityPortfolio_hessian_log_formulation', PACKAGE = 'riskParityPortfolio', Sigma, xk, b)
-}
-
-#' @export
-obj_function_log_formulation <- function(Sigma, xk, b) {
-    .Call('_riskParityPortfolio_obj_function_log_formulation', PACKAGE = 'riskParityPortfolio', Sigma, xk, b)
-}
-

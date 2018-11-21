@@ -42,16 +42,14 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
   return xk / xk.sum();
 }
 
-//' @export
-// [[Rcpp::export]]
+
 Eigen::VectorXd gradient_log_formulation(const Eigen::MatrixXd& Sigma,
                                          const Eigen::VectorXd& xk,
                                          const Eigen::VectorXd& b) {
   return Sigma * xk - (b.array() / xk.array()).matrix();
 }
 
-//' @export
-// [[Rcpp::export]]
+
 Eigen::MatrixXd hessian_log_formulation(const Eigen::MatrixXd& Sigma,
                                         const Eigen::VectorXd& xk,
                                         const Eigen::VectorXd& b) {
@@ -59,8 +57,7 @@ Eigen::MatrixXd hessian_log_formulation(const Eigen::MatrixXd& Sigma,
   return Sigma + M;
 }
 
-//' @export
-// [[Rcpp::export]]
+
 double obj_function_log_formulation(const Eigen::MatrixXd& Sigma,
                                     const Eigen::VectorXd& xk,
                                     const Eigen::VectorXd& b) {

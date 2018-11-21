@@ -67,15 +67,6 @@ Risk parity portfolio optimization using successive convex
              approximation (SCA) to cast the optimization problem into a
              series of QP problems fastly solvable using quadprog::solve.QP.
 }
-\examples{
-library(riskParityPortfolio)
-# generate synthetic covariance matrix
-N <- 100
-V <- matrix(rnorm(N ^ 2), nrow = N)
-Sigma <- V \%*\% t(V)
-# compute optimal risk parity portfolio
-portfolio <- riskParityPortfolioSCA(Sigma, formulation = "rc-over-var vs b")
-}
 \author{
 Daniel Palomar and Ze Vinicius
 }

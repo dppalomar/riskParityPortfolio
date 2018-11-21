@@ -2,14 +2,13 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolio}
 \alias{riskParityPortfolio}
-\title{Fast risk parity portfolio design using Newton method
-       combined with the successive convex approximation}
+\title{Fast risk parity portfolio design}
 \usage{
 riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
-  formulation = NA, w0 = NA, theta0 = NA, gamma = 0.9,
-  zeta = 1e-07, tau = NA, maxiter = 500, ftol = 1e-06,
-  wtol = 1e-06)
+  method = c("sca", "alabama", "slsqp"), formulation = NA, w0 = NA,
+  theta0 = NA, gamma = 0.9, zeta = 1e-07, tau = NA,
+  maxiter = 500, ftol = 1e-06, wtol = 1e-06, use_gradient = TRUE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
@@ -27,12 +26,14 @@ constraint}
 w < 0}
 
 \item{formulation}{string indicating the formulation to be used for the risk
-parity optimization problem. It must be one of: "rc-double-index",
+parity optimization problem. It must be one of: "diag", "rc-double-index",
 "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
 "rc-over-b vs theta". If formulation is NA and no additional terms
 or constraints are set, such as expected return or shortselling, then
-the vanilla risk parity portfolio will be returned.}
+the vanilla risk parity portfolio will be returned. If formulation is
+"diag" then the analytical solution of the risk parity optimization for
+for a diagonal covariance matrix will be returned.}
 
 \item{w0}{initial value for the portfolio wieghts. Default is the optimum
 portfolio weights for the case when Sigma is diagonal.}
@@ -51,6 +52,11 @@ vector of portfolio weights will be used}
 \item{ftol}{convergence tolerance on the value of the objective function}
 
 \item{wtol}{convergence tolerance on the values of the parameters}
+
+\item{use_gradient}{(this parameter is meaningful only if method is either
+"alabama" or "slsqp") if TRUE, gradients of the objective function wrt to the
+parameters will be used. This is strongly recommended to achieve faster
+results.}
 }
 \value{
 a list containing possibly the following elements:
@@ -64,8 +70,9 @@ The value `1` means it has converged, and `0` otherwise.}
 }
 \description{
 This functions uses the vanilla (Newton) risk parity portfolio
-             in order to initialize the SCA method. This convenience function
-             helps to put together the advantages of both methods.
+             in order to initialize the either the SCA method or a general solver.
+             This convenience function helps to put together the advantages
+             of both methods.
 }
 \author{
 Daniel Palomar and Ze Vinicius
