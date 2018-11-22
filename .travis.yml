@@ -6,3 +6,12 @@ matrix:
         - release
         - devel
       cache: packages
+      r_packages:
+        - knitr
+        - rmarkdown
+        - bookdown
+        - prettydoc
+        - covr
+        - PerformanceAnalytics
+      after_success:
+        - Rscript -e 'library(covr); codecov()'
