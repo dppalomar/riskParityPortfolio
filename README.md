@@ -1,9 +1,6 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
-
 # riskParityPortfolio
 
+[![Travis-CI-Badge](https://travis-ci.org/mirca/riskParityPortfolio.svg?branch=master)](https://travis-ci.org/mirca/riskParityPortfolio)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/riskParityPotfolio)](http://cran.r-project.org/package=riskParityPortfolio)
 [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/riskParityPortfolio)](http://cran.r-project.org/package=riskParityPortfolio)
 ![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
@@ -49,16 +46,16 @@ res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
 res$w
-#> [1] 0.42248432 0.06490164 0.02466496 0.10580655 0.38214252
+#> [1] 0.29316503 0.09690805 0.13718417 0.17923748 0.29350528
 res$risk_contribution
-#> [1]  4.690518e-17  0.000000e+00 -1.369181e-18  0.000000e+00 -4.242634e-17
+#> [1] 0.004191675 0.004191675 0.004191675 0.004191675 0.004191675
 c(res$w * (Sigma %*% res$w))
-#> [1]  4.690518e-17  0.000000e+00 -1.369181e-18  0.000000e+00 -4.242634e-17
+#> [1] 0.004191675 0.004191675 0.004191675 0.004191675 0.004191675
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$risk_contribution/sum(res$risk_contribution)
-#> [1] 1 0 0 0 0
+#> [1] 0.40 0.40 0.10 0.05 0.05
 ```
 
 ## Vignette
