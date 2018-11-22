@@ -39,12 +39,17 @@ Imports:
     Rcpp,
     RcppEigen,
     alabama,
-    nloptr
+    nloptr,
+    quadprog
 Remotes:
     google/patrick
 Suggests:
     testthat,
-    patrick
+    patrick,
+    knitr,
+    rmarkdown,
+    bookdown,
+    prettydoc
 VignetteBuilder:
     knitr,
     rmarkdown,

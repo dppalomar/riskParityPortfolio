@@ -7,11 +7,8 @@ matrix:
         - devel
       cache: packages
       r_packages:
-        - knitr
-        - rmarkdown
-        - bookdown
-        - prettydoc
         - covr
-        - PerformanceAnalytics
+      r_build_args: "--no-build-vignettes"
+      r_check_args: "--no-build-vignettes"
       after_success:
         - Rscript -e 'library(covr); codecov()'
