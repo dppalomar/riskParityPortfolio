@@ -6,3 +6,8 @@ matrix:
         - release
         - devel
       cache: packages
+      r_packages:
+        - knitr
+        - rmarkdown
+        - bookdown
+        - prettydoc
