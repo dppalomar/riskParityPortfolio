@@ -54,8 +54,8 @@ used by practitioners in the financial industry, with the package
 `riskParityPortfolio`, gives a description of the algorithms used, and
 compares the performance against existing packages such as `cccp` and `FinCovRegularization`.
 
-# Vanilla risk parity portfolio
 
+# Vanilla risk parity portfolio
 A risk parity portfolio denotes a class of portfolios whose assets verify the following equalities:
 $$\begin{equation}
 w_i \dfrac{\partial f(\mathbf{w})}{\partial w_i} = w_j \dfrac{\partial f(\mathbf{w})}{\partial w_j}, \forall i, j,
@@ -84,6 +84,11 @@ $$
 $$
 where $\mathbf{b} \triangleq (b_1, b_2, ..., b_N)$ is the vector of desired
 marginal risk contributions.
+
+In the case that $\boldsymbol{\Sigma}$ is diagonal and with the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w}\ge\mathbf{0}$, the risk budgeting portfolio is
+$$w_i = \frac{\sqrt{b_i}/\sqrt{\Sigma_{ii}}}{\sum_{k=1}^N\sqrt{b_k}/\sqrt{\Sigma_{kk}}}, \qquad i=1,\ldots,N.$$
+
+However, for non-diagonal $\boldsymbol{\Sigma}$ or with other additional constraints or objective function terms, a closed-form solution does not exist and some optimization procedures have to be constructed. The previous diagonal solution can always be used and is called _naive risk budgeting portfolio_.
 
 With the goal of designing risk budget portfolios, Spinu proposed in [@Spinu2013] to solve the
 following convex optimization problem:
@@ -150,22 +155,21 @@ As it can be observed, our implementation is quite faster (a factor of ~6x) than
 used by `cccp`. We suggest the interested reader to check out Chapter 11 of reference [@BoydCVXBook]
 for a thorough explanation on interior-point methods.
 
+
 # Modern risk parity portfolio
 The design of risk parity portfolios as solved by [@Spinu2013] is of paramount importance
 both for academia and industry. However, practitioners would like the ability to include
-additional constraints and objective terms desired in practice, such as the mean return, box constraints, etc.,
-that often give rise to nonconvex formulations.
+additional constraints and objective terms desired in practice, such as the mean return, box constraints, etc.
+In such cases, the risk-contribution constraints cannot be met with equality and gives rise to nonconvex formulations.
 
-Let's explore, for instance, the effects of having the expected return in the optimization problem.
-We recall that the optimization problem that include the expected return can be expressed as
+Let's explore, for instance, the effect of including the expected return as an additional objective in the optimization problem.
+The problem can be formulated as
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
 \end{array}$$
-in which $R$ is the risk concentration function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return,
-and $\lambda$ is a trade-off parameter.
-
+where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda$ is a trade-off parameter.
 
 ```{r, message=FALSE}
 library(scales)
@@ -209,7 +213,7 @@ library(cccp)
 # generate synthetic data
 set.seed(123)
 N <- 10
-V <- matrix(rnorm(N ^ 2), nrow = N)
+V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
 
 # uniform initial guess for the portfolio weights
@@ -234,8 +238,8 @@ barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contrib
         legend = c("riskParityPortfolio", "FinCovRegularization", "cccp"))
 ```
 
-Apart from the `RiskParity` function from the `FinCovRegularization` package,
-all the other functions perform the same. `FinCovRegularization` uses a general
+Apart from the `RiskParity()` function from the `FinCovRegularization` package,
+the other functions perform the same. `FinCovRegularization` uses a general
 solver with a hard coded initial guess for the portfolio weights. We conjecture
 that its poor initialization might be the reason for the convergence to a local solution.
 
