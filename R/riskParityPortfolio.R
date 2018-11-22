@@ -86,31 +86,42 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
   if (has_theta) {
+    ones <- rep(1, N)
+    zeros <- rep(0, N+1)
     if (budget && !shortselling) {
-      Amat <- cbind(rbind(matrix(1, N, 1), 0), diag(c(rep(1, N), 0)))
-      bvec <- c(1, rep(0, N+1))
+      Amat <- cbind(c(ones, 0), diag(c(ones, 0)))
+      bvec <- c(1, zeros)
       meq <- 1
-    } else if (budget) {
+    } else if (budget && shortselling) {
       Amat <- rbind(matrix(1, N, 1), 0)
       bvec <- 1
       meq <- 1
-    } else if (!shortselling) {
-      Amat <- diag(c(rep(1, N), 0))
-      bvec <- rep(0, N+1)
+    } else if (!budget && !shortselling) {
+      Amat <- diag(c(ones, 0))
+      bvec <- zeros
+      meq <- 0
+    } else {
+      Amat <- diag(zeros)
+      bvec <- zeros
       meq <- 0
     }
   } else {
+    zeros <- rep(0, N)
     if (budget && !shortselling) {
-      Amat <- cbind(matrix(1, N, 1), diag(N))
-      bvec <- c(1, rep(0, N))
+      Amat <- cbind(rep(1, N), diag(N))
+      bvec <- c(1, zeros)
       meq <- 1
-    } else if (budget) {
+    } else if (budget && shortselling) {
       Amat <- matrix(1, N, 1)
       bvec <- 1
       meq <- 1
-    } else if (!shortselling) {
+    } else if (!budget && !shortselling) {
       Amat <- diag(N)
       bvec <- rep(0, N)
+      meq <- 0
+    } else {
+      Amat <- diag(zeros)
+      bvec <- zeros
       meq <- 0
     }
   }
@@ -306,7 +317,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   # set initial value for theta
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
-    if (is.na(theta0)) {
+    if (is.null(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
       theta0 <- mean(r0 / b)
     }
