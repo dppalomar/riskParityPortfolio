@@ -5,10 +5,11 @@
 \title{Design of Risk Parity Portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-  mu = NA, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
-  method = c("sca", "alabama", "slsqp"), formulation = NA, w0 = NA,
-  theta0 = NA, gamma = 0.9, zeta = 1e-07, tau = NA,
-  maxiter = 500, ftol = 1e-06, wtol = 1e-06, use_gradient = TRUE)
+  mu = NULL, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
+  method = c("sca", "alabama", "slsqp"), formulation = NULL,
+  w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
+  tau = NULL, maxiter = 500, ftol = 1e-06, wtol = 1e-06,
+  use_gradient = TRUE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
@@ -29,7 +30,7 @@ w < 0}
 parity optimization problem. It must be one of: "diag", "rc-double-index",
 "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-"rc-over-b vs theta". If formulation is NA and no additional terms
+"rc-over-b vs theta". If formulation is NULL and no additional terms
 or constraints are set, such as expected return or shortselling, then
 the vanilla risk parity portfolio will be returned. If formulation is
 "diag" then the analytical solution of the risk parity optimization for
@@ -38,14 +39,14 @@ for a diagonal covariance matrix will be returned.}
 \item{w0}{initial value for the portfolio wieghts. Default is the optimum
 portfolio weights for the case when Sigma is diagonal.}
 
-\item{theta0}{initial value for theta. If NA, the optimum solution for a fixed
+\item{theta0}{initial value for theta. If NULL, the optimum solution for a fixed
 vector of portfolio weights will be used}
 
 \item{gamma}{learning rate}
 
 \item{zeta}{factor used to decrease the learning rate at each iteration}
 
-\item{tau}{regularization factor. If NA, a meaningful value will be used}
+\item{tau}{regularization factor. If NULL, a meaningful value will be used}
 
 \item{maxiter}{maximum number of iterations for the SCA loop}
 
@@ -70,7 +71,7 @@ The value `1` means it has converged, and `0` otherwise.}
 }
 \description{
 This functions uses the vanilla (Newton) risk parity portfolio
-             in order to initialize the either the SCA method or a general solver.
+             in order to initialize either the SCA method or a general solver.
              This convenience function helps to put together the advantages
              of both methods.
 }

@@ -39,11 +39,11 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #        "rc-over-b vs theta".
 # @param w0 initial value for the portfolio wieghts. Default is the optimum
 #        portfolio weights for the case when Sigma is diagonal.
-# @param theta0 initial value for theta. If NA, the optimum solution for a fixed
-#        vector of portfolio weights will be used
+# @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
+#        vector of portfolio weights will be used.
 # @param gamma learning rate
 # @param zeta factor used to decrease the learning rate at each iteration
-# @param tau regularization factor. If NA, a meaningful value will be used
+# @param tau regularization factor. If NULL, a meaningful value will be used
 # @param maxiter maximum number of iterations for the SCA loop
 # @param ftol convergence tolerance on the value of the objective function
 # @param wtol convergence tolerance on the values of the parameters
@@ -58,7 +58,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                   mu = NA, lambda = 1e-4,
+                                   mu = NULL, lambda = 1e-4,
                                    budget = TRUE, shortselling = FALSE,
                                    formulation = c("rc-double-index",
                                                    "rc-over-b-double-index",
@@ -68,21 +68,21 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc vs b-times-var",
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
-                                   w0 = NA, theta0 = NA, gamma = .9, zeta = 1e-7,
-                                   tau = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
+                                   w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
+                                   tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (anyNA(w0))
+  if (is.null(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
-    if (is.na(theta0))
+    if (is.null(theta0))
       theta0 <- mean(w0 * (Sigma %*% w0))
     w0 <- as.vector(c(w0, theta0))
   }
 
-  if (is.na(tau))
+  if (is.null(tau))
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
   if (has_theta) {
@@ -159,7 +159,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          stop("formulation ", formulation, " is not included.")
   )
 
-  has_mu <- !anyNA(mu)
+  has_mu <- !is.null(mu)
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
@@ -266,11 +266,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #        results
 # @param w0 initial value for the portfolio wieghts. Default is the optimum
 #        portfolio weights for the case when Sigma is diagonal
-# @param theta0 initial value for theta. If NA, the optimum solution for a fixed
+# @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
 #        vector of portfolio weights will be used
 # @param gamma learning rate
 # @param zeta factor used to decrease the learning rate at each iteration
-# @param tau regularization factor. If NA, a meaningful value will be used
+# @param tau regularization factor. If NULL, a meaningful value will be used
 # @param maxiter maximum number of iterations for the outer loop of the solver
 # @param ftol convergence tolerance on the value of the objective function
 # @param wtol convergence tolerance on the values of the parameters
@@ -285,7 +285,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                         mu = NA, lambda = 1e-4,
+                                         mu = NULL, lambda = 1e-4,
                                          budget = TRUE, shortselling = FALSE,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
@@ -296,11 +296,10 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                                          "rc vs theta",
                                                          "rc-over-b vs theta"),
                                          method = c("slsqp", "alabama"),
-                                         use_gradient = TRUE,
-                                         w0 = NA,
-                                         theta0 = NA, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
+                                         use_gradient = TRUE, w0 = NULL, theta0 = NULL,
+                                         maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if(anyNA(w0))
+  if(is.null(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
   formulation <- match.arg(formulation)
@@ -395,7 +394,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   )
   if (!use_gradient)
     R_grad <- NULL
-  has_mu <- !anyNA(mu)
+  has_mu <- !is.null(mu)
   if (has_mu) {
     wrap_R <- function(R, lambda, mu, has_theta, N) {
       if (has_theta) {
@@ -499,7 +498,7 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 #' @title Design of Risk Parity Portfolios
 #'
 #' @description This functions uses the vanilla (Newton) risk parity portfolio
-#'              in order to initialize the either the SCA method or a general solver.
+#'              in order to initialize either the SCA method or a general solver.
 #'              This convenience function helps to put together the advantages
 #'              of both methods.
 #'
@@ -511,22 +510,23 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
 #'        w < 0
+#" @param method which optimization method to use.
 #' @param formulation string indicating the formulation to be used for the risk
 #'        parity optimization problem. It must be one of: "diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 #'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#'        "rc-over-b vs theta". If formulation is NA and no additional terms
+#'        "rc-over-b vs theta". If formulation is NULL and no additional terms
 #'        or constraints are set, such as expected return or shortselling, then
 #'        the vanilla risk parity portfolio will be returned. If formulation is
 #'        "diag" then the analytical solution of the risk parity optimization for
 #'        for a diagonal covariance matrix will be returned.
 #' @param w0 initial value for the portfolio wieghts. Default is the optimum
 #'        portfolio weights for the case when Sigma is diagonal.
-#' @param theta0 initial value for theta. If NA, the optimum solution for a fixed
+#' @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
 #'        vector of portfolio weights will be used
 #' @param gamma learning rate
 #' @param zeta factor used to decrease the learning rate at each iteration
-#' @param tau regularization factor. If NA, a meaningful value will be used
+#' @param tau regularization factor. If NULL, a meaningful value will be used
 #' @param maxiter maximum number of iterations for the SCA loop
 #' @param use_gradient (this parameter is meaningful only if method is either
 #'        "alabama" or "slsqp") if TRUE, gradients of the objective function wrt to the
@@ -546,25 +546,27 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export
 riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                mu = NA, lambda = 1e-4, budget = TRUE, shortselling = FALSE,
-                                method = c("sca", "alabama", "slsqp"), formulation = NA, w0 = NA,
-                                theta0 = NA, gamma = .9, zeta = 1e-7, tau = NA, maxiter = 500,
+                                mu = NULL, lambda = 1e-4, budget = TRUE, shortselling = FALSE,
+                                method = c("sca", "alabama", "slsqp"), formulation = NULL, w0 = NULL,
+                                theta0 = NULL, gamma = .9, zeta = 1e-7, tau = NULL, maxiter = 500,
                                 ftol = 1e-6, wtol = 1e-6, use_gradient = TRUE) {
   formulations <- c("rc-double-index", "rc-over-b-double-index",
                     "rc-over-var vs b", "rc-over-var",
                     "rc-over-sd vs b-times-sd", "rc vs b-times-var",
                     "rc vs theta", "rc-over-b vs theta")
-  portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
-  has_mu <- !anyNA(mu)
-  has_theta <- !anyNA(theta0)
-  has_formulation <- !anyNA(formulation)
+  has_formulation <- !is.null(formulation)
   if (has_formulation && formulation == "diag") {
     return(riskParityPortfolioDiagSigma(Sigma, b))
   }
+  has_mu <- !is.null(mu)
+  has_theta <- !is.null(theta0)
   is_modern <- has_mu || has_theta || shortselling || (!budget) || has_formulation
-  if (is_modern) {
-    if (anyNA(w0))
-      w0 <- portfolio$w
+  if (!is_modern) {
+    portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
+  } else {
+    if (is.null(w0)) {
+      w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
+    }
     switch(match.arg(method),
            "sca" = {
               portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lambda = lambda,
