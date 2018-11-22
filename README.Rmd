@@ -89,8 +89,6 @@ If you have used this package in your research, please consider citing the follo
 ## Links
 Package: [GitHub](https://github.com/dppalomar/riskParityPortfolio).
 README file: [GitHub-readme](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html).
-Vignette: [GitHub-html-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-vignette.html).
+Vignette: [GitHub-html-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-vignette.html) and
+[GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-vignette.pdf)
 
-<!---
-https://docs.google.com/viewer?url=https://github.com/dppalomar/sparseEigen/raw/master/vignettes/SparseEigenvectors-vignette.pdf
---->
