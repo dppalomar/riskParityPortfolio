@@ -3,7 +3,6 @@
 using namespace Eigen;
 using namespace std;
 
-//' @export
 // [[Rcpp::export]]
 Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
                                          const Eigen::VectorXd& b,

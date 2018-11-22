@@ -6,6 +6,8 @@ clean:
 build:
 	Rscript .compileAttributes.R
 	Rscript .roxygenize.R
+	echo "useDynLib(riskParityPortfolio)" >> NAMESPACE
+	echo "importFrom(Rcpp, sourceCpp)" >> NAMESPACE
 
 install:
 	R CMD INSTALL ../riskParityPortfolio
