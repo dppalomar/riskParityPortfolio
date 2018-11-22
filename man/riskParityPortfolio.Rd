@@ -75,5 +75,5 @@ This functions uses the vanilla (Newton) risk parity portfolio
              of both methods.
 }
 \author{
-Daniel Palomar and Ze Vinicius
+Ze Vinicius and Daniel P. Palomar
 }
