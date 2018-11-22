@@ -543,7 +543,7 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 #' The value `1` means it has converged, and `0` otherwise.}
 #' \item{\code{risk_contribution}}{the risk contribution of every asset}
 #'
-#' @author Daniel Palomar and Ze Vinicius
+#' @author Ze Vinicius and Daniel P. Palomar
 #' @export
 riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                 mu = NA, lambda = 1e-4, budget = TRUE, shortselling = FALSE,
