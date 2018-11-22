@@ -12,5 +12,6 @@ matrix:
         - bookdown
         - prettydoc
         - covr
+        - PerformanceAnalytics
       after_success:
         - Rscript -e 'library(covr); codecov()'
