@@ -1,7 +1,12 @@
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+
+
 # riskParityPortfolio
 
 [![codecov](https://codecov.io/gh/mirca/riskParityPortfolio/branch/master/graph/badge.svg)](https://codecov.io/gh/mirca/riskParityPortfolio)
 [![Travis-CI-Badge](https://travis-ci.org/mirca/riskParityPortfolio.svg?branch=master)](https://travis-ci.org/mirca/riskParityPortfolio)
+[![Build status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/master?svg=true)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/riskParityPotfolio)](http://cran.r-project.org/package=riskParityPortfolio)
 [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/riskParityPortfolio)](http://cran.r-project.org/package=riskParityPortfolio)
 ![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
@@ -45,11 +50,11 @@ res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
 res$w
-#> [1] 0.1796434 0.1680011 0.3702392 0.1538354 0.1282809
+#> [1] 0.12642816 0.02512529 0.02856941 0.54993677 0.26994037
 res$risk_contribution
-#> [1] 0.02721206 0.02721206 0.02721206 0.02721206 0.02721206
+#> [1] 0.0009458898 0.0009458898 0.0009458898 0.0009458898 0.0009458898
 c(res$w * (Sigma %*% res$w))
-#> [1] 0.02721206 0.02721206 0.02721206 0.02721206 0.02721206
+#> [1] 0.0009458898 0.0009458898 0.0009458898 0.0009458898 0.0009458898
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
