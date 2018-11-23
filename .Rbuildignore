@@ -10,3 +10,4 @@
 ^papers$
 ^vignettes/RiskParityPortfolio-vignette_cache$
 ^vignettes/RiskParityPortfolio-vignette_files$
+^appveyor\.yml$
