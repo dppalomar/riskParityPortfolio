@@ -21,7 +21,7 @@
 #' For more details see the vignette:
 #' \href{https://session.run/riskParityPortfolio/_static/getting_started.html}{GitHub-html-vignette}.
 #'
-#' @author Vinicius Ze and Daniel P. Palomar
+#' @author Ze Vinicius and Daniel P. Palomar
 #'
 #' @references
 #' Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
