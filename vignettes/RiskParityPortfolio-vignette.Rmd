@@ -176,8 +176,8 @@ lmd_sweep <- c(0, 10 ^ (seq(-5, 2, .25)))
 mean_return <- c()
 risk_parity <- c()
 
-for (lmd in lmd_sweep) {
-  rpp <- riskParityPortfolio(Sigma, w0 = w0, mu = mu, lambda = lmd,
+for (lmd_mu in lmd_sweep) {
+  rpp <- riskParityPortfolio(Sigma, w0 = w0, mu = mu, lmd_mu = lmd_mu,
                              formulation = "rc-double-index")
   mean_return <- c(mean_return, rpp$mean_return)
   risk_parity <- c(risk_parity, rpp$risk)

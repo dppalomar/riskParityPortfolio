@@ -4,8 +4,8 @@
 \alias{riskParityPortfolio}
 \title{Design of Risk Parity Portfolios}
 \usage{
-riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-  mu = NULL, lambda = 1e-04, budget = TRUE, shortselling = FALSE,
+riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
+  lmd_var = 0, budget = TRUE, shortselling = FALSE,
   method = c("sca", "alabama", "slsqp"), formulation = NULL,
   w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
   tau = NULL, maxiter = 500, ftol = 1e-06, wtol = 1e-06,
@@ -18,13 +18,15 @@ riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
 \item{mu}{vector of expected returns}
 
-\item{lambda}{scalar the controls the importance of the expected return term}
+\item{lmd_mu}{scalar the controls the importance of the expected return term}
 
 \item{budget}{boolean indicating whether to consider sum(w) = 1 as a
 constraint}
 
 \item{shortselling}{boolean indicating whether to allow short-selling, i.e.,
 w < 0}
+
+\item{method}{which optimization method to use.}
 
 \item{formulation}{string indicating the formulation to be used for the risk
 parity optimization problem. It must be one of: "diag", "rc-double-index",

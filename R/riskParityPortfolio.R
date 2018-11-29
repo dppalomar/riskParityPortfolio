@@ -27,7 +27,8 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 # @param Sigma covariance or correlation matrix
 # @param b budget vector, aka, risk budgeting targets
 # @param mu vector of expected returns
-# @param lambda scalar the controls the importance of the expected return term
+# @param lmd_mu scalar that controls the importance of the expected return term
+# @param lmd_var scalar that controls the importance of the variance term
 # @param budget boolean indicating whether to consider sum(w) = 1 as a
 #        constraint
 # @param shortselling boolean indicating whether to allow short-selling, i.e.,
@@ -58,7 +59,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                   mu = NULL, lambda = 1e-4,
+                                   mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
                                    budget = TRUE, shortselling = FALSE,
                                    formulation = c("rc-double-index",
                                                    "rc-over-b-double-index",
@@ -70,6 +71,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc-over-b vs theta"),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
+  has_var <- lmd_var > 0
   N <- nrow(Sigma)
   if (is.null(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
@@ -176,9 +178,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   fun_k <- R(wk, Sigma, b)
   if (has_mu) {
     if (has_theta)
-      fun_k <- fun_k - lambda * t(mu) %*% wk[1:N]
+      fun_k <- fun_k - lmd_mu * t(mu) %*% wk[1:N]
     else
-      fun_k <- fun_k - lambda * t(mu) %*% wk
+      fun_k <- fun_k - lmd_mu * t(mu) %*% wk
   }
   fun_seq <- c(fun_k)
   time_seq <- c(0)
@@ -201,12 +203,14 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     Ak <- A(wk, Sigma, b, Sigma_w = Sigma_wk)
     g_wk <- g(wk, Sigma, b, r = rk)
     Qk <- 2 * crossprod(Ak) + tauI
+    if (has_var)
+      Qk <- Qk + lmd_var * Sigma
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     if (has_mu)
       if (has_theta)
-        qk <- qk - lambda * c(mu, 0)
+        qk <- qk - lmd_mu * c(mu, 0)
       else
-        qk <- qk - lambda * mu
+        qk <- qk - lmd_mu * mu
     # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
                                 meq = meq)$solution
@@ -216,9 +220,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     fun_next <- R(w_next, Sigma, b)
     if (has_mu)
       if (has_theta)
-        fun_next <- fun_next - lambda * t(mu) %*% w_next[1:N]
+        fun_next <- fun_next - lmd_mu * t(mu) %*% w_next[1:N]
       else
-        fun_next <- fun_next - lambda * t(mu) %*% w_next
+        fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
     fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters and objective function
     werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
@@ -243,9 +247,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   }
   if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
-    portfolio_results$risk <- fun_seq[length(fun_seq)] + lambda * portfolio_results$mean_return
-  } else {
-    portfolio_results$risk <- fun_seq[length(fun_seq)]
+    portfolio_results$risk <- portfolio_results$risk + lmd_mu * portfolio_results$mean_return
+  }
+  if (has_var) {
+    portfolio_results$variance <- t(portfolio_results$w) %*% Sigma %*% portfolio_results$w
+    portfolio_results$risk <- portfolio_results$risk - lmd_var * portfolio_results$variance
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
@@ -262,6 +268,8 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 # @param Sigma covariance or correlation matrix
 # @param b budget vector, aka, risk budgeting targets
 # @param mu vector of expected returns
+# @param lmd_mu scalar that controls the importance of the expected return term
+# @param lmd_var scalar that controls the importance of the variance term
 # @param budget boolean indicating whether to consider sum(w) = 1 as a
 #        constraint
 # @param shortselling boolean indicating whether to allow short-selling, i.e.,
@@ -295,8 +303,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
 #
 # @author Daniel Palomar and Ze Vinicius
-riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                         mu = NULL, lambda = 1e-4,
+riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
                                          budget = TRUE, shortselling = FALSE,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
@@ -310,7 +317,9 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          use_gradient = TRUE, w0 = NULL, theta0 = NULL,
                                          maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if(is.null(w0))
+  if (is.null(b))
+    b <- rep(1/N, N)
+  if (is.null(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
   formulation <- match.arg(formulation)
@@ -407,29 +416,29 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
     R_grad <- NULL
   has_mu <- !is.null(mu)
   if (has_mu) {
-    wrap_R <- function(R, lambda, mu, has_theta, N) {
+    wrap_R <- function(R, lmd_mu, mu, has_theta, N) {
       if (has_theta) {
         func <- function(...) {
           kwargs <- list(...)
           w_ <- kwargs[[1]]
-          return(R(...) - lambda * t(mu) %*% w_[1:N])
+          return(R(...) - lmd_mu * t(mu) %*% w_[1:N])
         }
       } else {
         func <- function(...) {
           kwargs <- list(...)
-          return(R(...) - lambda * t(mu) %*% kwargs[[1]])
+          return(R(...) - lmd_mu * t(mu) %*% kwargs[[1]])
         }
       }
       return(func)
     }
-    wrap_R_grad <- function(R_grad, lambda, mu) {
+    wrap_R_grad <- function(R_grad, lmd_mu, mu) {
       grad <- function(...) {
-        return(R_grad(...) - lambda * mu)
+        return(R_grad(...) - lmd_mu * mu)
       }
       return(grad)
     }
-    R_ <- wrap_R(R, lambda, mu, has_theta, N)
-    R_grad_ <- wrap_R_grad(R_grad, lambda, mu)
+    R_ <- wrap_R(R, lmd_mu, mu, has_theta, N)
+    R_grad_ <- wrap_R_grad(R_grad, lmd_mu, mu)
   } else {
     R_ <- R
     R_grad_ <- R_grad
@@ -466,6 +475,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   w <- res$par
 
   portfolio_results <- list()
+  portfolio_results$risk <- fun_seq[length(fun_seq)]
   if (!has_theta) {
     portfolio_results$w <- w
     portfolio_results$risk_contribution <- as.vector(w * (Sigma %*% w))
@@ -476,9 +486,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   }
   if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
-    portfolio_results$risk <- fun_seq[length(fun_seq)] + lambda * portfolio_results$mean_return
-  } else {
-    portfolio_results$risk <- fun_seq[length(fun_seq)]
+    portfolio_results$risk <- portfolio_results$risk + lmd_mu * portfolio_results$mean_return
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
@@ -499,8 +507,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
-riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                      maxiter = 50, tol = 1e-6) {
+riskParityPortfolioNewton <- function(Sigma, b = NULL, maxiter = 50, tol = 1e-6) {
   w <- risk_parity_portfolio_nn(Sigma, b, tol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
@@ -516,12 +523,12 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
 #' @param mu vector of expected returns
-#' @param lambda scalar the controls the importance of the expected return term
+#' @param lmd_mu scalar the controls the importance of the expected return term
 #' @param budget boolean indicating whether to consider sum(w) = 1 as a
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
 #'        w < 0
-#" @param method which optimization method to use.
+#' @param method which optimization method to use.
 #' @param formulation string indicating the formulation to be used for the risk
 #'        parity optimization problem. It must be one of: "diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
@@ -556,11 +563,13 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export
-riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                mu = NULL, lambda = 1e-4, budget = TRUE, shortselling = FALSE,
+riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
+                                lmd_var = 0, budget = TRUE, shortselling = FALSE,
                                 method = c("sca", "alabama", "slsqp"), formulation = NULL, w0 = NULL,
                                 theta0 = NULL, gamma = .9, zeta = 1e-7, tau = NULL, maxiter = 500,
                                 ftol = 1e-6, wtol = 1e-6, use_gradient = TRUE) {
+  if (is.null(b))
+    b <- rep(1/nrow(Sigma), nrow(Sigma))
   formulations <- c("rc-double-index", "rc-over-b-double-index",
                     "rc-over-var vs b", "rc-over-var",
                     "rc-over-sd vs b-times-sd", "rc vs b-times-var",
@@ -580,15 +589,16 @@ riskParityPortfolio <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     }
     switch(match.arg(method),
            "sca" = {
-              portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lambda = lambda,
-                                                  budget = budget, shortselling = shortselling,
+              portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
+                                                  lmd_var = lmd_var, budget = budget,
+                                                  shortselling = shortselling,
                                                   formulation = formulation, w0 = w0,
                                                   theta0 = theta0, gamma = gamma, zeta = zeta,
                                                   tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol)
            },
            "slsqp" =,
            "alabama" = {
-              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lambda = lambda,
+              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                         budget = budget, shortselling = shortselling,
                                                         formulation = formulation, method = method,
                                                         use_gradient = use_gradient, w0 = w0, theta0 = theta0,

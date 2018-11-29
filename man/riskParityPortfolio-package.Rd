@@ -39,5 +39,5 @@ F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
 Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
 }
 \author{
-Vinicius Ze and Daniel P. Palomar
+Ze Vinicius and Daniel P. Palomar
 }
