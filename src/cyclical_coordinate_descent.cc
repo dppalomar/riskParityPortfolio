@@ -8,26 +8,26 @@ Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
                                           const Eigen::VectorXd& b,
                                           const double tol,
                                           const int maxiter) {
-  double aux, sigma;
+  double aux, sigma, x_diff;
   int N = b.size();
-  Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1) / N;
+  Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
   Eigen::VectorXd x_star(N);
   Eigen::VectorXd Sigma_xk(N);
+  xk = (1 / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   sigma = std::sqrt(xk.transpose() * Sigma * xk);
   for (int k = 0; k < maxiter; ++k) {
     for (int i = 0; i < N; ++i) {
-      //// compute update for the portfolio weights x
+      // compute update for the portfolio weights x
       aux = xk(i) * Sigma(i, i) - Sigma_xk(i);
       x_star(i) = (.5 / Sigma(i, i)) * (aux + std::sqrt(aux * aux + 4 * Sigma(i, i) * b(i) * sigma));
-      //// update auxiliary terms
-      Sigma_xk += (Sigma.col(i).array() * (x_star(i) - xk(i))).matrix();
-      //sigma = std::sqrt(sigma * sigma +
-      //                  2 * (Sigma.row(i).array() * (x_star(i) * x_star.transpose().array() -
-      //                                               xk(i) * xk.transpose().array())).sum() +
-      //                  Sigma(i, i) * (xk(i) * xk(i) - x_star(i) * x_star(i)));
+      // update auxiliary terms
+      x_diff = x_star(i) - xk(i);
+      Sigma_xk += (Sigma.col(i).array() * x_diff).matrix();
+      sigma = std::sqrt(sigma * sigma + (2 * (x_star(i) - xk(i)) *
+                                         (Sigma.row(i).array() * xk.transpose().array()).sum())
+                        + Sigma(i, i) * (x_diff * x_diff));
       xk(i) = x_star(i);
-      sigma = std::sqrt(xk.transpose() * Sigma * xk);
     }
     if ((Sigma_xk.array() - b.array()).abs().maxCoeff() < tol)
       break;
