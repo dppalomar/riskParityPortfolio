@@ -513,6 +513,25 @@ riskParityPortfolioNewton <- function(Sigma, b = NULL, maxiter = 50, tol = 1e-6)
 }
 
 
+# @title Fast vanilla risk parity algorithm for high dimensional portfolio
+#        design using the cyclical coordinate descent method.
+#
+# @description Risk parity portfolio optimization using the cyclical method
+#              proposed by Griveau-Billion (2013)
+#
+# @param Sigma covariance or correlation matrix
+# @param b budget vector
+# @param maxiter maximum number of iterations of both damped and quadratic phases
+# @param tol tolerance of the stopping criteria
+# @return a list containing the following elements:
+# \item{\code{w}}{optimal portfolio vector}
+# \item{\code{risk_contribution}}{the risk contribution of every asset}
+riskParityPortfolioCyclical <- function(Sigma, b = NULL, maxiter = 50, tol = 1e-6) {
+  w <- risk_parity_portfolio_ccd(Sigma, b, tol, maxiter)
+  return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
+}
+
+
 #' @title Design of Risk Parity Portfolios
 #'
 #' @description This functions uses the vanilla (Newton) risk parity portfolio

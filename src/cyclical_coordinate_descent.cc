@@ -35,6 +35,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
   return x_star / x_star.sum();
 }
 
+
 double obj_function(const Eigen::MatrixXd& Sigma,
                     const Eigen::VectorXd& x,
                     const Eigen::VectorXd& b) {
