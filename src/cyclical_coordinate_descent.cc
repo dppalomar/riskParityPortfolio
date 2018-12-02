@@ -24,9 +24,8 @@ Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
       // update auxiliary terms
       x_diff = x_star(i) - xk(i);
       Sigma_xk += (Sigma.col(i).array() * x_diff).matrix();
-      sigma = std::sqrt(sigma * sigma + (2 * (x_star(i) - xk(i)) *
-                                         (Sigma.row(i).array() * xk.transpose().array()).sum())
-                        + Sigma(i, i) * (x_diff * x_diff));
+      sigma = std::sqrt(sigma * sigma + 2 * x_diff * (Sigma.row(i).array() * xk.transpose().array()).sum() +
+                        Sigma(i, i) * x_diff * x_diff);
       xk(i) = x_star(i);
     }
     if ((Sigma_xk.array() - b.array()).abs().maxCoeff() < tol)
