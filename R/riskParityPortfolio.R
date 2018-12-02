@@ -507,7 +507,8 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
-riskParityPortfolioNewton <- function(Sigma, b = NULL, maxiter = 50, tol = 1e-6) {
+riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                      maxiter = 50, tol = 1e-6) {
   w <- risk_parity_portfolio_nn(Sigma, b, tol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
@@ -526,7 +527,8 @@ riskParityPortfolioNewton <- function(Sigma, b = NULL, maxiter = 50, tol = 1e-6)
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
-riskParityPortfolioCyclical <- function(Sigma, b = NULL, maxiter = 50, tol = 1e-6) {
+riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                        maxiter = 50, tol = 1e-6) {
   w <- risk_parity_portfolio_ccd(Sigma, b, tol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
