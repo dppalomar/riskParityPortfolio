@@ -7,12 +7,14 @@ Welcome to riskParityPortfolio!
 ===============================
 
 ``riskParityPortfolio`` is an `R` package for designing portfolios
-that meet the risk parity criteria. It provides the implementation of three
+that meet the risk parity criteria. It provides the implementation of the following
 algorithms:
-1) a Newton method for simple risk parity design proposed by
+1) a Newton method for simple design of risk parity portfolios proposed by
 `Spinu (2013) <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383>`_,
-2) general purpose non-linear constrained optimization solvers such as ``alabama`` and ``slsqp``, and
-3) the successive convex approximation (SCA) proposed by
+2) a cyclical coordinate descent algorithm for high dimensional portfolios proposed by
+`Griveau-Billion (2013) <https://arxiv.org/pdf/1311.4057.pdf>`_,
+3) general purpose non-linear constrained optimization solvers such as ``alabama`` and ``slsqp``, and
+4) the successive convex approximation (SCA) proposed by
 `Feng & Palomar (2016) <http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf>`_.
 
 Please, see the `Getting started <_static/getting_started.html>`_
