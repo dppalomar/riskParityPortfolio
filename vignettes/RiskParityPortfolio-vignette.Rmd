@@ -133,12 +133,12 @@ b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
 op <- microbenchmark(rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-                     newton = riskParityPortfolio:::risk_parity_portfolio_nn(Sigma, b, 
+                     newton = riskParityPortfolio:::risk_parity_portfolio_nn(Sigma, b,
                                                                              1e-6, 50),
                      times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
-boxplot(op, ylab = "Time in Milliseconds", 
+boxplot(op, ylab = "Time in Milliseconds",
         xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
@@ -434,6 +434,41 @@ It can be noted that the `"alabama"` and `"slsqp"` greatly benefit from the addi
 information. Despite that fact, the `"sca"` method still performs faster. Additionally,
 in some cases, the `"sca"` method attains a better solution than the other methods.
 
+# Appendix III: Design of high dimensional risk parity portfolio
+
+In order to efficiently design high dimensional portfolios that follows the risk parity criterion,
+we implement the cyclical coordinate descent algorithm proposed by [@Billion2013]. In brief, this
+algorithm optimizes for one portfolio weight at a time while leaving the rest fixed.
+By iterativelly applying this procedure it is possible to show that the sequence of estimations reaches
+the global minimum of the convex function in roughly $O(N_{iter} * N^2)$.
+
+The plot below illustrates the computational scaling of both `"newton"` and `"cyclical"` algorithms.
+```{r}
+library(microbenchmark)
+library(riskParityPortfolio)
+
+sizes <- c(10, 50, 100, 200, 300, 400, 500, 600, 700, 1000)
+size_seq <- c(1:length(sizes))
+times <- matrix(0, 2, length(sizes))
+for (i in size_seq) {
+  V <- matrix(rnorm(1000 * sizes[i]), nrow = sizes[i])
+  Sigma <- V %*% t(V)
+  bench <- microbenchmark(newton = riskParityPortfolio(Sigma, algorithm="newton"),
+                          cyclical = riskParityPortfolio(Sigma, algorithm="cyclical"),
+                          times = 10L, unit = "ms", control = list(order = "inorder", warmup = 4))
+  times[1, i] <- median(bench$time[c(TRUE, FALSE)] / 10 ^ 6)
+  times[2, i] <- median(bench$time[c(FALSE, TRUE)] / 10 ^ 6)
+}
+
+colors <- c("#0B032D", "#FFB997")
+plot(size_seq, times[1,], type = "b", pch=15, cex=.75, col = colors[1],
+     xlab = "Portfolio length", ylab = "CPU time [ms]", xaxt = "n")
+grid()
+lines(size_seq, times[2,], type = "b", pch=16, cex=.75, col = colors[2])
+axis(side = 1, at = size_seq, labels = sizes)
+legend("topleft", legend = c("newton", "cyclical"), col=colors, pch=c(15, 16),
+       lty=c(1, 1), bty="n")
+```
 
 # References {-}
 \setlength{\parindent}{-0.2in}

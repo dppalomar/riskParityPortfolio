@@ -6,10 +6,10 @@
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
   lmd_var = 0, budget = TRUE, shortselling = FALSE,
-  method = c("sca", "alabama", "slsqp"), formulation = NULL,
-  w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
-  tau = NULL, maxiter = 500, ftol = 1e-06, wtol = 1e-06,
-  use_gradient = TRUE)
+  algorithm = c("newton", "cyclical"), method = c("sca", "alabama",
+  "slsqp"), formulation = NULL, w0 = NULL, theta0 = NULL,
+  gamma = 0.9, zeta = 1e-07, tau = NULL, maxiter = 50,
+  ftol = 1e-08, wtol = 1e-06, use_gradient = TRUE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
@@ -19,6 +19,9 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
 \item{mu}{vector of expected returns}
 
 \item{lmd_mu}{scalar the controls the importance of the expected return term}
+
+\item{lmd_var}{scalar that controls the importance of the variance term
+(only available for the SCA method for now).}
 
 \item{budget}{boolean indicating whether to consider sum(w) = 1 as a
 constraint}
@@ -38,8 +41,8 @@ the vanilla risk parity portfolio will be returned. If formulation is
 "diag" then the analytical solution of the risk parity optimization for
 for a diagonal covariance matrix will be returned.}
 
-\item{w0}{initial value for the portfolio wieghts. Default is the optimum
-portfolio weights for the case when Sigma is diagonal.}
+\item{w0}{initial value for the portfolio weights. Default is the vanilla
+portfolio computed either with Newton or Cyclical methods.}
 
 \item{theta0}{initial value for theta. If NULL, the optimum solution for a fixed
 vector of portfolio weights will be used}
@@ -72,10 +75,10 @@ The value `1` means it has converged, and `0` otherwise.}
 \item{\code{risk_contribution}}{the risk contribution of every asset}
 }
 \description{
-This functions uses the vanilla (Newton) risk parity portfolio
-             in order to initialize either the SCA method or a general solver.
-             This convenience function helps to put together the advantages
-             of both methods.
+This functions uses the vanilla (Newton or Cyclical) risk parity
+             portfolio in order to initialize either the SCA method or a
+             general solver. This convenience function helps to put together
+             the advantages of both methods.
 }
 \author{
 Ze Vinicius and Daniel P. Palomar

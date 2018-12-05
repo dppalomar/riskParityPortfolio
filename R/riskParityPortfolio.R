@@ -536,15 +536,17 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 
 #' @title Design of Risk Parity Portfolios
 #'
-#' @description This functions uses the vanilla (Newton) risk parity portfolio
-#'              in order to initialize either the SCA method or a general solver.
-#'              This convenience function helps to put together the advantages
-#'              of both methods.
+#' @description This functions uses the vanilla (Newton or Cyclical) risk parity
+#'              portfolio in order to initialize either the SCA method or a
+#'              general solver. This convenience function helps to put together
+#'              the advantages of both methods.
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
 #' @param mu vector of expected returns
 #' @param lmd_mu scalar the controls the importance of the expected return term
+#' @param lmd_var scalar that controls the importance of the variance term
+#'        (only available for the SCA method for now).
 #' @param budget boolean indicating whether to consider sum(w) = 1 as a
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
@@ -559,8 +561,8 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 #'        the vanilla risk parity portfolio will be returned. If formulation is
 #'        "diag" then the analytical solution of the risk parity optimization for
 #'        for a diagonal covariance matrix will be returned.
-#' @param w0 initial value for the portfolio wieghts. Default is the optimum
-#'        portfolio weights for the case when Sigma is diagonal.
+#' @param w0 initial value for the portfolio weights. Default is the vanilla
+#'        portfolio computed either with Newton or Cyclical methods.
 #' @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
 #'        vector of portfolio weights will be used
 #' @param gamma learning rate
@@ -584,11 +586,15 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export
-riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
-                                lmd_var = 0, budget = TRUE, shortselling = FALSE,
-                                method = c("sca", "alabama", "slsqp"), formulation = NULL, w0 = NULL,
-                                theta0 = NULL, gamma = .9, zeta = 1e-7, tau = NULL, maxiter = 500,
-                                ftol = 1e-6, wtol = 1e-6, use_gradient = TRUE) {
+riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
+                                lmd_mu = 1e-4, lmd_var = 0,
+                                budget = TRUE, shortselling = FALSE,
+                                algorithm = c("newton", "cyclical"),
+                                method = c("sca", "alabama", "slsqp"),
+                                formulation = NULL, w0 = NULL, theta0 = NULL,
+                                gamma = .9, zeta = 1e-7, tau = NULL,
+                                maxiter = 50, ftol = 1e-8, wtol = 1e-6,
+                                use_gradient = TRUE) {
   if (is.null(b))
     b <- rep(1/nrow(Sigma), nrow(Sigma))
   formulations <- c("rc-double-index", "rc-over-b-double-index",
@@ -603,10 +609,24 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
   has_theta <- !is.null(theta0)
   is_modern <- has_mu || has_theta || shortselling || (!budget) || has_formulation
   if (!is_modern) {
-    portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
+    switch(match.arg(algorithm),
+           "newton" = {
+             portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
+           }, "cyclical" = {
+             portfolio <- riskParityPortfolioCyclical(Sigma, b, maxiter, ftol)
+           },
+           stop("algorithm ", algorithm, "is not included.")
+    )
   } else {
     if (is.null(w0)) {
-      w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
+      switch(match.arg(algorithm),
+             "newton" = {
+               w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
+             }, "cyclical" = {
+               w0 <- riskParityPortfolioCyclical(Sigma, b, maxiter, ftol)$w
+             },
+             stop("algorithm ", algorithm, "is not included.")
+      )
     }
     switch(match.arg(method),
            "sca" = {
