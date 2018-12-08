@@ -37,7 +37,6 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
     if (lambdak < tol)
       break;
   }
-
   return xk / xk.sum();
 }
 
@@ -57,8 +56,8 @@ Eigen::MatrixXd hessian_log_formulation(const Eigen::MatrixXd& Sigma,
 }
 
 
-double obj_function_log_formulation(const Eigen::MatrixXd& Sigma,
-                                    const Eigen::VectorXd& xk,
-                                    const Eigen::VectorXd& b) {
+double obj_function_spinu(const Eigen::MatrixXd& Sigma,
+                    const Eigen::VectorXd& xk,
+                    const Eigen::VectorXd& b) {
   return (.5 * (xk.transpose() * Sigma * xk)).sum() - (b.array() * (xk.array().log())).sum();
 }

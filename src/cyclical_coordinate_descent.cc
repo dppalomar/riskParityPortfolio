@@ -35,8 +35,8 @@ Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
 }
 
 
-double obj_function(const Eigen::MatrixXd& Sigma,
-                    const Eigen::VectorXd& x,
-                    const Eigen::VectorXd& b) {
+double obj_function_roncalli(const Eigen::MatrixXd& Sigma,
+                             const Eigen::VectorXd& x,
+                             const Eigen::VectorXd& b) {
   return std::sqrt((x.transpose() * Sigma * x).sum()) - (b.array() * (x.array().log())).sum();
 }

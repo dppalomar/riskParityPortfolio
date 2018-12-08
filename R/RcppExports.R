@@ -5,6 +5,10 @@ risk_parity_portfolio_ccd <- function(Sigma, b, tol, maxiter) {
     .Call('_riskParityPortfolio_risk_parity_portfolio_ccd', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
 }
 
+risk_parity_portfolio_nn_bt <- function(Sigma, b, tol, maxiter) {
+    .Call('_riskParityPortfolio_risk_parity_portfolio_nn_bt', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
+}
+
 risk_parity_portfolio_nn <- function(Sigma, b, tol, maxiter) {
     .Call('_riskParityPortfolio_risk_parity_portfolio_nn', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
 }
