@@ -55,7 +55,7 @@ vector of portfolio weights will be used}
 
 \item{maxiter}{maximum number of iterations for the SCA loop}
 
-\item{ftol}{convergence tolerance on the value of the objective function}
+\item{ftol}{convergence tolerance for the Newton and cyclical algorithms}
 
 \item{wtol}{convergence tolerance on the values of the parameters}
 

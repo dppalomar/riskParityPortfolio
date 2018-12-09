@@ -573,7 +573,7 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 #'        "alabama" or "slsqp") if TRUE, gradients of the objective function wrt to the
 #'        parameters will be used. This is strongly recommended to achieve faster
 #'        results.
-#' @param ftol convergence tolerance on the value of the objective function
+#' @param ftol convergence tolerance for the Newton and cyclical algorithms
 #' @param wtol convergence tolerance on the values of the parameters
 #' @return a list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
