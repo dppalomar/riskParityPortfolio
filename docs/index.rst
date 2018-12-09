@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to riskParityPortfolio!
-===============================
+Documentation
+=============
 
 ``riskParityPortfolio`` is an `R` package for designing portfolios
 that meet the risk parity criteria. It provides the implementation of the following
@@ -34,13 +34,18 @@ The *development* version can be installed from GitHub as follows:
 Citation
 --------
 
-If you made use of this package on your research, please cite the following works:
+If you made use of this package on your research, please consider citing the following resources:
 
+- J. V. de M. Cardoso and D. P. Palomar (2018). riskParityPortfolio: Design of
+  Risk Parity Portfolios. R package version 0.1.0. https://CRAN.R-project.org/package=riskParityPortfolio.
 - Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
   Risk Parity Portfolio Design". IEEE Trans. on Signal Processing, vol. 63, no. 19,
-  pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219
+  pp. 5285-5300, Oct. 2015. doi:10.1109/TSP.2015.2452219.
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
-  Available at SSRN: http://dx.doi.org/10.2139/ssrn.2297383
+  Available at SSRN: http://dx.doi.org/10.2139/ssrn.2297383.
+- Griveau-Billion T., Richard J., and Roncalli T. "A fast algorithm for computing
+  High-dimensional risk parity portfolios", ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf,
+  2013.
 
 Bug Reports
 -----------
