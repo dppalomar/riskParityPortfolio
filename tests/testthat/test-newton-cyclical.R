@@ -8,12 +8,8 @@ Sigma <- V %*% t(V)
 
 test_that("Newton and Cyclical Coordinate Descent give the same results", {
   newton <- riskParityPortfolioNewton(Sigma)
-  w_n <- riskParityPortfolio:::risk_parity_portfolio_newton(Sigma, rep(1/N, N), 1e-8, 50)
-  rc_n <- c(w_n * (Sigma %*% w_n))
   cyclical <- riskParityPortfolioCyclical(Sigma)
   expect_that(all(abs(newton$w - cyclical$w) < 1e-4), is_true())
-  expect_that(all(abs(newton$w - w_n) < 1e-4), is_true())
   expect_that(all(abs(newton$risk_contribution - cyclical$risk_contribution) < 1e-4),
               is_true())
-  expect_that(all(abs(newton$risk_contribution - rc_n) < 1e-4), is_true())
 })

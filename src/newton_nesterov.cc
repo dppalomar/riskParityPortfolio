@@ -7,8 +7,8 @@ using namespace std;
 Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
                                          const Eigen::VectorXd& b,
                                          const double tol,
-                                         const int maxiter) {
-  int N = b.size();
+                                         const unsigned int maxiter) {
+  const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
   Eigen::VectorXd uk(N), d(N);
   Eigen::MatrixXd Hk(N, N);
@@ -17,7 +17,7 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
   // initial guess
   xk = std::sqrt(b.sum() / Sigma.sum()) * xk;
   // damped phase
-  for (int i = 0; i < maxiter; ++i) {
+  for (unsigned int i = 0; i < maxiter; ++i) {
     uk = gradient_log_formulation(Sigma, xk, b);
     Hk = hessian_log_formulation(Sigma, xk, b);
     d = Hk.llt().solve(uk);
@@ -28,7 +28,7 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
       break;
   }
   // quadratic phase
-  for(int i = 0; i < maxiter; ++i) {
+  for(unsigned int i = 0; i < maxiter; ++i) {
     uk = gradient_log_formulation(Sigma, xk, b);
     Hk = hessian_log_formulation(Sigma, xk, b);
     d = Hk.llt().solve(uk);

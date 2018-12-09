@@ -7,17 +7,17 @@ using namespace std;
 Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
                                           const Eigen::VectorXd& b,
                                           const double tol,
-                                          const int maxiter) {
+                                          const unsigned int maxiter) {
   double aux, sigma, x_diff;
-  int N = b.size();
+  const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
   Eigen::VectorXd x_star(N);
   Eigen::VectorXd Sigma_xk(N);
   xk = (1 / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   sigma = std::sqrt(xk.transpose() * Sigma * xk);
-  for (int k = 0; k < maxiter; ++k) {
-    for (int i = 0; i < N; ++i) {
+  for (unsigned int k = 0; k < maxiter; ++k) {
+    for (unsigned int i = 0; i < N; ++i) {
       // compute update for the portfolio weights x
       aux = xk(i) * Sigma(i, i) - Sigma_xk(i);
       x_star(i) = (.5 / Sigma(i, i)) * (aux + std::sqrt(aux * aux + 4 * Sigma(i, i) * b(i) * sigma));
