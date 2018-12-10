@@ -37,11 +37,12 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #        parity optimization problem. It must be one of: "rc-double-index",
 #        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 #        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#        "rc-over-b vs theta".
-# @param w0 initial value for the portfolio wieghts. Default is the optimum
-#        portfolio weights for the case when Sigma is diagonal.
+#        "rc-over-b vs theta"
+# @param w0 initial value for the portfolio wieghts. If NULL, then the optimum
+#        portfolio weights for the case when Sigma is diagonal is used.
 # @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
-#        vector of portfolio weights will be used.
+#        vector of portfolio weights will be used. Note that this parameter is only
+#        used if the formulation contains theta
 # @param gamma learning rate
 # @param zeta factor used to decrease the learning rate at each iteration
 # @param tau regularization factor. If NULL, a meaningful value will be used
@@ -50,12 +51,19 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 # @param wtol convergence tolerance on the values of the parameters
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
-# \item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
-# \item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
-# \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-# \item{\code{convergence}}{flag to indicate whether or not the optimization converged.
-# The value `1` means it has converged, and `0` otherwise.}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
+# \item{\code{theta}}{the optimal value for theta (in case that it is part of
+#                     the chosen formulation}
+# \item{\code{obj_fun}}{the sequence of values from the objective function at
+#                       each iteration}
+# \item{\code{risk}}{the last value of the objective function}
+# \item{\code{mean_return}}{the expected return of the portoflio if the mean
+#                           return term is included in the optimization}
+# \item{\code{variance}}{the variance of the portfolio if the variance term is
+#                        included in the optimization}
+# \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+# \item{\code{convergence}}{flag to indicate whether or not the optimization
+# converged. The value `1` means it has converged, and `0` otherwise.}
 #
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
@@ -295,12 +303,17 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 # @param wtol convergence tolerance on the values of the parameters
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
-# \item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
-# \item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
-# \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-# \item{\code{convergence}}{flag to indicate whether or not the optimization converged.
-# The value `1` means it has converged, and `0` otherwise.}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
+# \item{\code{theta}}{the optimal value for theta (in case that it is part of
+#                     the chosen formulation}
+# \item{\code{obj_fun}}{the sequence of values from the objective function at
+#                       each iteration}
+# \item{\code{risk}}{the last value of the objective function}
+# \item{\code{mean_return}}{the expected return of the portoflio if the mean
+#                           return term is included in the optimization}
+# \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+# \item{\code{convergence}}{flag to indicate whether or not the optimization
+# converged. The value `1` means it has converged, and `0` otherwise.}
 #
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
@@ -551,6 +564,9 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 #'        constraint
 #' @param shortselling boolean indicating whether to allow short-selling, i.e.,
 #'        w < 0
+#' @param algorithm which algorithm to use for computing the initial portfolio
+#'        solution. We recommend choosing "cyclical" for high-dimensional
+#'        (N > 500) portfolios since it scales better in that regime
 #' @param method which optimization method to use.
 #' @param formulation string indicating the formulation to be used for the risk
 #'        parity optimization problem. It must be one of: "diag", "rc-double-index",
@@ -577,12 +593,19 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 #' @param wtol convergence tolerance on the values of the parameters
 #' @return a list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
-#' \item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
-#' \item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
-#' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-#' \item{\code{convergence}}{flag to indicate whether or not the optimization converged.
-#' The value `1` means it has converged, and `0` otherwise.}
 #' \item{\code{risk_contribution}}{the risk contribution of every asset}
+#' \item{\code{theta}}{the optimal value for theta (in case that it is part of
+#'                     the chosen formulation}
+#' \item{\code{obj_fun}}{the sequence of values from the objective function at
+#'                       each iteration}
+#' \item{\code{risk}}{the last value of the objective function}
+#' \item{\code{mean_return}}{the expected return of the portoflio if the mean
+#'                           return term is included in the optimization}
+#' \item{\code{variance}}{the variance of the portfolio if the variance term is
+#'                        included in the optimization}
+#' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+#' \item{\code{convergence}}{flag to indicate whether or not the optimization
+#' converged. The value `1` means it has converged, and `0` otherwise.}
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export

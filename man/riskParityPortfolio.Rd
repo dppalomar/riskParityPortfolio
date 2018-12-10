@@ -29,6 +29,10 @@ constraint}
 \item{shortselling}{boolean indicating whether to allow short-selling, i.e.,
 w < 0}
 
+\item{algorithm}{which algorithm to use for computing the initial portfolio
+solution. We recommend choosing "cyclical" for high-dimensional
+(N > 500) portfolios since it scales better in that regime}
+
 \item{method}{which optimization method to use.}
 
 \item{formulation}{string indicating the formulation to be used for the risk
@@ -67,12 +71,19 @@ results.}
 \value{
 a list containing possibly the following elements:
 \item{\code{w}}{optimal portfolio vector}
-\item{\code{theta}}{the optimal value for theta (in case that it is part of the chosen formulation}
-\item{\code{obj_fun}}{the sequence of values from the objective function at each iteration}
-\item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-\item{\code{convergence}}{flag to indicate whether or not the optimization converged.
-The value `1` means it has converged, and `0` otherwise.}
 \item{\code{risk_contribution}}{the risk contribution of every asset}
+\item{\code{theta}}{the optimal value for theta (in case that it is part of
+                    the chosen formulation}
+\item{\code{obj_fun}}{the sequence of values from the objective function at
+                      each iteration}
+\item{\code{risk}}{the last value of the objective function}
+\item{\code{mean_return}}{the expected return of the portoflio if the mean
+                          return term is included in the optimization}
+\item{\code{variance}}{the variance of the portfolio if the variance term is
+                       included in the optimization}
+\item{\code{elapsed_time}}{elapsed time recorded at every iteration}
+\item{\code{convergence}}{flag to indicate whether or not the optimization
+converged. The value `1` means it has converged, and `0` otherwise.}
 }
 \description{
 This functions uses the vanilla (Newton or Cyclical) risk parity
