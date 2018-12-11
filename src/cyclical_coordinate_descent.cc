@@ -13,8 +13,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma,
   double aux, x_diff, xk_sum;
   const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
-  Eigen::VectorXd x_star(N);
-  Eigen::VectorXd Sigma_xk(N);
+  Eigen::VectorXd x_star(N), Sigma_xk(N), rc(N);
   xk = (1 / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   for (unsigned int k = 0; k < maxiter; ++k) {
@@ -28,8 +27,8 @@ Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma,
       xk(i) = x_star(i);
     }
     xk_sum = xk.sum();
-    if ((xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum) -
-         b.array()).abs().maxCoeff() < tol)
+    rc = (xk.array() * (Sigma_xk).array() / (xk_sum * xk_sum)).matrix();
+    if ((rc.array() / rc.sum() - b.array()).abs().maxCoeff() < tol)
       break;
   }
   return x_star / xk_sum;
@@ -45,8 +44,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
   double aux, sigma, x_diff, xk_sum;
   const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
-  Eigen::VectorXd x_star(N);
-  Eigen::VectorXd Sigma_xk(N);
+  Eigen::VectorXd x_star(N), Sigma_xk(N), rc(N);
   xk = (1 / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   sigma = std::sqrt(xk.transpose() * Sigma * xk);
@@ -63,8 +61,8 @@ Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
       xk(i) = x_star(i);
     }
     xk_sum = xk.sum();
-    if ((xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum) -
-         b.array()).abs().maxCoeff() < tol)
+    rc = (xk.array() * (Sigma_xk).array() / (xk_sum * xk_sum)).matrix();
+    if ((rc.array() / rc.sum() - b.array()).abs().maxCoeff() < tol)
       break;
   }
   return x_star / xk_sum;

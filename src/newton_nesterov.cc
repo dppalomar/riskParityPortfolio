@@ -10,7 +10,7 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
                                          const unsigned int maxiter) {
   const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
-  Eigen::VectorXd uk(N), d(N);
+  Eigen::VectorXd uk(N), d(N), rc(N);
   Eigen::MatrixXd Hk(N, N);
   double dx, lambdak, xk_sum, lambda_star = 0.3628676;
 
@@ -35,8 +35,8 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
     //lambdak = std::sqrt(uk.dot(d));
     xk = xk - d;
     xk_sum = xk.sum();
-    if ((xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum) -
-         b.array()).abs().maxCoeff() < tol)
+    rc = (xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum)).matrix();
+    if ((rc.array() / rc.sum() - b.array()).abs().maxCoeff() < tol)
       break;
     //if (lambdak < tol)
     //  break;

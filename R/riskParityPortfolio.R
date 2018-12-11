@@ -64,7 +64,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
-                                   w_lb = 0, w_ub = Inf,
+                                   w_lb = 0, w_ub = 1,
                                    formulation = c("rc-double-index",
                                                    "rc-over-b-double-index",
                                                    "rc-over-var vs b",
@@ -76,6 +76,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 500, tol = 1e-5) {
   N <- nrow(Sigma)
+  if (length(w_ub) == 1)
+    w_ub <- rep(w_ub, N)
+  if (length(w_lb) == 1)
+    w_lb <- rep(w_lb, N)
+
   if (is.null(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
@@ -91,11 +96,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     tau <- .05 * sum(diag(Sigma)) / (2*N)
 
   if (has_theta) {
-    Amat <- cbind(c(rep(1, N), 0), diag(c(rep(1, N), 0)))
-    bvec <- c(1, rep(0, N+1))
+    Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
+    bvec <- c(1, c(w_lb, 0), c(-w_ub, 0))
   } else {
-    Amat <- cbind(rep(1, N), diag(N))
-    bvec <- c(1, rep(0, N))
+    Amat <- cbind(rep(1, N), diag(N), -diag(N))
+    bvec <- c(1, w_lb, -w_ub)
   }
   meq <- 1
 
@@ -197,7 +202,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
         fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
     fun_seq <- c(fun_seq, fun_next)
     # check convergence
-    if (k > 1 && (max(abs(rk - b)) < tol))
+    if (k > 1 && (max(abs(rk/sum(rk) - b)) < tol))
       break
     # update variables
     wk <- w_next
@@ -279,7 +284,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #
 # @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
-                                         budget = TRUE, shortselling = FALSE,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
                                                          "rc-over-var vs b",
@@ -511,9 +515,9 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' Markowitz portfolio. In addition to the vanilla formulation, where the risk
 #' contributions are perfectly equalized subject to no shortselling and budget
 #' constraints, many other formulations are considered that allow for box
-#' constraints and shortselling, as well as the inclusion of additional
-#' objectives like the expected return and overall variance. See vignette for
-#' a detailed documentation and comparison, with several illustrative examples.
+#' constraints, as well as the inclusion of additional objectives like the expected
+#' return and overall variance. See vignette for a detailed documentation and
+#' comparison, with several illustrative examples.
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
@@ -521,6 +525,10 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' @param lmd_mu scalar the controls the importance of the expected return term
 #' @param lmd_var scalar that controls the importance of the variance term
 #'        (only available for the SCA method for now).
+#' @param w_lb lower bound on the value of each portfolio weight. If a vector,
+#'        then the lower bound is applied element-wise.
+#' @param w_ub upper bound on the value of each portfolio weight. If a vector,
+#'        then the upper bound is applied element-wise.
 #' @param algorithm which algorithm to use for computing the initial portfolio
 #'        solution. We recommend choosing "cyclical" for high-dimensional
 #'        (N > 500) portfolios since it scales better in that regime
@@ -579,6 +587,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' @export
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 1e-4, lmd_var = 0,
+                                w_lb = 0, w_ub = 1,
                                 algorithm = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
@@ -630,7 +639,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     switch(match.arg(method),
            "sca" = {
               portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
-                                                  lmd_var = lmd_var, formulation = formulation, w0 = w0,
+                                                  lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
+                                                  formulation = formulation, w0 = w0,
                                                   theta0 = theta0, gamma = gamma, zeta = zeta,
                                                   tau = tau, maxiter = maxiter, tol = tol)
            },

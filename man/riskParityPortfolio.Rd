@@ -5,11 +5,11 @@
 \title{Design of Risk Parity Portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
-  lmd_var = 0, algorithm = c("cyclical-spinu", "cyclical-roncalli",
-  "newton"), method = c("sca", "alabama", "slsqp"), formulation = NULL,
-  w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
-  tau = NULL, maxiter = 50, tol = 1e-08, wtol = 1e-06,
-  use_gradient = TRUE)
+  lmd_var = 0, w_lb = 0, w_ub = 1, algorithm = c("cyclical-spinu",
+  "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
+  formulation = NULL, w0 = NULL, theta0 = NULL, gamma = 0.9,
+  zeta = 1e-07, tau = NULL, maxiter = 50, tol = 1e-08,
+  wtol = 1e-06, use_gradient = TRUE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
@@ -22,6 +22,12 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
 
 \item{lmd_var}{scalar that controls the importance of the variance term
 (only available for the SCA method for now).}
+
+\item{w_lb}{lower bound on the value of each portfolio weight. If a vector,
+then the lower bound is applied element-wise.}
+
+\item{w_ub}{upper bound on the value of each portfolio weight. If a vector,
+then the upper bound is applied element-wise.}
 
 \item{algorithm}{which algorithm to use for computing the initial portfolio
 solution. We recommend choosing "cyclical" for high-dimensional
@@ -86,9 +92,9 @@ consider the overall volatility of the portfolio as in the mean-variance
 Markowitz portfolio. In addition to the vanilla formulation, where the risk
 contributions are perfectly equalized subject to no shortselling and budget
 constraints, many other formulations are considered that allow for box
-constraints and shortselling, as well as the inclusion of additional
-objectives like the expected return and overall variance. See vignette for
-a detailed documentation and comparison, with several illustrative examples.
+constraints, as well as the inclusion of additional objectives like the expected
+return and overall variance. See vignette for a detailed documentation and
+comparison, with several illustrative examples.
 }
 \references{
 Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
