@@ -45,8 +45,19 @@ successive convex approximation method proposed by Feng & Palomar (2015).
 To install ``riskParityPortfolio`` type the following inside an R session:
 
 ```{r, eval = FALSE}
+# Installation from GitHub
 install.packages("devtools")
 devtools::install_github("dppalomar/riskParityPortfolio")
+
+# Getting help
+library(riskParityPortfolio)
+help(package = "riskParityPortfolio")
+package?riskParityPortfolio
+?riskParityPortfolio
+
+# Citing this work
+citation("library(riskParityPortfolio)")
+
 ```
 
 You can also get ``riskParityPortfolio`` from Docker as follows:

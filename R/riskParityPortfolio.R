@@ -549,10 +549,15 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 
 #' @title Design of Risk Parity Portfolios
 #'
-#' @description This functions uses the vanilla (Newton or Cyclical) risk parity
-#'              portfolio in order to initialize either the SCA method or a
-#'              general solver. This convenience function helps to put together
-#'              the advantages of both methods.
+#' @description This function designs risk-parity portfolios to equalize/distribute
+#' the risk contributions of the different assets, which is missing if we simply
+#' consider the overall volatility of the portfolio as in the mean-variance
+#' Markowitz portfolio. In addition to the vanilla formulation, where the risk
+#' contributions are perfectly equalized subject to no shortselling and budget
+#' constraints, many other formulations are considered that allow for box
+#' constraints and shortselling, as well as the inclusion of additional
+#' objectives like the expected return and overall variance. See vignette for
+#' a detailed documentation and comparison, with several illustrative examples.
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
@@ -606,6 +611,17 @@ riskParityPortfolioCyclical <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma
 #' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 #' \item{\code{convergence}}{flag to indicate whether or not the optimization
 #' converged. The value `1` means it has converged, and `0` otherwise.}
+#' 
+#' @references
+#' Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
+#' for Risk Parity Portfolio Design," \emph{IEEE Trans. on Signal Processing},
+#' vol. 63, no. 19, pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.2452219)
+#'
+#' F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
+#' Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+#' 
+#' T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
+#' ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export
