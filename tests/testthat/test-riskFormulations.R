@@ -1,114 +1,23 @@
 context("test-riskFormulations.R")
 library(riskParityPortfolio)
-library(numDeriv) # install.packages("numDeriv")
 library(testthat)
 
-# generate a random Sigma and w
+# generate a random Sigma and mu
+set.seed(123)
 N <- 5
-Sigma12 <- matrix(rnorm(N^2), N, N)
-Sigma <- Sigma12 %*% t(Sigma12)
-w <- runif(N)
+V <- matrix(rnorm(N^2), N, N)
+Sigma <- cov(V)
 
-# basic quantities
-b <- rep(1/N, N)
-Sigma_w <- as.vector(Sigma %*% w)
-r <- w*Sigma_w
-sum_r <- sum(r)
-
-#  Formulation “rc-double-index”
-test_that("rc-double-index gradient against numerical derivs", {
-R <- riskParityPortfolio:::R_rc_double_index(w, Sigma)
-risk_grad <- riskParityPortfolio:::R_grad_rc_double_index(w, Sigma)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_double_index, x = w, Sigma = Sigma)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_double_index(w, Sigma)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_double_index, x = w, Sigma = Sigma)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation “rc-over-b-double-index”
-test_that("rc-over-b-double-index gradient against numerical derivs", {
-R <- riskParityPortfolio:::R_rc_over_b_double_index(w, Sigma, b)
-risk_grad <- riskParityPortfolio:::R_grad_rc_over_b_double_index(w, Sigma, b)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_b_double_index, x = w, Sigma = Sigma, b = b)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_over_b_double_index(w, Sigma, b)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_b_double_index, x = w, Sigma = Sigma, b = b)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation “rc-over-var-vs-b”
-test_that("rc-over-var-vs-b gradient against numerical derivs", {
-R <- riskParityPortfolio:::R_rc_over_var_vs_b(w, Sigma, b)
-risk_grad <- riskParityPortfolio:::R_grad_rc_over_var_vs_b(w, Sigma, b)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_var_vs_b, x = w, Sigma = Sigma, b = b)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_over_var_vs_b(w, Sigma, b)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_var_vs_b, x = w, Sigma = Sigma, b = b)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation “rc-over-var”
-test_that("rc-over-var-vs-b gradient against numerical derivs", {
-R <- riskParityPortfolio:::R_rc_over_var(w, Sigma)
-risk_grad <- riskParityPortfolio:::R_grad_rc_over_var(w, Sigma)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_var, x = w, Sigma = Sigma)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_over_var(w, Sigma)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_var, x = w, Sigma = Sigma)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation "rc-over-sd vs b-times-sd"
-test_that("rc-over-sd vs b-times-sd gradient against numerical derivs", {
-R <- riskParityPortfolio:::R_rc_over_sd_vs_b_times_sd(w, Sigma, b)
-risk_grad <- riskParityPortfolio:::R_grad_rc_over_sd_vs_b_times_sd(w, Sigma, b)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_sd_vs_b_times_sd, x = w, Sigma = Sigma, b = b)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_over_sd_vs_b_times_sd(w, Sigma, b)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_sd_vs_b_times_sd, x = w, Sigma = Sigma, b = b)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation "rc vs b-times-var"
-test_that("rc vs b-times-var gradient against numerical derivs", {
-R <- riskParityPortfolio:::R_rc_vs_b_times_var(w, Sigma, b)
-risk_grad <- riskParityPortfolio:::R_grad_rc_vs_b_times_var(w, Sigma, b)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_vs_b_times_var, x = w, Sigma = Sigma, b = b)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_vs_b_times_var(w, Sigma, b)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_vs_b_times_var, x = w, Sigma = Sigma, b = b)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation "rc vs theta"
-test_that("rc vs theta gradient against numerical derivs", {
-theta <- mean(r) + rnorm(1)
-R <- riskParityPortfolio:::R_rc_vs_theta(c(w, theta), Sigma)
-risk_grad <- riskParityPortfolio:::R_grad_rc_vs_theta(c(w, theta), Sigma)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_vs_theta(c(w, theta), Sigma)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
-})
-
-#  Formulation "rc-over-b vs theta"
-test_that("rc-over-b vs theta gradient against numerical derivs", {
-theta <- mean(r/b) + rnorm(1)
-R <- riskParityPortfolio:::R_rc_over_b_vs_theta(c(w, theta), Sigma, b)
-risk_grad <- riskParityPortfolio:::R_grad_rc_over_b_vs_theta(c(w, theta), Sigma, b)
-risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_b_vs_theta, x = c(w, theta), Sigma = Sigma, b = b)
-expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
-
-g_jac <- riskParityPortfolio:::A_rc_over_b_vs_theta(c(w, theta), Sigma, b)
-g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_b_vs_theta, x = c(w, theta), Sigma = Sigma, b = b)
-expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+test_that("sca, alabama, and slsq give similar results in low dimensional problems", {
+  formulations_list <- c("rc-double-index", "rc-over-b-double-index",
+                         "rc-over-var vs b", "rc-over-var",
+                         "rc-over-sd vs b-times-sd", "rc vs b-times-var",
+                         "rc vs theta", "rc-over-b vs theta")
+  for(formulation in formulations_list) {
+    rpp_sca <- riskParityPortfolio(Sigma, method = "sca", formulation = formulation)
+    rpp_alabama <- riskParityPortfolio(Sigma, method = "alabama", formulation = formulation)
+    rpp_slsqp <- riskParityPortfolio(Sigma, method = "slsqp", formulation = formulation)
+    expect_that(all(abs(rpp_sca$w - rpp_alabama$w) < 1e-3), is_true())
+    expect_that(all(abs(rpp_sca$w - rpp_slsqp$w) < 1e-3), is_true())
+  }
 })

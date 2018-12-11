@@ -1,12 +1,14 @@
 # riskParityPortfolio
 
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/riskParityPotfolio)](http://cran.r-project.org/package=riskParityPortfolio)
+[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/riskParityPortfolio)](http://cran.r-project.org/package=riskParityPortfolio)
+![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
+
 [![codecov](https://codecov.io/gh/mirca/riskParityPortfolio/branch/master/graph/badge.svg)](https://codecov.io/gh/mirca/riskParityPortfolio)
 [![Travis-CI-Badge](https://travis-ci.org/mirca/riskParityPortfolio.svg?branch=master)](https://travis-ci.org/mirca/riskParityPortfolio)
 [![Build status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/master?svg=true)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/riskParityPotfolio)](http://cran.r-project.org/package=riskParityPortfolio)
-[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/riskParityPortfolio)](http://cran.r-project.org/package=riskParityPortfolio)
-![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
+
 
 *riskParityPortfolio* provides tools to design portfolios that follow the risk
 parity criteria. More precisely we implement a Newton method proposed by
@@ -21,8 +23,19 @@ To install ``riskParityPortfolio`` type the following inside an R session:
 
 
 ```r
+# Installation from GitHub
 install.packages("devtools")
 devtools::install_github("dppalomar/riskParityPortfolio")
+
+# Getting help
+library(riskParityPortfolio)
+help(package = "riskParityPortfolio")
+package?riskParityPortfolio
+?riskParityPortfolio
+
+# Citing this work
+citation("library(riskParityPortfolio)")
+
 ```
 
 You can also get ``riskParityPortfolio`` from Docker as follows:
@@ -45,11 +58,11 @@ res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
 res$w
-#> [1] 0.06837391 0.14456362 0.11136586 0.51101706 0.16467955
+#> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
 res$risk_contribution
-#> [1] 0.02478764 0.02478764 0.02478764 0.02478764 0.02478764
+#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
 c(res$w * (Sigma %*% res$w))
-#> [1] 0.02478764 0.02478764 0.02478764 0.02478764 0.02478764
+#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
@@ -71,10 +84,10 @@ If you have used this package in your research, please consider citing the follo
 - Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for
   Risk Parity Portfolio Design," _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015.  (https://doi.org/10.1109/TSP.2015.2452219)
-- F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
+- F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
   Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
-- Griveau-Billion T., Richard J., and Roncalli T. "A fast algorithm for computing High-dimensional risk parity portfolios",
-  ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf, 2013.
+- T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
+  ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 
 ## Links
 Package: [GitHub](https://github.com/dppalomar/riskParityPortfolio).

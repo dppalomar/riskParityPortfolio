@@ -54,10 +54,3 @@ Eigen::MatrixXd hessian_log_formulation(const Eigen::MatrixXd& Sigma,
   Eigen::MatrixXd M = (b.array() / (xk.array() * xk.array())).matrix().asDiagonal();
   return Sigma + M;
 }
-
-
-double obj_function_spinu(const Eigen::MatrixXd& Sigma,
-                    const Eigen::VectorXd& xk,
-                    const Eigen::VectorXd& b) {
-  return (.5 * (xk.transpose() * Sigma * xk)).sum() - (b.array() * (xk.array().log())).sum();
-}

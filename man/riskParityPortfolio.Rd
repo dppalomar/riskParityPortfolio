@@ -5,9 +5,8 @@
 \title{Design of Risk Parity Portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
-  lmd_var = 0, budget = TRUE, shortselling = FALSE,
-  algorithm = c("newton", "cyclical"), method = c("sca", "alabama",
-  "slsqp"), formulation = NULL, w0 = NULL, theta0 = NULL,
+  lmd_var = 0, algorithm = c("newton", "cyclical"), method = c("sca",
+  "alabama", "slsqp"), formulation = NULL, w0 = NULL, theta0 = NULL,
   gamma = 0.9, zeta = 1e-07, tau = NULL, maxiter = 50,
   ftol = 1e-08, wtol = 1e-06, use_gradient = TRUE)
 }
@@ -22,12 +21,6 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
 
 \item{lmd_var}{scalar that controls the importance of the variance term
 (only available for the SCA method for now).}
-
-\item{budget}{boolean indicating whether to consider sum(w) = 1 as a
-constraint}
-
-\item{shortselling}{boolean indicating whether to allow short-selling, i.e.,
-w < 0}
 
 \item{algorithm}{which algorithm to use for computing the initial portfolio
 solution. We recommend choosing "cyclical" for high-dimensional
@@ -86,10 +79,26 @@ a list containing possibly the following elements:
 converged. The value `1` means it has converged, and `0` otherwise.}
 }
 \description{
-This functions uses the vanilla (Newton or Cyclical) risk parity
-             portfolio in order to initialize either the SCA method or a
-             general solver. This convenience function helps to put together
-             the advantages of both methods.
+This function designs risk-parity portfolios to equalize/distribute
+the risk contributions of the different assets, which is missing if we simply
+consider the overall volatility of the portfolio as in the mean-variance
+Markowitz portfolio. In addition to the vanilla formulation, where the risk
+contributions are perfectly equalized subject to no shortselling and budget
+constraints, many other formulations are considered that allow for box
+constraints and shortselling, as well as the inclusion of additional
+objectives like the expected return and overall variance. See vignette for
+a detailed documentation and comparison, with several illustrative examples.
+}
+\references{
+Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
+for Risk Parity Portfolio Design," \emph{IEEE Trans. on Signal Processing},
+vol. 63, no. 19, pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.2452219)
+
+F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
+Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+
+T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
+ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 }
 \author{
 Ze Vinicius and Daniel P. Palomar

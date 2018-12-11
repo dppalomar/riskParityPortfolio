@@ -24,10 +24,10 @@ a detailed documentation and comparison, with several illustrative examples.
 \section{Help}{
 
 For a quick help see the README file:
-\href{https://github.com/dppalomar/riskParityPortfolio}{GitHub-README}.
+\href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html}{GitHub-README}.
 
 For more details see the vignette:
-\href{https://session.run/riskParityPortfolio/_static/getting_started.html}{GitHub-html-vignette}.
+\href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-vignette.html}{GitHub-html-vignette}.
 }
 
 \references{
@@ -35,8 +35,11 @@ Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
 for Risk Parity Portfolio Design," \emph{IEEE Trans. on Signal Processing},
 vol. 63, no. 19, pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.2452219)
 
-F. Spinu, "An Algorithm for Computing Risk Parity Weights" (July 30, 2013).
+F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
 Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+
+T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
+ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 }
 \author{
 Ze Vinicius and Daniel P. Palomar

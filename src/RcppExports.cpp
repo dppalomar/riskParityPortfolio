@@ -6,9 +6,9 @@
 
 using namespace Rcpp;
 
-// risk_parity_portfolio_ccd
-Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
-RcppExport SEXP _riskParityPortfolio_risk_parity_portfolio_ccd(SEXP SigmaSEXP, SEXP bSEXP, SEXP tolSEXP, SEXP maxiterSEXP) {
+// risk_parity_portfolio_ccd_spinu
+Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
+RcppExport SEXP _riskParityPortfolio_risk_parity_portfolio_ccd_spinu(SEXP SigmaSEXP, SEXP bSEXP, SEXP tolSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,7 +16,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type b(bSEXP);
     Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type maxiter(maxiterSEXP);
-    rcpp_result_gen = Rcpp::wrap(risk_parity_portfolio_ccd(Sigma, b, tol, maxiter));
+    rcpp_result_gen = Rcpp::wrap(risk_parity_portfolio_ccd_spinu(Sigma, b, tol, maxiter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// risk_parity_portfolio_ccd_roncalli
+Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
+RcppExport SEXP _riskParityPortfolio_risk_parity_portfolio_ccd_roncalli(SEXP SigmaSEXP, SEXP bSEXP, SEXP tolSEXP, SEXP maxiterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Sigma(SigmaSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type b(bSEXP);
+    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(risk_parity_portfolio_ccd_roncalli(Sigma, b, tol, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -36,7 +50,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_riskParityPortfolio_risk_parity_portfolio_ccd", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_ccd, 4},
+    {"_riskParityPortfolio_risk_parity_portfolio_ccd_spinu", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_ccd_spinu, 4},
+    {"_riskParityPortfolio_risk_parity_portfolio_ccd_roncalli", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_ccd_roncalli, 4},
     {"_riskParityPortfolio_risk_parity_portfolio_nn", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_nn, 4},
     {NULL, NULL, 0}
 };
