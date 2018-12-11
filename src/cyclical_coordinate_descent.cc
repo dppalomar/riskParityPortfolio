@@ -10,7 +10,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma,
                                                 const Eigen::VectorXd& b,
                                                 const double tol,
                                                 const unsigned int maxiter) {
-  double aux, x_diff;
+  double aux, x_diff, xk_sum;
   const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
   Eigen::VectorXd x_star(N);
@@ -27,10 +27,12 @@ Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma,
       Sigma_xk += (Sigma.col(i).array() * x_diff).matrix();
       xk(i) = x_star(i);
     }
-    if ((Sigma_xk.array() - b.array()).abs().maxCoeff() < tol)
+    xk_sum = xk.sum();
+    if ((xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum) -
+         b.array()).abs().maxCoeff() < tol)
       break;
   }
-  return x_star / x_star.sum();
+  return x_star / xk_sum;
 }
 
 // Cyclical coordinate descent for Roncalli's square-root formulation
@@ -40,7 +42,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
                                                    const Eigen::VectorXd& b,
                                                    const double tol,
                                                    const unsigned int maxiter) {
-  double aux, sigma, x_diff;
+  double aux, sigma, x_diff, xk_sum;
   const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
   Eigen::VectorXd x_star(N);
@@ -60,8 +62,10 @@ Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
                         Sigma(i, i) * x_diff * x_diff);
       xk(i) = x_star(i);
     }
-    if ((Sigma_xk.array() - b.array()).abs().maxCoeff() < tol)
+    xk_sum = xk.sum();
+    if ((xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum) -
+         b.array()).abs().maxCoeff() < tol)
       break;
   }
-  return x_star / x_star.sum();
+  return x_star / xk_sum;
 }

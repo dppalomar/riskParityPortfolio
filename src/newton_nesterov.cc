@@ -12,7 +12,7 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
   Eigen::VectorXd uk(N), d(N);
   Eigen::MatrixXd Hk(N, N);
-  double dx, lambdak, lambda_star = 0.3628676;
+  double dx, lambdak, xk_sum, lambda_star = 0.3628676;
 
   // initial guess
   xk = std::sqrt(b.sum() / Sigma.sum()) * xk;
@@ -32,14 +32,16 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
     uk = gradient_log_formulation(Sigma, xk, b);
     Hk = hessian_log_formulation(Sigma, xk, b);
     d = Hk.llt().solve(uk);
-    lambdak = std::sqrt(uk.dot(d));
+    //lambdak = std::sqrt(uk.dot(d));
     xk = xk - d;
-    if (((Sigma * xk ).array() - b.array()).abs().maxCoeff() < tol)
+    xk_sum = xk.sum();
+    if ((xk.array() * (Sigma * xk).array() / (xk_sum * xk_sum) -
+         b.array()).abs().maxCoeff() < tol)
       break;
     //if (lambdak < tol)
     //  break;
   }
-  return xk / xk.sum();
+  return xk / xk_sum;
 }
 
 
