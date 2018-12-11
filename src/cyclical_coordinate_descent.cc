@@ -3,11 +3,43 @@
 using namespace Eigen;
 using namespace std;
 
+// Cyclical coordinate descent for Spinu's formulation
+// of the risk parity portfolio problem
 // [[Rcpp::export]]
-Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
-                                          const Eigen::VectorXd& b,
-                                          const double tol,
-                                          const unsigned int maxiter) {
+Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma,
+                                                const Eigen::VectorXd& b,
+                                                const double tol,
+                                                const unsigned int maxiter) {
+  double aux, x_diff;
+  const unsigned int N = b.size();
+  Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
+  Eigen::VectorXd x_star(N);
+  Eigen::VectorXd Sigma_xk(N);
+  xk = (1 / Sigma.sum()) * xk;
+  Sigma_xk = Sigma * xk;
+  for (unsigned int k = 0; k < maxiter; ++k) {
+    for (unsigned int i = 0; i < N; ++i) {
+      // compute update for the portfolio weights x
+      aux = xk(i) * Sigma(i, i) - Sigma_xk(i);
+      x_star(i) = (.5 / Sigma(i, i)) * (aux + std::sqrt(aux * aux + 4 * Sigma(i, i) * b(i)));
+      // update auxiliary terms
+      x_diff = x_star(i) - xk(i);
+      Sigma_xk += (Sigma.col(i).array() * x_diff).matrix();
+      xk(i) = x_star(i);
+    }
+    if ((Sigma_xk.array() - b.array()).abs().maxCoeff() < tol)
+      break;
+  }
+  return x_star / x_star.sum();
+}
+
+// Cyclical coordinate descent for Roncalli's square-root formulation
+// of the risk parity portfolio problem
+// [[Rcpp::export]]
+Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
+                                                   const Eigen::VectorXd& b,
+                                                   const double tol,
+                                                   const unsigned int maxiter) {
   double aux, sigma, x_diff;
   const unsigned int N = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(N, 1);
@@ -34,9 +66,3 @@ Eigen::VectorXd risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
   return x_star / x_star.sum();
 }
 
-
-double obj_function_roncalli(const Eigen::MatrixXd& Sigma,
-                             const Eigen::VectorXd& x,
-                             const Eigen::VectorXd& b) {
-  return std::sqrt((x.transpose() * Sigma * x).sum()) - (b.array() * (x.array().log())).sum();
-}
