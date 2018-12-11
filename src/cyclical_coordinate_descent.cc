@@ -65,4 +65,3 @@ Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
   }
   return x_star / x_star.sum();
 }
-

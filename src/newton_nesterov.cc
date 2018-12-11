@@ -34,8 +34,10 @@ Eigen::VectorXd risk_parity_portfolio_nn(const Eigen::MatrixXd& Sigma,
     d = Hk.llt().solve(uk);
     lambdak = std::sqrt(uk.dot(d));
     xk = xk - d;
-    if (lambdak < tol)
+    if (((Sigma * xk ).array() - b.array()).abs().maxCoeff() < tol)
       break;
+    //if (lambdak < tol)
+    //  break;
   }
   return xk / xk.sum();
 }

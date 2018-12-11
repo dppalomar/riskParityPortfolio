@@ -5,10 +5,11 @@
 \title{Design of Risk Parity Portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
-  lmd_var = 0, algorithm = c("newton", "cyclical"), method = c("sca",
-  "alabama", "slsqp"), formulation = NULL, w0 = NULL, theta0 = NULL,
-  gamma = 0.9, zeta = 1e-07, tau = NULL, maxiter = 50,
-  ftol = 1e-08, wtol = 1e-06, use_gradient = TRUE)
+  lmd_var = 0, algorithm = c("cyclical-spinu", "cyclical-roncalli",
+  "newton"), method = c("sca", "alabama", "slsqp"), formulation = NULL,
+  w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
+  tau = NULL, maxiter = 50, ftol = 1e-08, wtol = 1e-06,
+  use_gradient = TRUE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}

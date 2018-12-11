@@ -580,7 +580,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' @export
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 1e-4, lmd_var = 0,
-                                algorithm = c("newton", "cyclical"),
+                                algorithm = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
@@ -604,8 +604,12 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     switch(match.arg(algorithm),
            "newton" = {
              portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
-           }, "cyclical" = {
+           },
+           "cyclical-spinu" = {
              portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)
+           },
+           "cyclical-roncalli" = {
+             portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
            },
            stop("algorithm ", algorithm, "is not included.")
     )
@@ -614,8 +618,12 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       switch(match.arg(algorithm),
              "newton" = {
                w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
-             }, "cyclical" = {
+             },
+             "cyclical-spinu" = {
                w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w
+             },
+             "cyclical-roncalli" = {
+               portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
              },
              stop("algorithm ", algorithm, "is not included.")
       )
