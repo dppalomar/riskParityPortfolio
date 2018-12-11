@@ -89,8 +89,8 @@ $$\begin{array}{ll}
 
 It turns out, as shown in [@Spinu2013], that the unique solution for the optimization problem
 stated above attains the risk budget requirements in an exact fashion. Such solution can be
-computed using convex optimization packages, such as CVXR, but a faster implementation of a
-Newton algorithm, also proposed by [@Spinu2013], is implemented in this package.
+computed using convex optimization packages, such as CVXR, but faster algorithms such as Newton and cyclical
+coordinate descent, proposed by [@Spinu2013] and [@Billion2013], are implemented in this package.
 
 A simple code example on how to design a risk parity portfolio is as follows:
 ```{r, message = FALSE}
@@ -116,10 +116,10 @@ barplot(portfolio$risk_contribution,
 As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
 
-Now, let's see a comparison, in terms of computational time, of our Newton
+Now, let's see a comparison, in terms of computational time, of our cyclical coordinate descent
 implementation against the `rp()` function from the `cccp` package. (For a fair
 comparison, instead of calling our function `riskParityPortfolio()`, we call
-directly the core internal function `risk_parity_portfolio_nn()`, which only
+directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
 computes the risk parity weights, just like `rp()`.)
 ```{r}
 library(microbenchmark)
@@ -133,8 +133,8 @@ b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
 op <- microbenchmark(rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-                     newton = riskParityPortfolio:::risk_parity_portfolio_nn(Sigma, b,
-                                                                             1e-6, 50),
+                     cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b,
+                                                                                      1e-6, 50),
                      times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
@@ -142,16 +142,17 @@ boxplot(op, ylab = "Time in Milliseconds",
         xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
-As it can be observed, our implementation is quite faster (a factor of ~6x) than the interior-point method
+As it can be observed, our implementation is orders of maginitude faster than the interior-point method
 used by `cccp`. We suggest the interested reader to check out Chapter 11 of reference [@BoydCVXBook]
 for a thorough explanation on interior-point methods.
 
 
 # Modern risk parity portfolio
-The design of risk parity portfolios as solved by [@Spinu2013] is of paramount importance
+The design of risk parity portfolios as solved by [@Spinu2013] and [@Billion2013] is of paramount importance
 both for academia and industry. However, practitioners would like the ability to include
 additional constraints and objective terms desired in practice, such as the mean return, box constraints, etc.
-In such cases, the risk-contribution constraints cannot be met with equality and gives rise to nonconvex formulations.
+In such cases, the risk-contribution constraints cannot be met with equality, mainly because they give rise
+to nonconvex formulations.
 
 Let's explore, for instance, the effect of including the expected return as an additional objective in the optimization problem.
 The problem can be formulated as
@@ -444,31 +445,36 @@ By iterativelly applying this procedure it is possible to show that the sequence
 the global minimum of the convex function in roughly $O(N_{iter} \times N^2)$.
 
 The plot below illustrates the computational scaling of both `"newton"` and `"cyclical"` algorithms.
+Note that the `cyclical` algorithm is implemented for two different formulations used by [@Spinu2013]
+and [@Billion2013], respectively. Nonetheless, they output the same solution.
 ```{r}
 library(microbenchmark)
 library(riskParityPortfolio)
 
-sizes <- c(10, 50, 100, 200, 300, 400, 500, 600, 700, 1000)
+sizes <- c(10, 50, 100, 200, 300, 400, 500, 600, 700)
 size_seq <- c(1:length(sizes))
-times <- matrix(0, 2, length(sizes))
+times <- matrix(0, 3, length(sizes))
 for (i in size_seq) {
   V <- matrix(rnorm(1000 * sizes[i]), nrow = sizes[i])
   Sigma <- V %*% t(V)
   bench <- microbenchmark(newton = riskParityPortfolio(Sigma, algorithm="newton"),
-                          cyclical = riskParityPortfolio(Sigma, algorithm="cyclical"),
+                          cyclical_spinu = riskParityPortfolio(Sigma, algorithm="cyclical-spinu"),
+                          cyclical_roncalli = riskParityPortfolio(Sigma, algorithm="cyclical-roncalli"),
                           times = 10L, unit = "ms", control = list(order = "inorder", warmup = 4))
-  times[1, i] <- median(bench$time[c(TRUE, FALSE)] / 10 ^ 6)
-  times[2, i] <- median(bench$time[c(FALSE, TRUE)] / 10 ^ 6)
+  times[1, i] <- median(bench$time[c(TRUE, FALSE, FALSE)] / 10 ^ 6)
+  times[2, i] <- median(bench$time[c(FALSE, TRUE, FALSE)] / 10 ^ 6)
+  times[3, i] <- median(bench$time[c(FALSE, FALSE, TRUE)] / 10 ^ 6)
 }
 
-colors <- c("#0B032D", "#FFB997")
+colors <- c("#0B032D", "#FFB997", "red")
 plot(size_seq, times[1,], type = "b", pch=15, cex=.75, col = colors[1],
      xlab = "Portfolio length", ylab = "CPU time [ms]", xaxt = "n")
 grid()
 lines(size_seq, times[2,], type = "b", pch=16, cex=.75, col = colors[2])
+lines(size_seq, times[3,], type = "b", pch=17, cex=.75, col = colors[3])
 axis(side = 1, at = size_seq, labels = sizes)
-legend("topleft", legend = c("newton", "cyclical"), col=colors, pch=c(15, 16),
-       lty=c(1, 1), bty="n")
+legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
+       col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 ```
 
 # References {-}
