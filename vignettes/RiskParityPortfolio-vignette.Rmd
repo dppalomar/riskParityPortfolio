@@ -71,7 +71,7 @@ $$w_i(\Sigma \mathbf{w})_{i} = w_j(\Sigma \mathbf{w})_{j}, \forall i, j.$$
 A natural extension of the risk parity portfolio is the so called risk budget portfolio, in which
 the marginal risk contributions match preassigned quantities. Mathematically,
 $$(\Sigma \mathbf{w})_i w_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \forall i,$$
-where $\mathbf{b} \triangleq (b_1, b_2, ..., b_N)$ is the vector of desired
+where $\mathbf{b} \triangleq (b_1, b_2, ..., b_N)$ (with $\mathbf{1}^T\mathbf{b}=1$ and $\mathbf{b}\ge\mathbf{0}$) is the vector of desired
 marginal risk contributions.
 
 In the case that $\boldsymbol{\Sigma}$ is diagonal and with the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w}\ge\mathbf{0}$, the risk budgeting portfolio is
@@ -242,7 +242,7 @@ $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$
 
 We consider the risk formulations as presented in [@FengPal2015riskparity].
 They can be passed through the keyword argument `formulation` in the function
-`riskParityPortfolio`.
+`riskParityPortfolio()`.
 
 The name of the formulations and their mathematical expressions are presented as follows.
 
@@ -390,6 +390,7 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
+
 ## Experiment with real market data
 Now, let's query some real market data using the package `sparseIndexTracking`
 and check the performance of the different methods.
@@ -434,13 +435,13 @@ It can be noted that the `"alabama"` and `"slsqp"` greatly benefit from the addi
 information. Despite that fact, the `"sca"` method still performs faster. Additionally,
 in some cases, the `"sca"` method attains a better solution than the other methods.
 
-# Appendix III: Design of high dimensional risk parity portfolio
 
+# Appendix III: Design of high dimensional risk parity portfolio
 In order to efficiently design high dimensional portfolios that follows the risk parity criterion,
 we implement the cyclical coordinate descent algorithm proposed by [@Billion2013]. In brief, this
 algorithm optimizes for one portfolio weight at a time while leaving the rest fixed.
 By iterativelly applying this procedure it is possible to show that the sequence of estimations reaches
-the global minimum of the convex function in roughly $O(N_{iter} * N^2)$.
+the global minimum of the convex function in roughly $O(N_{iter} \times N^2)$.
 
 The plot below illustrates the computational scaling of both `"newton"` and `"cyclical"` algorithms.
 ```{r}
