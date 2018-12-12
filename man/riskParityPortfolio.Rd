@@ -8,7 +8,7 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
   lmd_var = 0, w_lb = 0, w_ub = 1, algorithm = c("cyclical-spinu",
   "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
   formulation = NULL, w0 = NULL, theta0 = NULL, gamma = 0.9,
-  zeta = 1e-07, tau = NULL, maxiter = 50, tol = 1e-08,
+  zeta = 1e-07, tau = NULL, maxiter = 50, ftol = 1e-08,
   wtol = 1e-06, use_gradient = TRUE)
 }
 \arguments{
@@ -59,7 +59,7 @@ vector of portfolio weights will be used}
 
 \item{maxiter}{maximum number of iterations for the SCA loop}
 
-\item{tol}{convergence tolerance on the risk contribution target}
+\item{ftol}{convergence tolerance on the risk contribution target}
 
 \item{wtol}{convergence tolerance on the values of the portfolio weights}
 

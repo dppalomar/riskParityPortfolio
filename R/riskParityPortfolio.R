@@ -74,7 +74,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
-                                   tau = NULL, maxiter = 500, tol = 1e-5) {
+                                   tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
   if (length(w_ub) == 1)
     w_ub <- rep(w_ub, N)
@@ -83,6 +83,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
   if (is.null(w0))
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+
+  w0 <- pmin(w_ub, w0)
+  w0 <- pmax(w_lb, w0)
 
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
@@ -202,7 +205,10 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
         fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
     fun_seq <- c(fun_seq, fun_next)
     # check convergence
-    if (k > 1 && (max(abs(rk/sum(rk) - b)) < tol))
+    # check convergence on parameters and objective function
+    werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
+    ferr <- abs(fun_next - fun_k) / max(1, abs(fun_k))
+    if (k > 1 && (werr < wtol && ferr < ftol))
       break
     # update variables
     wk <- w_next
@@ -468,13 +474,13 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
 # @param Sigma covariance or correlation matrix
 # @param b budget vector
 # @param maxiter maximum number of iterations of both damped and quadratic phases
-# @param tol tolerance of the stopping criteria
+# @param ftol tolerance of the stopping criteria
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
 riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                      maxiter = 50, tol = 1e-8) {
-  w <- risk_parity_portfolio_nn(Sigma, b, tol, maxiter)
+                                      maxiter = 50, ftol = 1e-8) {
+  w <- risk_parity_portfolio_nn(Sigma, b, ftol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
 
@@ -488,21 +494,21 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 # @param Sigma covariance or correlation matrix
 # @param b budget vector
 # @param maxiter maximum number of iterations of both damped and quadratic phases
-# @param tol tolerance of the stopping criteria
+# @param ftol tolerance of the stopping criteria
 # @return a list containing the following elements:
 # \item{\code{w}}{optimal portfolio vector}
 # \item{\code{risk_contribution}}{the risk contribution of every asset}
 riskParityPortfolioCyclicalRoncalli <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                        maxiter = 50, tol = 1e-8) {
-  w <- risk_parity_portfolio_ccd_roncalli(Sigma, b, tol, maxiter)
+                                        maxiter = 50, ftol = 1e-8) {
+  w <- risk_parity_portfolio_ccd_roncalli(Sigma, b, ftol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
 
 
 # same as above but for Spinu's risk parity formulation
 riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                             maxiter = 50, tol = 1e-8) {
-  w <- risk_parity_portfolio_ccd_spinu(Sigma, b, tol, maxiter)
+                                             maxiter = 50, ftol = 1e-8) {
+  w <- risk_parity_portfolio_ccd_spinu(Sigma, b, ftol, maxiter)
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
 
@@ -554,7 +560,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #'        "alabama" or "slsqp") if TRUE, gradients of the objective function wrt to the
 #'        parameters will be used. This is strongly recommended to achieve faster
 #'        results.
-#' @param tol convergence tolerance on the risk contribution target
+#' @param ftol convergence tolerance on the risk contribution target
 #' @param wtol convergence tolerance on the values of the portfolio weights
 #' @return a list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
@@ -592,7 +598,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
-                                maxiter = 50, tol = 1e-8, wtol = 1e-6,
+                                maxiter = 50, ftol = 1e-8, wtol = 1e-6,
                                 use_gradient = TRUE) {
   if (is.null(b))
     b <- rep(1/nrow(Sigma), nrow(Sigma))
@@ -611,13 +617,13 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if (!is_modern) {
     switch(match.arg(algorithm),
            "newton" = {
-             portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, tol)
+             portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
            },
            "cyclical-spinu" = {
-             portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, tol)
+             portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)
            },
            "cyclical-roncalli" = {
-             portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, tol)
+             portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
            },
            stop("algorithm ", algorithm, "is not included.")
     )
@@ -625,13 +631,13 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     if (is.null(w0)) {
       switch(match.arg(algorithm),
              "newton" = {
-               w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, tol)$w
+               w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
              },
              "cyclical-spinu" = {
-               w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, tol)$w
+               w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w
              },
              "cyclical-roncalli" = {
-               portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, tol)
+               portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
              },
              stop("algorithm ", algorithm, "is not included.")
       )
@@ -642,14 +648,14 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                   lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
                                                   formulation = formulation, w0 = w0,
                                                   theta0 = theta0, gamma = gamma, zeta = zeta,
-                                                  tau = tau, maxiter = maxiter, tol = tol)
+                                                  tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol)
            },
            "slsqp" =,
            "alabama" = {
               portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                         formulation = formulation, method = method,
                                                         use_gradient = use_gradient, w0 = w0, theta0 = theta0,
-                                                        maxiter = maxiter, ftol = tol, wtol = wtol)
+                                                        maxiter = maxiter, ftol = ftol, wtol = wtol)
 
            },
            stop("method ", method, "is not included.")
