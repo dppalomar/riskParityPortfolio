@@ -133,13 +133,11 @@ Sigma <- V %*% t(V)
 b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
-op <- microbenchmark(rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-                     cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b,
-                                                                                      1e-6, 50),
-                     rp_optimalPortfolio = optimalPortfolio(Sigma = Sigma,
-                                                            control = list(type = 'erc',
-                                                                           constraint = 'lo')),
-                     times = 10L)
+op <- microbenchmark(
+          rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
+          cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
+          optPort = optimalPortfolio(Sigma = Sigma,control = list(type = 'erc', constraint = 'lo')),
+          times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in Milliseconds",
@@ -169,7 +167,6 @@ where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf
 
 ```{r, message=FALSE}
 library(scales)
-library(latex2exp)
 
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
@@ -214,7 +211,8 @@ w0 <- rep(1/N, N)
 
 # compute risk parity portfolios using different methods
 rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
-riskport_w <- optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo'))
+riskport_w <- optimalPortfolio(Sigma = Sigma, control = list(type = 'erc',
+                                                             constraint = 'lo'))
 fincov_w <- RiskParity(Sigma)
 fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
 riskport_risk_contribution <- c(riskport_w * (Sigma %*% riskport_w))
@@ -226,12 +224,14 @@ cccp_risk_contribution <- c(cccp_w * (Sigma %*% cccp_w))
 barplot(rbind(rpp$w, fincov_w, cccp_w, riskport_w),
         main = "Portfolios Weights", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:4],
-        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp", "RiskPortfolios"))
+        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
+                   "RiskPortfolios"))
 barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution,
               riskport_risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:4],
-        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp", "RiskPortfolios"))
+        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
+                   "RiskPortfolios"))
 ```
 
 Apart from the `RiskParity()` function from the `FinCovRegularization` package
@@ -297,20 +297,23 @@ Additionally, we compare `method="alabama"` and `method="slsqp"` without using t
 gradient of the objective function.
 
 ## Experiment: formulation "rc-over-var vs b"
-```{r}
+```{r, message = FALSE}
 set.seed(123)
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- V %*% t(V)
 w0 <- riskParityPortfolio(Sigma, formulation = "diag")$w
 
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "slsqp")
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                 method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
                                         method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "alabama")
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                   method = "alabama")
 res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
                                           method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "sca")
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                               method = "sca")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -330,18 +333,21 @@ legend("topright", legend=c("alabama-nograd",
                             "slsqp-nograd",
                             "slsqp",
                             "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
+       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
 ## Experiment: formulation "rc vs b-times-var"
-```{r}
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var", method = "slsqp")
+```{r, message = FALSE}
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
+                                 method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
                                         method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var", method = "alabama")
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
+                                   method = "alabama")
 res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
                                           method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var", method = "sca")
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
+                               method = "sca")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -365,14 +371,17 @@ legend("topright", legend=c("alabama-nograd",
 ```
 
 ## Experiment: formulation "rc-over-sd vs b-times-sd"
-```{r}
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd", method = "slsqp")
+```{r, message = FALSE}
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
+                                 method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
                                         method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd", method = "alabama")
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
+                                   method = "alabama")
 res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
                                           method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd", method = "sca")
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
+                               method = "sca")
 
 plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
@@ -392,7 +401,7 @@ legend("topright", legend=c("alabama-nograd",
                             "slsqp-nograd",
                             "slsqp",
                             "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
+       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
 
@@ -400,7 +409,7 @@ legend("topright", legend=c("alabama-nograd",
 Now, let's query some real market data using the package `sparseIndexTracking`
 and check the performance of the different methods.
 
-```{r}
+```{r, message = FALSE}
 library(sparseIndexTracking)
 library(xts)
 data(INDEX_2010)
@@ -408,13 +417,16 @@ Sigma <- cov(INDEX_2010$X)
 N <- nrow(Sigma)
 w0 <- rep(1/N, N)
 
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "slsqp")
+res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                 method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
                                         method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "alabama")
+res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                                   method = "alabama")
 res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
                                           method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b", method = "sca")
+res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
+                               method = "sca")
 
 plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
      pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
@@ -433,7 +445,8 @@ legend("topright", legend=c("alabama-nograd",
                             "slsqp-nograd",
                             "slsqp",
                             "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
+       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8,
+       bg = "white")
 ```
 
 It can be noted that the `"alabama"` and `"slsqp"` greatly benefit from the additional gradient
@@ -461,10 +474,11 @@ times <- matrix(0, 3, length(sizes))
 for (i in size_seq) {
   V <- matrix(rnorm(1000 * sizes[i]), nrow = sizes[i])
   Sigma <- V %*% t(V)
-  bench <- microbenchmark(newton = riskParityPortfolio(Sigma, method_init="newton"),
-                          cyclical_spinu = riskParityPortfolio(Sigma, method_init="cyclical-spinu"),
-                          cyclical_roncalli = riskParityPortfolio(Sigma, method_init="cyclical-roncalli"),
-                          times = 10L, unit = "ms", control = list(order = "inorder", warmup = 4))
+  bench <- microbenchmark(
+            newton = riskParityPortfolio(Sigma, method_init="newton"),
+            cyclical_spinu = riskParityPortfolio(Sigma, method_init="cyclical-spinu"),
+            cyclical_roncalli = riskParityPortfolio(Sigma, method_init="cyclical-roncalli"),
+            times = 10L, unit = "ms", control = list(order = "inorder", warmup = 4))
   times[1, i] <- median(bench$time[c(TRUE, FALSE, FALSE)] / 10 ^ 6)
   times[2, i] <- median(bench$time[c(FALSE, TRUE, FALSE)] / 10 ^ 6)
   times[3, i] <- median(bench$time[c(FALSE, FALSE, TRUE)] / 10 ^ 6)
