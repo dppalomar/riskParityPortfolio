@@ -5,11 +5,12 @@
 \title{Design of Risk Parity Portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
-  lmd_var = 0, w_lb = 0, w_ub = 1, algorithm = c("cyclical-spinu",
-  "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
-  formulation = NULL, w0 = NULL, theta0 = NULL, gamma = 0.9,
-  zeta = 1e-07, tau = NULL, maxiter = 50, ftol = 1e-08,
-  wtol = 1e-06, use_gradient = TRUE)
+  lmd_var = 0, w_lb = 0, w_ub = 1,
+  method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
+  method = c("sca", "alabama", "slsqp"), formulation = NULL,
+  w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
+  tau = NULL, maxiter = 50, ftol = 1e-08, wtol = 1e-06,
+  use_gradient = TRUE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
@@ -18,18 +19,20 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
 
 \item{mu}{vector of expected returns}
 
-\item{lmd_mu}{scalar the controls the importance of the expected return term}
+\item{lmd_mu}{scalar that controls the importance of the expected return term}
 
 \item{lmd_var}{scalar that controls the importance of the variance term
 (only available for the SCA method for now).}
 
 \item{w_lb}{lower bound on the value of each portfolio weight. If a vector,
-then the lower bound is applied element-wise.}
+then the lower bound is applied element-wise
+(only available for the SCA method for now).}
 
 \item{w_ub}{upper bound on the value of each portfolio weight. If a vector,
-then the upper bound is applied element-wise.}
+then the upper bound is applied element-wise
+(only available for the SCA method for now).}
 
-\item{algorithm}{which algorithm to use for computing the initial portfolio
+\item{method_init}{which algorithm to use for computing the initial portfolio
 solution. We recommend choosing "cyclical" for high-dimensional
 (N > 500) portfolios since it scales better in that regime}
 
@@ -93,8 +96,33 @@ Markowitz portfolio. In addition to the vanilla formulation, where the risk
 contributions are perfectly equalized subject to no shortselling and budget
 constraints, many other formulations are considered that allow for box
 constraints, as well as the inclusion of additional objectives like the expected
-return and overall variance. See vignette for a detailed documentation and
+return and overall variance. See the vignette for a detailed documentation and
 comparison, with several illustrative examples.
+}
+\examples{
+library(riskParityPortfolio)
+
+# create covariance matrix
+N <- 5
+V <- matrix(rnorm(N^2), nrow = N)
+Sigma <- cov(V)
+
+# risk-parity portfolio
+res <- riskParityPortfolio(Sigma)
+names(res)
+#> [1] "w"                 "risk_contribution"
+res$w
+#> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
+res$risk_contribution
+#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+c(res$w * (Sigma \%*\% res$w))
+#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+
+# risk budggeting portfolio
+res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
+res$risk_contribution/sum(res$risk_contribution)
+#> [1] 0.40 0.40 0.10 0.05 0.05
+
 }
 \references{
 Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
@@ -104,8 +132,8 @@ vol. 63, no. 19, pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.245
 F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
 Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
 
-T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
-ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
+T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional
+risk parity portfolios," 2013. ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 }
 \author{
 Ze Vinicius and Daniel P. Palomar

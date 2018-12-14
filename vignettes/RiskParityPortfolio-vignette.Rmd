@@ -117,13 +117,14 @@ As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
 
 Now, let's see a comparison, in terms of computational time, of our cyclical coordinate descent
-implementation against the `rp()` function from the `cccp` package. (For a fair
-comparison, instead of calling our function `riskParityPortfolio()`, we call
-directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
-computes the risk parity weights, just like `rp()`.)
+implementation against the `rp()` function from the `cccp` package and the `optimalPortfolio()` function
+from the `RiskPortfolios` package. (For a fair comparison, instead of calling our function `riskParityPortfolio()`,
+we call directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
+computes the risk parity weights, just like `rp()` and `optimalPortfolio()`.)
 ```{r}
 library(microbenchmark)
 library(cccp)
+library(RiskPortfolios)
 library(riskParityPortfolio)
 
 N <- 100
@@ -135,6 +136,9 @@ b <- rep(1/N, N)
 op <- microbenchmark(rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
                      cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b,
                                                                                       1e-6, 50),
+                     rp_optimalPortfolio = optimalPortfolio(Sigma = Sigma,
+                                                            control = list(type = 'erc',
+                                                                           constraint = 'lo')),
                      times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
@@ -143,8 +147,8 @@ boxplot(op, ylab = "Time in Milliseconds",
 ```
 
 As it can be observed, our implementation is orders of maginitude faster than the interior-point method
-used by `cccp`. We suggest the interested reader to check out Chapter 11 of reference [@BoydCVXBook]
-for a thorough explanation on interior-point methods.
+used by `cccp` and `RiskPortfolios`. We suggest the interested reader to check out Chapter 11 of reference
+[@BoydCVXBook] for a thorough explanation on interior-point methods.
 
 
 # Modern risk parity portfolio
@@ -171,14 +175,13 @@ N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
 mu <- runif(N)
-w0 <- riskParityPortfolio(Sigma)$w  # vanilla solution as starting point
 
 lmd_sweep <- c(0, 10 ^ (seq(-5, 2, .25)))
 mean_return <- c()
 risk_parity <- c()
 
 for (lmd_mu in lmd_sweep) {
-  rpp <- riskParityPortfolio(Sigma, w0 = w0, mu = mu, lmd_mu = lmd_mu,
+  rpp <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = lmd_mu,
                              formulation = "rc-double-index")
   mean_return <- c(mean_return, rpp$mean_return)
   risk_parity <- c(risk_parity, rpp$risk)
@@ -189,14 +192,12 @@ plot(risk_parity, mean_return, type = "b", pch=19, cex=.6, col=alpha("blue", .5)
      ylim = c(min(mean_return), max(mean_return)),
      xlim = c(min(risk_parity), max(risk_parity)),
      main = "Expected Return vs Risk")
-points(risk_parity[1], mean_return[1], pch=24)
-legend("bottomright", legend=TeX("$\\lambda = 0$"), col="black", pch = 24)
 ```
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
-such as `FinCovRegularization` and `cccp`. Let's check how do they perform
-against `riskParityPortfolio`.
+such as `FinCovRegularization`, `cccp`, and `RiskPortfolios`. Let's check how
+do they perform against `riskParityPortfolio`.
 
 ```{r, message = FALSE}
 library(FinCovRegularization)
@@ -213,27 +214,30 @@ w0 <- rep(1/N, N)
 
 # compute risk parity portfolios using different methods
 rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
+riskport_w <- optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo'))
 fincov_w <- RiskParity(Sigma)
 fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
+riskport_risk_contribution <- c(riskport_w * (Sigma %*% riskport_w))
 # The list of arguments is the following: 1) the initial guess for the portfolio weights,
 # 2) the covariance matrix of the asset returns, 3) the marginal risk contributions
 cccp_w <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
 cccp_risk_contribution <- c(cccp_w * (Sigma %*% cccp_w))
 
-barplot(rbind(rpp$w, fincov_w, cccp_w),
+barplot(rbind(rpp$w, fincov_w, cccp_w, riskport_w),
         main = "Portfolios Weights", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:3],
-        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp"))
-barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution),
+        beside = TRUE, col = rainbow8equal[1:4],
+        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp", "RiskPortfolios"))
+barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution,
+              riskport_risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:3],
-        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp"))
+        beside = TRUE, col = rainbow8equal[1:4],
+        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp", "RiskPortfolios"))
 ```
 
-Apart from the `RiskParity()` function from the `FinCovRegularization` package,
-the other functions perform the same. `FinCovRegularization` uses a general
-solver with a hard coded initial guess for the portfolio weights. We conjecture
-that its poor initialization might be the reason for the convergence to a local solution.
+Apart from the `RiskParity()` function from the `FinCovRegularization` package
+and `optimalPortfolio()` from the `RiskPortfolios` package, the other functions perform the same.
+`FinCovRegularization` uses a general solver with a hard coded initial guess for the portfolio
+weights. We conjecture that its poor initialization might be the reason for the convergence to a local solution.
 
 # Appendix I: Risk concentration formulations
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
@@ -457,9 +461,9 @@ times <- matrix(0, 3, length(sizes))
 for (i in size_seq) {
   V <- matrix(rnorm(1000 * sizes[i]), nrow = sizes[i])
   Sigma <- V %*% t(V)
-  bench <- microbenchmark(newton = riskParityPortfolio(Sigma, algorithm="newton"),
-                          cyclical_spinu = riskParityPortfolio(Sigma, algorithm="cyclical-spinu"),
-                          cyclical_roncalli = riskParityPortfolio(Sigma, algorithm="cyclical-roncalli"),
+  bench <- microbenchmark(newton = riskParityPortfolio(Sigma, method_init="newton"),
+                          cyclical_spinu = riskParityPortfolio(Sigma, method_init="cyclical-spinu"),
+                          cyclical_roncalli = riskParityPortfolio(Sigma, method_init="cyclical-roncalli"),
                           times = 10L, unit = "ms", control = list(order = "inorder", warmup = 4))
   times[1, i] <- median(bench$time[c(TRUE, FALSE, FALSE)] / 10 ^ 6)
   times[2, i] <- median(bench$time[c(FALSE, TRUE, FALSE)] / 10 ^ 6)

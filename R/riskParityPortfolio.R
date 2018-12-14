@@ -522,20 +522,22 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' contributions are perfectly equalized subject to no shortselling and budget
 #' constraints, many other formulations are considered that allow for box
 #' constraints, as well as the inclusion of additional objectives like the expected
-#' return and overall variance. See vignette for a detailed documentation and
+#' return and overall variance. See the vignette for a detailed documentation and
 #' comparison, with several illustrative examples.
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka, risk budgeting targets
 #' @param mu vector of expected returns
-#' @param lmd_mu scalar the controls the importance of the expected return term
+#' @param lmd_mu scalar that controls the importance of the expected return term
 #' @param lmd_var scalar that controls the importance of the variance term
 #'        (only available for the SCA method for now).
 #' @param w_lb lower bound on the value of each portfolio weight. If a vector,
-#'        then the lower bound is applied element-wise.
+#'        then the lower bound is applied element-wise
+#'        (only available for the SCA method for now).
 #' @param w_ub upper bound on the value of each portfolio weight. If a vector,
-#'        then the upper bound is applied element-wise.
-#' @param algorithm which algorithm to use for computing the initial portfolio
+#'        then the upper bound is applied element-wise
+#'        (only available for the SCA method for now).
+#' @param method_init which algorithm to use for computing the initial portfolio
 #'        solution. We recommend choosing "cyclical" for high-dimensional
 #'        (N > 500) portfolios since it scales better in that regime
 #' @param method which optimization method to use.
@@ -556,12 +558,12 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' @param zeta factor used to decrease the learning rate at each iteration
 #' @param tau regularization factor. If NULL, a meaningful value will be used
 #' @param maxiter maximum number of iterations for the SCA loop
+#' @param ftol convergence tolerance on the risk contribution target
+#' @param wtol convergence tolerance on the values of the portfolio weights
 #' @param use_gradient (this parameter is meaningful only if method is either
 #'        "alabama" or "slsqp") if TRUE, gradients of the objective function wrt to the
 #'        parameters will be used. This is strongly recommended to achieve faster
 #'        results.
-#' @param ftol convergence tolerance on the risk contribution target
-#' @param wtol convergence tolerance on the values of the portfolio weights
 #' @return a list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
 #' \item{\code{risk_contribution}}{the risk contribution of every asset}
@@ -578,6 +580,30 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' \item{\code{convergence}}{flag to indicate whether or not the optimization
 #' converged. The value `1` means it has converged, and `0` otherwise.}
 #'
+#' @examples
+#' library(riskParityPortfolio)
+#'
+#' # create covariance matrix
+#' N <- 5
+#' V <- matrix(rnorm(N^2), nrow = N)
+#' Sigma <- cov(V)
+#'
+#' # risk-parity portfolio
+#' res <- riskParityPortfolio(Sigma)
+#' names(res)
+#' #> [1] "w"                 "risk_contribution"
+#' res$w
+#' #> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
+#' res$risk_contribution
+#' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+#' c(res$w * (Sigma %*% res$w))
+#' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+#'
+#' # risk budggeting portfolio
+#' res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
+#' res$risk_contribution/sum(res$risk_contribution)
+#' #> [1] 0.40 0.40 0.10 0.05 0.05
+#'
 #' @references
 #' Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
 #' for Risk Parity Portfolio Design," \emph{IEEE Trans. on Signal Processing},
@@ -586,15 +612,15 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
 #' Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
 #'
-#' T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
-#' ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
+#' T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional
+#' risk parity portfolios," 2013. ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 1e-4, lmd_var = 0,
                                 w_lb = 0, w_ub = 1,
-                                algorithm = c("cyclical-spinu", "cyclical-roncalli", "newton"),
+                                method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
@@ -615,7 +641,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_var <- lmd_var > 0
   is_modern <- has_mu || has_theta || has_formulation || has_var
   if (!is_modern) {
-    switch(match.arg(algorithm),
+    switch(match.arg(method_init),
            "newton" = {
              portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
            },
@@ -625,11 +651,11 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            "cyclical-roncalli" = {
              portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
            },
-           stop("algorithm ", algorithm, "is not included.")
+           stop("method_init ", method_init, "is not included.")
     )
   } else {
     if (is.null(w0)) {
-      switch(match.arg(algorithm),
+      switch(match.arg(method_init),
              "newton" = {
                w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
              },
@@ -639,7 +665,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
              "cyclical-roncalli" = {
                portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
              },
-             stop("algorithm ", algorithm, "is not included.")
+             stop("method_init ", method_init, "is not included.")
       )
     }
     switch(match.arg(method),
