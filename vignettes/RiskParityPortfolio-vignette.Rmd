@@ -213,8 +213,7 @@ variance <- c()
 risk_parity <- c()
 
 for (lmd_var in lmd_sweep) {
-  rpp <- riskParityPortfolio(Sigma, w0 = (1/diag(Sigma)) / sum(1/diag(Sigma)),
-                             lmd_var = lmd_var)
+  rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var)
   variance <- c(variance, rpp$variance)
   risk_parity <- c(risk_parity, rpp$risk_parity)
 }
