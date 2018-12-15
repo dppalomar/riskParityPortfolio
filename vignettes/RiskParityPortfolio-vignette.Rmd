@@ -146,7 +146,8 @@ op <- microbenchmark(
           times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
-boxplot(op, ylab = "Time in milliseconds", xlab = NULL,
+boxplot(op, main = "Time comparison [milliseconds]", 
+        xlab = NULL, ylab = NULL,
         unit = "ms", outline = FALSE, las = 2)
 ```
 
