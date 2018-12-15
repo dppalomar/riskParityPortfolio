@@ -1,4 +1,4 @@
-#include "newton_nesterov.hh"
+#include "newton_nesterov.h"
 // [[Rcpp::depends(RcppEigen)]]
 using namespace Eigen;
 using namespace std;

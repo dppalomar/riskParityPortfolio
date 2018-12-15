@@ -1,4 +1,4 @@
-#include "objfunctions.hh"
+#include "objfunctions.h"
 // [[Rcpp::depends(RcppEigen)]]
 using namespace Eigen;
 using namespace std;

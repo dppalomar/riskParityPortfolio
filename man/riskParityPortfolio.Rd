@@ -70,7 +70,7 @@ the optimum solution for a fixed vector of portfolio weights will be used.}
 \item{wtol}{convergence tolerance on the values of the portfolio weights}
 
 \item{use_gradient}{(this parameter is meaningful only if method is either
-\code{"alabama"} or \code{"slsqp"}) if TRUE, gradients of the objective function wrt 
+\code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt 
 to the parameters will be used. This is strongly recommended to achieve faster results.}
 }
 \value{
@@ -88,7 +88,7 @@ a list containing possibly the following elements:
                        included in the optimization}
 \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 \item{\code{convergence}}{flag to indicate whether or not the optimization
-converged. The value TRUE means it has converged and FALSE otherwise.}
+converged. The value \code{TRUE} means it has converged and \code{FALSE} otherwise.}
 }
 \description{
 This function designs risk-parity portfolios to equalize/distribute

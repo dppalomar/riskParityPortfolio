@@ -3,7 +3,7 @@ title: "Fast Design of Risk Parity Portfolios"
 author: |
   | Zé Vinícius and Daniel P. Palomar
   | Hong Kong University of Science and Technology (HKUST)
-date: "`r Sys.Date()`"
+date: "2018-12-15"
 output:
   bookdown::html_document2:
     base_format: prettydoc::html_pretty
@@ -31,24 +31,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r, echo = FALSE}
-library(knitr)
-opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.align = "center",
-  fig.retina = 2,
-  out.width = "85%",
-  dpi = 96,
-  pngquant = "--speed=1"
-)
-knit_hooks$set(pngquant = hook_pngquant)
-#Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "all")
-#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "bookdown::html_document2")
-#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "bookdown::pdf_document2")
-#tools::compactPDF("vignettes/RiskParityPortfolio-vignette.pdf", gs_quality = "ebook")
-```
+
 
 -----------
 > This vignette illustrates the design of risk-parity portfolios, widely
@@ -95,11 +78,10 @@ computed using convex optimization packages, such as CVXR, but faster algorithms
 coordinate descent, proposed by [@Spinu2013] and [@Billion2013], are implemented in this package.
 
 A simple code example on how to design a risk parity portfolio is as follows:
-```{r, echo=FALSE, message=FALSE}
-rainbow8equal <- c("#BF4D4D", "#BFA34D", "#86BF4D", "#4DBF69", "#4DBFBF", "#4D69BF", "#864DBF", "#BF4DA3")
-```
 
-```{r, message=FALSE}
+
+
+```r
 library(riskParityPortfolio)
 
 # generate synthetic data
@@ -112,11 +94,18 @@ portfolio <- riskParityPortfolio(Sigma)
 # plot the portfolio designed by each method
 barplot(portfolio$w, main = "Portfolio Weights", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"))
+```
+
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-3-1.png" width="85%" style="display: block; margin: auto;" />
+
+```r
 # plot the risk contributions
 barplot(portfolio$risk_contribution,
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"))
 ```
+
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-3-2.png" width="85%" style="display: block; margin: auto;" />
 
 As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
@@ -126,7 +115,8 @@ implementation against the `rp()` function from the `cccp` package and the `opti
 from the `RiskPortfolios` package. (For a fair comparison, instead of calling our function `riskParityPortfolio()`,
 we call directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
 computes the risk parity weights, just like `rp()` and `optimalPortfolio()`.)
-```{r}
+
+```r
 library(microbenchmark)
 library(cccp)
 library(RiskPortfolios)
@@ -144,10 +134,21 @@ op <- microbenchmark(
           optPort = optimalPortfolio(Sigma = Sigma,control = list(type = 'erc', constraint = 'lo')),
           times = 10L)
 print(op)
+#> Unit: microseconds
+#>      expr         min          lq         mean       median          uq
+#>   rp_cccp   22930.628   23292.127   24890.5854   24323.0235   24877.889
+#>  cyclical     184.814     195.321     207.2597     208.1885     220.774
+#>   optPort 1088532.928 1123927.769 1167132.7348 1173655.9935 1212653.724
+#>          max neval
+#>    31567.513    10
+#>      230.883    10
+#>  1223331.183    10
 par(mar = c(7, 4, 4, 2))
 boxplot(op, ylab = "Time in milliseconds",
         xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
+
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-4-1.png" width="85%" style="display: block; margin: auto;" />
 
 As it can be observed, our implementation is orders of maginitude faster than the interior-point method
 used by `cccp` and `RiskPortfolios`. We suggest the interested reader to check out Chapter 11 of reference
@@ -170,7 +171,8 @@ R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
 \end{array}$$
 where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function or risk parity function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda$ is a trade-off parameter.
 
-```{r, message=FALSE}
+
+```r
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
@@ -194,13 +196,16 @@ plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "blue",
      main = "Expected Return vs Risk Parity")
 ```
 
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-5-1.png" width="85%" style="display: block; margin: auto;" />
+
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
 such as `FinCovRegularization`, `cccp`, and `RiskPortfolios`. Let's check how
 do they perform against `riskParityPortfolio`. 
 (Note that other packages like `FRAPO` use `cccp` under the hood.)
 
-```{r, message=FALSE}
+
+```r
 library(FinCovRegularization)
 library(cccp)
 library(RiskPortfolios)
@@ -230,6 +235,11 @@ barplot(rbind(rpp$w, fincov_w, cccp_w, riskport_w),
         beside = TRUE, col = rainbow8equal[1:4],
         legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
                    "RiskPortfolios"))
+```
+
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-6-1.png" width="85%" style="display: block; margin: auto;" />
+
+```r
 barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution,
               riskport_risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
@@ -238,6 +248,8 @@ barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contrib
                    "RiskPortfolios"),
         args.legend = list(x = "bottomright"))
 ```
+
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-6-2.png" width="85%" style="display: block; margin: auto;" />
 
 Depending on the condition number of the covariance matrix, we found that the packages `FinCovRegularization` and `RiskPortfolios` may fail unexpectedly. Apart from that, the other functions perform the same.
 
@@ -300,7 +312,8 @@ Additionally, we compare `method = "alabama"` and `method = "slsqp"` without usi
 gradient of the objective function.
 
 ## Experiment: formulation "rc-over-var vs b"
-```{r, message = FALSE}
+
+```r
 set.seed(123)
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
@@ -339,8 +352,11 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-7-1.png" width="85%" style="display: block; margin: auto;" />
+
 ## Experiment: formulation "rc vs b-times-var"
-```{r, message = FALSE}
+
+```r
 res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
                                  method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
@@ -373,8 +389,11 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-8-1.png" width="85%" style="display: block; margin: auto;" />
+
 ## Experiment: formulation "rc-over-sd vs b-times-sd"
-```{r, message = FALSE}
+
+```r
 res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
                                  method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
@@ -407,12 +426,15 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-9-1.png" width="85%" style="display: block; margin: auto;" />
+
 
 ## Experiment with real market data
 Now, let's query some real market data using the package `sparseIndexTracking`
 and check the performance of the different methods.
 
-```{r, message = FALSE}
+
+```r
 library(sparseIndexTracking)
 library(xts)
 data(INDEX_2010)
@@ -452,6 +474,8 @@ legend("topright", legend=c("alabama-nograd",
        bg = "white")
 ```
 
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-10-1.png" width="85%" style="display: block; margin: auto;" />
+
 It can be noted that the `"alabama"` and `"slsqp"` greatly benefit from the additional gradient
 information. Despite that fact, the `"sca"` method still performs faster. Additionally,
 in some cases, the `"sca"` method attains a better solution than the other methods.
@@ -467,7 +491,8 @@ the global minimum of the convex function in roughly $O(N_{iter} \times N^2)$.
 The plot below illustrates the computational scaling of both Newton and cyclical algorithms.
 Note that the cyclical algorithm is implemented for two different formulations used by [@Spinu2013]
 and [@Billion2013], respectively. Nonetheless, they output the same solution, as they should.
-```{r}
+
+```r
 library(microbenchmark)
 library(riskParityPortfolio)
 
@@ -497,6 +522,8 @@ axis(side = 1, at = size_seq, labels = sizes)
 legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 ```
+
+<img src="RiskParityPortfolio-vignette_files/figure-html/unnamed-chunk-11-1.png" width="85%" style="display: block; margin: auto;" />
 
 # References {-}
 \setlength{\parindent}{-0.2in}

@@ -1,4 +1,4 @@
-#include "cyclical_coordinate_descent.hh"
+#include "cyclical_coordinate_descent.h"
 // [[Rcpp::depends(RcppEigen)]]
 using namespace Eigen;
 using namespace std;
