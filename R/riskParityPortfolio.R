@@ -678,6 +678,18 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
              stop("method_init ", method_init, "is not included.")
       )
     }
+
+    w_gmvp <- 1 / diag(Sigma)
+    w_gmvp <- w_gmvp / sum(w_gmvp)
+    if(has_mu)
+      w_rc <- as.numeric(max(mu) == mu)
+    else
+      w_rc <- 0
+    theta_rc <- 1 / (1 + lmd_var + lmd_mu * sum(has_mu))
+    theta_er <- lmd_mu * sum(has_mu) / (1 + lmd_var + lmd_mu)
+    theta_var <- lmd_var / (1 + lmd_var + lmd_mu * sum(has_mu))
+    w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
+
     switch(match.arg(method),
            "sca" = {
               portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
