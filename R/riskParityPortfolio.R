@@ -526,8 +526,10 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' comparison, with several illustrative examples.
 #'
 #' @param Sigma covariance or correlation matrix
-#' @param b budget vector, aka, risk budgeting targets
-#' @param mu vector of expected returns
+#' @param b budget vector, aka risk budgeting targets. The default is the uniform
+#'        1/N vector.
+#' @param mu vector of expected returns (only needed if the expected return term 
+#'        is desired in the objective)
 #' @param lmd_mu scalar that controls the importance of the expected return term
 #' @param lmd_var scalar that controls the importance of the variance term
 #'        (only available for the SCA method for now).
@@ -538,47 +540,47 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #'        then the upper bound is applied element-wise
 #'        (only available for the SCA method for now).
 #' @param method_init which algorithm to use for computing the initial portfolio
-#'        solution. We recommend choosing "cyclical" for high-dimensional
-#'        (N > 500) portfolios since it scales better in that regime
-#' @param method which optimization method to use.
+#'        solution. We recommend choosing cyclical over Newton for high-dimensional
+#'        (N > 500) portfolios since it scales better in that regime. The 
+#'        default is \code{"cyclical-spinu"}.
+#' @param method which optimization method to use. The default is "sca".
 #' @param formulation string indicating the formulation to be used for the risk
-#'        parity optimization problem. It must be one of: "diag", "rc-double-index",
+#'        parity optimization problem. It must be one of: \code{"diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 #'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#'        "rc-over-b vs theta". If formulation is NULL and no additional terms
+#'        "rc-over-b vs theta"}. If \code{formulation} is \code{NULL} and no additional terms
 #'        or constraints are set, such as expected return or shortselling, then
 #'        the vanilla risk parity portfolio will be returned. If formulation is
-#'        "diag" then the analytical solution of the risk parity optimization for
+#'        \code{"diag"} then the analytical solution of the risk parity optimization for
 #'        for a diagonal covariance matrix will be returned.
 #' @param w0 initial value for the portfolio weights. Default is the vanilla
-#'        portfolio computed either with Newton or Cyclical methods.
-#' @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
-#'        vector of portfolio weights will be used
-#' @param gamma learning rate
-#' @param zeta factor used to decrease the learning rate at each iteration
-#' @param tau regularization factor. If NULL, a meaningful value will be used
+#'        portfolio computed either with cyclical or Newton methods.
+#' @param theta0 initial value for theta (in case formulation uses theta). If \code{NULL}, 
+#'        the optimum solution for a fixed vector of portfolio weights will be used.
+#' @param gamma learning rate for the SCA method.
+#' @param zeta factor used to decrease the learning rate at each iteration for the SCA method.
+#' @param tau regularization factor. If \code{NULL}, a meaningful value will be used
 #' @param maxiter maximum number of iterations for the SCA loop
 #' @param ftol convergence tolerance on the risk contribution target
 #' @param wtol convergence tolerance on the values of the portfolio weights
 #' @param use_gradient (this parameter is meaningful only if method is either
-#'        "alabama" or "slsqp") if TRUE, gradients of the objective function wrt to the
-#'        parameters will be used. This is strongly recommended to achieve faster
-#'        results.
+#'        \code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt 
+#'        to the parameters will be used. This is strongly recommended to achieve faster results.
 #' @return a list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
 #' \item{\code{risk_contribution}}{the risk contribution of every asset}
 #' \item{\code{theta}}{the optimal value for theta (in case that it is part of
-#'                     the chosen formulation}
+#'                     the chosen formulation)}
 #' \item{\code{obj_fun}}{the sequence of values from the objective function at
 #'                       each iteration}
-#' \item{\code{risk}}{the last value of the objective function}
+#' \item{\code{risk}}{the last value of the generalized risk}
 #' \item{\code{mean_return}}{the expected return of the portoflio if the mean
 #'                           return term is included in the optimization}
 #' \item{\code{variance}}{the variance of the portfolio if the variance term is
 #'                        included in the optimization}
 #' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 #' \item{\code{convergence}}{flag to indicate whether or not the optimization
-#' converged. The value `1` means it has converged, and `0` otherwise.}
+#' converged. The value \code{TRUE} means it has converged and \code{FALSE} otherwise.}
 #'
 #' @examples
 #' library(riskParityPortfolio)

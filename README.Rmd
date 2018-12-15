@@ -35,12 +35,12 @@ knit_hooks$set(pngquant = hook_pngquant)
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
 
-*riskParityPortfolio* provides tools to design portfolios that follow the risk
-parity criteria. More precisely we implement a Newton method proposed by
-Spinu (2013) and a Cyclical method proposed by Griveau-Billion (2013), which
-formulate the risk parity as a convex problem and therefore a unique solution
-is available. For general, usually nonconvex formulations, we implement the
-successive convex approximation method proposed by Feng & Palomar (2015).
+The package *riskParityPortfolio* provides tools to design risk-parity 
+portfolios. In its simplest form, we consider the convex formulation 
+with a unique solution proposed by Spinu (2013) and use a cyclical 
+method inspired by Griveau-Billion (2013). For more general formulations, 
+which are usually nonconvex, we implement the successive convex approximation 
+method proposed by Feng & Palomar (2015).
 
 
 ## Installation
@@ -58,7 +58,7 @@ package?riskParityPortfolio
 ?riskParityPortfolio
 
 # Citing this work
-citation("library(riskParityPortfolio)")
+citation("riskParityPortfolio")
 
 ```
 

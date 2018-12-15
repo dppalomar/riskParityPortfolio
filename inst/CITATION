@@ -6,7 +6,7 @@ citEntry(entry = "Manual",
                                    as.person("D. P. Palomar")),
          note         = "R package version 0.1.0",
          year         = "2018",
-         url          = "https://CRAN.R-project.org/package=sparseIndexTracking",
+         url          = "https://CRAN.R-project.org/package=riskParityPortfolio",
 
          textVersion  =
            paste("J. V. de M. Cardoso and D. P. Palomar (2018).",

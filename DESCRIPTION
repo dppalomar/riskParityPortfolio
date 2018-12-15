@@ -48,11 +48,7 @@ Remotes:
     google/patrick
 Suggests:
     testthat,
-    patrick,
-    knitr,
-    rmarkdown,
-    bookdown,
-    prettydoc
+    patrick
 VignetteBuilder:
     knitr,
     rmarkdown,
