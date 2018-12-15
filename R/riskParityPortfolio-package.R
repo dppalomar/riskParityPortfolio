@@ -19,7 +19,7 @@
 #' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html}{GitHub-README}.
 #'
 #' For more details see the vignette:
-#' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-vignette.html}{GitHub-html-vignette}.
+#' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-html-vignette.html}{GitHub-html-vignette}.
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #'

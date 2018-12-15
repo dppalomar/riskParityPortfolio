@@ -3,7 +3,7 @@ This is the first release in CRAN (package also available in GitHub).
 ---
 
 ## Test environments
-* OS X, R 3.5.0
+* OS X, R 3.5.1
 * Windows at http://win-builder.r-project.org/win-builder
 
 ## R CMD check results
