@@ -150,8 +150,8 @@ boxplot(op, ylab = "Time in milliseconds",
 ```
 
 As it can be observed, our implementation is orders of maginitude faster than the interior-point method
-used by `cccp` and `RiskPortfolios`. We suggest the interested reader to check out Chapter 11 of reference
-[@BoydCVXBook] for a thorough explanation on interior-point methods.
+used by `cccp` and the formulation used by `RiskPortfolios`. We suggest the interested reader to check
+out Chapter 11 of reference [@BoydCVXBook] for a thorough explanation on interior-point methods.
 
 
 # Modern risk parity portfolio
@@ -161,8 +161,8 @@ additional constraints and objective terms desired in practice, such as the mean
 In such cases, the risk-contribution constraints cannot be met with equality, mainly because they give rise
 to nonconvex formulations.
 
-Let's explore, for instance, the effect of including the expected return as an additional objective in the optimization problem.
-The problem can be formulated as
+Let's explore, for instance, the effect of including the expected return as an
+additional objective in the optimization problem. The problem can be formulated as
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
@@ -184,7 +184,7 @@ for (lmd_mu in lmd_sweep) {
   rpp <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = lmd_mu,
                              formulation = "rc-double-index")
   mean_return <- c(mean_return, rpp$mean_return)
-  risk_parity <- c(risk_parity, rpp$risk)
+  risk_parity <- c(risk_parity, rpp$risk_parity)
 }
 
 plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "blue",
@@ -192,6 +192,40 @@ plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "blue",
      ylim = c(min(mean_return), max(mean_return)),
      xlim = c(min(risk_parity), max(risk_parity)),
      main = "Expected Return vs Risk Parity")
+```
+
+Similarly, the `riskParityPortfolio` package let us include the variance
+as an objective term, so that the actual optimization problem can be expressed as
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} &
+R(\mathbf{w}) + \nu \mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
+\end{array}$$
+
+In the code, that can be done by passing a positive value to the parameter `lmd_var`.
+Let's check the following illustrative example that depicts the depence between
+volatility and risk parity:
+
+```{r, message=FALSE}
+N <- 10
+Sigma <- diag(c(1:N))
+lmd_sweep <- c(10 ^ (seq(-5, 5, .25)))
+variance <- c()
+risk_parity <- c()
+
+for (lmd_var in lmd_sweep) {
+  rpp <- riskParityPortfolio(Sigma, w0 = (1/diag(Sigma)) / sum(1/diag(Sigma)),
+                             lmd_var = lmd_var)
+  variance <- c(variance, rpp$variance)
+  risk_parity <- c(risk_parity, rpp$risk_parity)
+}
+
+volatility <- sqrt(variance)
+plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "blue",
+     xlab = "Risk Parity", ylab = "Volatility",
+     ylim = c(min(volatility), max(volatility)),
+     xlim = c(min(risk_parity), max(risk_parity)),
+     main = "Volatility vs Risk Parity")
 ```
 
 # Comparison with other packages
