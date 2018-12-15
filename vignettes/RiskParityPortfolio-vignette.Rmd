@@ -110,11 +110,13 @@ Sigma <- cov(V)
 portfolio <- riskParityPortfolio(Sigma)
 # plot the portfolio designed by each method
 barplot(portfolio$w, main = "Portfolio Weights", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"))
+        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"),
+        args.legend = list(bg = "white"))
 # plot the risk contributions
 barplot(portfolio$risk_contribution,
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"))
+        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"),
+        args.legend = list(bg = "white"))
 ```
 
 As presented earlier, the risk parity portfolios are designed in
@@ -144,8 +146,8 @@ op <- microbenchmark(
           times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
-boxplot(op, ylab = "Time in milliseconds",
-        xlab = NULL, unit = "ms", outline = FALSE, las = 2)
+boxplot(op, ylab = "Time in milliseconds", xlab = NULL,
+        unit = "ms", outline = FALSE, las = 2)
 ```
 
 As it can be observed, our implementation is orders of maginitude faster than the interior-point method
@@ -261,14 +263,14 @@ barplot(rbind(rpp$w, fincov_w, cccp_w, riskport_w),
         main = "Portfolios Weights", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:4],
         legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
-                   "RiskPortfolios"))
+                   "RiskPortfolios"), args.legend = list(bg = "white"))
 barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution,
               riskport_risk_contribution),
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:4],
         legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
                    "RiskPortfolios"),
-        args.legend = list(x = "bottomright"))
+        args.legend = list(x = "bottomright", bg = "white"))
 ```
 
 Depending on the condition number of the covariance matrix, we found that the packages `FinCovRegularization` and `RiskPortfolios` may fail unexpectedly. Apart from that, the other functions perform the same.
