@@ -53,6 +53,7 @@ Suggests:
     prettydoc,
     RiskPortfolios,
     rmarkdown,
+    R.rsp,    
     sparseIndexTracking,
     testthat,
     xts
@@ -65,5 +66,6 @@ VignetteBuilder:
     prettydoc,
     RiskPortfolios,
     rmarkdown,
+    R.rsp,
     sparseIndexTracking,
     xts
