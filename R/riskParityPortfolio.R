@@ -52,7 +52,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 #                     the chosen formulation}
 # \item{\code{obj_fun}}{the sequence of values from the objective function at
 #                       each iteration}
-# \item{\code{risk}}{the last value of the objective function}
+# \item{\code{risk_parity}}{the risk parity of the portfolio}
 # \item{\code{mean_return}}{the expected return of the portoflio if the mean
 #                           return term is included in the optimization}
 # \item{\code{variance}}{the variance of the portfolio if the variance term is
@@ -208,9 +208,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
         fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
     if (has_var)
       if (has_theta)
-        fun_next <- fun_next + lmd_var * (w_next[1:N] %*% Sigma %*% w_next[1:N])
+        fun_next <- fun_next + lmd_var * (t(w_next[1:N]) %*% Sigma %*% w_next[1:N])
       else
-        fun_next <- fun_next + lmd_var * (w_next %*% Sigma %*% w_next)
+        fun_next <- fun_next + lmd_var * (t(w_next) %*% Sigma %*% w_next)
     fun_seq <- c(fun_seq, fun_next)
     # check convergence
     # check convergence on parameters and objective function
@@ -225,7 +225,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   }
 
   portfolio_results <- list()
-  portfolio_results$risk <- fun_seq[length(fun_seq)]
+  portfolio_results$risk_parity <- fun_seq[length(fun_seq)]
   if (!has_theta) {
     portfolio_results$w <- w_next
     portfolio_results$risk_contribution <- as.vector(w_next * (Sigma %*% w_next))
@@ -236,11 +236,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   }
   if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
-    portfolio_results$risk <- portfolio_results$risk + lmd_mu * portfolio_results$mean_return
+    portfolio_results$risk_parity <- portfolio_results$risk_parity + lmd_mu * portfolio_results$mean_return
   }
   if (has_var) {
     portfolio_results$variance <- t(portfolio_results$w) %*% Sigma %*% portfolio_results$w
-    portfolio_results$risk <- portfolio_results$risk - lmd_var * portfolio_results$variance
+    portfolio_results$risk_parity <- portfolio_results$risk_parity - lmd_var * portfolio_results$variance
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
@@ -289,7 +289,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 #                     the chosen formulation}
 # \item{\code{obj_fun}}{the sequence of values from the objective function at
 #                       each iteration}
-# \item{\code{risk}}{the last value of the objective function}
+# \item{\code{risk_parity}}{the risk parity of the portfolio}
 # \item{\code{mean_return}}{the expected return of the portoflio if the mean
 #                           return term is included in the optimization}
 # \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
@@ -454,7 +454,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
   w <- res$par
 
   portfolio_results <- list()
-  portfolio_results$risk <- fun_seq[length(fun_seq)]
+  portfolio_results$risk_parity <- fun_seq[length(fun_seq)]
   if (!has_theta) {
     portfolio_results$w <- w
     portfolio_results$risk_contribution <- as.vector(w * (Sigma %*% w))
@@ -465,7 +465,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
   }
   if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
-    portfolio_results$risk <- portfolio_results$risk + lmd_mu * portfolio_results$mean_return
+    portfolio_results$risk_parity <- portfolio_results$risk_parity + lmd_mu * portfolio_results$mean_return
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
@@ -536,7 +536,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka risk budgeting targets. The default is the uniform
 #'        1/N vector.
-#' @param mu vector of expected returns (only needed if the expected return term 
+#' @param mu vector of expected returns (only needed if the expected return term
 #'        is desired in the objective)
 #' @param lmd_mu scalar that controls the importance of the expected return term
 #' @param lmd_var scalar that controls the importance of the variance term
@@ -549,9 +549,9 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #'        (only available for the SCA method for now).
 #' @param method_init which algorithm to use for computing the initial portfolio
 #'        solution. We recommend choosing cyclical over Newton for high-dimensional
-#'        (N > 500) portfolios since it scales better in that regime. The 
+#'        (N > 500) portfolios since it scales better in that regime. The
 #'        default is \code{"cyclical-spinu"}.
-#' @param method which optimization method to use. The default is "sca".
+#' @param method which optimization method to use. The default is \code{"sca"}.
 #' @param formulation string indicating the formulation to be used for the risk
 #'        parity optimization problem. It must be one of: \code{"diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
@@ -563,7 +563,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #'        for a diagonal covariance matrix will be returned.
 #' @param w0 initial value for the portfolio weights. Default is the vanilla
 #'        portfolio computed either with cyclical or Newton methods.
-#' @param theta0 initial value for theta (in case formulation uses theta). If \code{NULL}, 
+#' @param theta0 initial value for theta (in case formulation uses theta). If \code{NULL},
 #'        the optimum solution for a fixed vector of portfolio weights will be used.
 #' @param gamma learning rate for the SCA method.
 #' @param zeta factor used to decrease the learning rate at each iteration for the SCA method.
@@ -572,7 +572,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' @param ftol convergence tolerance on the risk contribution target
 #' @param wtol convergence tolerance on the values of the portfolio weights
 #' @param use_gradient (this parameter is meaningful only if method is either
-#'        \code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt 
+#'        \code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt
 #'        to the parameters will be used. This is strongly recommended to achieve faster results.
 #' @return a list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
@@ -581,7 +581,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #'                     the chosen formulation)}
 #' \item{\code{obj_fun}}{the sequence of values from the objective function at
 #'                       each iteration}
-#' \item{\code{risk}}{the last value of the generalized risk}
+#' \item{\code{risk_parity}}{the risk parity of the portfolio}
 #' \item{\code{mean_return}}{the expected return of the portoflio if the mean
 #'                           return term is included in the optimization}
 #' \item{\code{variance}}{the variance of the portfolio if the variance term is
