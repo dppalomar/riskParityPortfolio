@@ -13,7 +13,6 @@ output:
     number_sections: no
     toc: yes
     toc_depth: 1
-    keep_md: true
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
