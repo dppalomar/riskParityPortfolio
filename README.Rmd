@@ -35,11 +35,11 @@ knit_hooks$set(pngquant = hook_pngquant)
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
 
-The package 'riskParityPortfolio' provides tools to design risk-parity 
-portfolios. In its simplest form, we consider the convex formulation 
-with a unique solution proposed by Spinu (2013) and use a cyclical 
-method inspired by Griveau-Billion (2013). For more general formulations, 
-which are usually nonconvex, we implement the successive convex approximation 
+The package `riskParityPortfolio` provides tools to design risk-parity
+portfolios. In its simplest form, we consider the convex formulation
+with a unique solution proposed by Spinu (2013) and use a cyclical
+method inspired by Griveau-Billion (2013). For more general formulations,
+which are usually nonconvex, we implement the successive convex approximation
 method proposed by Feng & Palomar (2015).
 
 
@@ -73,6 +73,7 @@ docker pull mirca/riskparityportfolio
 ```{r}
 library(riskParityPortfolio)
 
+set.seed(0)
 # create covariance matrix
 N <- 5
 V <- matrix(rnorm(N^2), nrow = N)
