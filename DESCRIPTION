@@ -26,9 +26,10 @@ Authors@R: c(
   person(c("Daniel", "P."), "Palomar", role = c("cre", "aut"), email = "daniel.p.palomar@gmail.com")
   )
 Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
-URL: https://github.com/dppalomar/riskParityPortfolio,
-    https://www.danielppalomar.com,
-    https://doi.org/10.1109/TSP.2015.2452219
+URL: https://CRAN.R-project.org/package=riskParityPortfolio,
+     https://github.com/dppalomar/riskParityPortfolio,
+     https://www.danielppalomar.com,
+     https://doi.org/10.1109/TSP.2015.2452219
 BugReports: https://github.com/dppalomar/riskParityPortfolio/issues
 Depends:
 License: GPL-3 | file LICENSE

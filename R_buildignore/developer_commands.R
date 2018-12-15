@@ -38,6 +38,7 @@ devtools::test()
 devtools::check()
 rcmdcheck::rcmdcheck()
 devtools::build()
+#R CMD build .
 #R CMD build . --compact-vignettes=gs+qpdf  # this is to generate tarball
 #R CMD check riskParityPortfolio_0.1.0.tar.gz --as-cran  # this is before submission to CRAN
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
@@ -46,5 +47,3 @@ devtools::build()
 #devtools::build_win()  #to check under windows
 #devtools::release(args = "--compact-vignettes=gs+qpdf")  #for CRAN
 
-# This package may help to have html vignettes:
-# https://stackoverflow.com/questions/19716498/using-a-static-prebuilt-pdf-vignette-in-r-package
