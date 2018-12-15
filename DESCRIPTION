@@ -50,6 +50,7 @@ Suggests:
     FinCovRegularization,
     knitr,
     microbenchmark,
+    numDeriv,
     patrick,
     prettydoc,
     RiskPortfolios,

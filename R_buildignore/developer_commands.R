@@ -23,14 +23,14 @@ library(riskParityPortfolio)
 #devtools::build()  # to generate the installation file
 
 # Documentation
-devtools::document()  #to generate all documentation via roxygen
+devtools::document()  # to generate all documentation via roxygen
 ?riskParityPortfolio
 
 
 # Code tests
 #devtools::use_testthat()  # the first time
 devtools::test()
-#covr::package_coverage()  #coverage of tests
+#covr::package_coverage()  # coverage of tests
 #goodpractice::gp()  # overall checks
 
 
@@ -38,8 +38,8 @@ devtools::test()
 devtools::check()
 rcmdcheck::rcmdcheck()
 devtools::build()
-#R CMD build .
-#R CMD build . --compact-vignettes=gs+qpdf  # this is to generate tarball
+#R CMD build .  # this is to generate tarball
+#R CMD build . --compact-vignettes=gs+qpdf  
 #R CMD check riskParityPortfolio_0.1.0.tar.gz --as-cran  # this is before submission to CRAN
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
 
