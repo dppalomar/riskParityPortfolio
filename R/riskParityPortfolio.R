@@ -184,7 +184,10 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     g_wk <- g(wk, Sigma, b, r = rk)
     Qk <- 2 * crossprod(Ak) + tauI
     if (has_var)
-      Qk <- Qk + lmd_var * Sigma
+      if (has_theta)
+        Qk <- Qk + lmd_var * cbind(rbind(Sigma, rep(0, N)), rep(0, N+1))
+      else
+        Qk <- Qk + lmd_var * Sigma
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     if (has_mu)
       if (has_theta)
@@ -203,6 +206,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
         fun_next <- fun_next - lmd_mu * t(mu) %*% w_next[1:N]
       else
         fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
+    if (has_var)
+      if (has_theta)
+        fun_next <- fun_next + lmd_var * (w_next[1:N] %*% Sigma %*% w_next[1:N])
+      else
+        fun_next <- fun_next + lmd_var * (w_next %*% Sigma %*% w_next)
     fun_seq <- c(fun_seq, fun_next)
     # check convergence
     # check convergence on parameters and objective function
