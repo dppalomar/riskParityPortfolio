@@ -1,21 +1,27 @@
+---
+output:
+  html_document:
+    variant: markdown_github
+    keep_md: true
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+
+
 # riskParityPortfolio
 
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/riskParityPotfolio)](http://cran.r-project.org/package=riskParityPortfolio)
-[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/riskParityPortfolio)](http://cran.r-project.org/package=riskParityPortfolio)
-![CRAN Downloads Total](http://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
-
-[![codecov](https://codecov.io/gh/mirca/riskParityPortfolio/branch/master/graph/badge.svg)](https://codecov.io/gh/mirca/riskParityPortfolio)
-[![Travis-CI-Badge](https://travis-ci.org/mirca/riskParityPortfolio.svg?branch=master)](https://travis-ci.org/mirca/riskParityPortfolio)
-[![Build status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/master?svg=true)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
-[![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
 
-*riskParityPortfolio* provides tools to design portfolios that follow the risk
-parity criteria. More precisely we implement a Newton method proposed by
-Spinu (2013) and a Cyclical method proposed by Griveau-Billion (2013), which
-formulate the risk parity as a convex problem and therefore a unique solution
-is available. For general, usually nonconvex formulations, we implement the
-successive convex approximation method proposed by Feng & Palomar (2015).
+
+The package *riskParityPortfolio* provides tools to design risk-parity 
+portfolios. In its simplest form, we consider the convex formulation 
+with a unique solution proposed by Spinu (2013) and use a cyclical 
+method inspired by Griveau-Billion (2013). For more general formulations, 
+which are usually nonconvex, we implement the successive convex approximation 
+method proposed by Feng & Palomar (2015).
 
 
 ## Installation
@@ -34,7 +40,7 @@ package?riskParityPortfolio
 ?riskParityPortfolio
 
 # Citing this work
-citation("library(riskParityPortfolio)")
+citation("riskParityPortfolio")
 
 ```
 
@@ -58,11 +64,11 @@ res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
 res$w
-#> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
+#> [1] 0.08255655 0.47600209 0.16441764 0.10521082 0.17181289
 res$risk_contribution
-#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+#> [1] 0.03587918 0.03587918 0.03587918 0.03587918 0.03587918
 c(res$w * (Sigma %*% res$w))
-#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+#> [1] 0.03587918 0.03587918 0.03587918 0.03587918 0.03587918
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))

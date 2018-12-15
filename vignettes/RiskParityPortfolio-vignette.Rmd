@@ -38,7 +38,8 @@ opts_chunk$set(
   fig.align = "center",
   fig.retina = 2,
   out.width = "85%",
-  dpi = 96
+  dpi = 96,
+  pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
 #Help on bookdown: https://bookdown.org/yihui/bookdown/
@@ -49,7 +50,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 -----------
-This vignette illustrates the design of risk-parity portfolios, widely
+> This vignette illustrates the design of risk-parity portfolios, widely
 used by practitioners in the financial industry, with the package
 `riskParityPortfolio`, gives a description of the algorithms used, and
 compares the performance against existing packages.
@@ -206,8 +207,8 @@ library(RiskPortfolios)
 # generate synthetic data
 set.seed(123)
 N <- 10
-#V <- matrix(rnorm(N^2), nrow = N)
-V <- matrix(rnorm(N*(N+N/5)), N+N/5, N)
+#V <- matrix(rnorm(N^2), nrow = N)  # with this, RiskPortfolios::optimalPortfolio() fails
+V <- matrix(rnorm(N*(N+N/5)), N+N/5, N)  # with this, FinCovRegularization::RiskParity() fails
 Sigma <- cov(V)
 
 # uniform initial guess for the portfolio weights
