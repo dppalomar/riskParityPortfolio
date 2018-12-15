@@ -1,10 +1,10 @@
 ---
 output:
+  md_document:
+    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true
-  md_document:
-    variant: markdown_github
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -35,7 +35,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
 
-The package *riskParityPortfolio* provides tools to design risk-parity 
+The package 'riskParityPortfolio' provides tools to design risk-parity 
 portfolios. In its simplest form, we consider the convex formulation 
 with a unique solution proposed by Spinu (2013) and use a cyclical 
 method inspired by Griveau-Billion (2013). For more general formulations, 

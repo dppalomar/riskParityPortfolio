@@ -164,7 +164,7 @@ Let's explore, for instance, the effect of including the expected return as an
 additional objective in the optimization problem. The problem can be formulated as
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
-R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
+R(\mathbf{w}) - \lambda_{\mu} \mathbf{w}^{T}\boldsymbol{\mu}\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
 \end{array}$$
 where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function or risk parity function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda$ is a trade-off parameter.
@@ -197,7 +197,7 @@ Similarly, the `riskParityPortfolio` package let us include the variance
 as an objective term, so that the actual optimization problem can be expressed as
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
-R(\mathbf{w}) + \nu \mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
+R(\mathbf{w}) + \lambda_{\sf var} \mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
 \end{array}$$
 
