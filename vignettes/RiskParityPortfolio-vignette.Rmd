@@ -52,7 +52,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 This vignette illustrates the design of risk-parity portfolios, widely
 used by practitioners in the financial industry, with the package
 `riskParityPortfolio`, gives a description of the algorithms used, and
-compares the performance against existing packages such as `cccp` and `FinCovRegularization`.
+compares the performance against existing packages.
 
 
 # Vanilla risk parity portfolio
@@ -93,9 +93,12 @@ computed using convex optimization packages, such as CVXR, but faster algorithms
 coordinate descent, proposed by [@Spinu2013] and [@Billion2013], are implemented in this package.
 
 A simple code example on how to design a risk parity portfolio is as follows:
-```{r, message = FALSE}
+```{r, echo=FALSE, message=FALSE}
+rainbow8equal <- c("#BF4D4D", "#BFA34D", "#86BF4D", "#4DBF69", "#4DBFBF", "#4D69BF", "#864DBF", "#BF4DA3")
+```
+
+```{r, message=FALSE}
 library(riskParityPortfolio)
-library(PerformanceAnalytics)
 
 # generate synthetic data
 set.seed(123)
@@ -129,7 +132,7 @@ library(riskParityPortfolio)
 
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
-Sigma <- V %*% t(V)
+Sigma <- cov(V)
 b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
@@ -140,7 +143,7 @@ op <- microbenchmark(
           times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
-boxplot(op, ylab = "Time in Milliseconds",
+boxplot(op, ylab = "Time in milliseconds",
         xlab = NULL, unit = "ms", outline = FALSE, las = 2)
 ```
 
@@ -163,11 +166,9 @@ $$\begin{array}{ll}
 R(\mathbf{w}) - \lambda \mathbf{w}^{T}\boldsymbol{\mu}\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
 \end{array}$$
-where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda$ is a trade-off parameter.
+where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function or risk parity function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda$ is a trade-off parameter.
 
 ```{r, message=FALSE}
-library(scales)
-
 N <- 100
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
@@ -184,26 +185,29 @@ for (lmd_mu in lmd_sweep) {
   risk_parity <- c(risk_parity, rpp$risk)
 }
 
-plot(risk_parity, mean_return, type = "b", pch=19, cex=.6, col=alpha("blue", .5),
-     xlab = "Risk", ylab = "Expected Return",
+plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "blue",
+     xlab = "Risk Parity", ylab = "Expected Return",
      ylim = c(min(mean_return), max(mean_return)),
      xlim = c(min(risk_parity), max(risk_parity)),
-     main = "Expected Return vs Risk")
+     main = "Expected Return vs Risk Parity")
 ```
 
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
 such as `FinCovRegularization`, `cccp`, and `RiskPortfolios`. Let's check how
-do they perform against `riskParityPortfolio`.
+do they perform against `riskParityPortfolio`. 
+(Note that other packages like `FRAPO` use `cccp` under the hood.)
 
-```{r, message = FALSE}
+```{r, message=FALSE}
 library(FinCovRegularization)
 library(cccp)
+library(RiskPortfolios)
 
 # generate synthetic data
 set.seed(123)
 N <- 10
-V <- matrix(rnorm(N^2), nrow = N)
+#V <- matrix(rnorm(N^2), nrow = N)
+V <- matrix(rnorm(N*(N+N/5)), N+N/5, N)
 Sigma <- cov(V)
 
 # uniform initial guess for the portfolio weights
@@ -213,11 +217,9 @@ w0 <- rep(1/N, N)
 rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
 riskport_w <- optimalPortfolio(Sigma = Sigma, control = list(type = 'erc',
                                                              constraint = 'lo'))
+riskport_risk_contribution <- c(riskport_w * (Sigma %*% riskport_w))
 fincov_w <- RiskParity(Sigma)
 fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
-riskport_risk_contribution <- c(riskport_w * (Sigma %*% riskport_w))
-# The list of arguments is the following: 1) the initial guess for the portfolio weights,
-# 2) the covariance matrix of the asset returns, 3) the marginal risk contributions
 cccp_w <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
 cccp_risk_contribution <- c(cccp_w * (Sigma %*% cccp_w))
 
@@ -231,13 +233,12 @@ barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contrib
         main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
         beside = TRUE, col = rainbow8equal[1:4],
         legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
-                   "RiskPortfolios"))
+                   "RiskPortfolios"),
+        args.legend = list(x = "bottomright"))
 ```
 
-Apart from the `RiskParity()` function from the `FinCovRegularization` package
-and `optimalPortfolio()` from the `RiskPortfolios` package, the other functions perform the same.
-`FinCovRegularization` uses a general solver with a hard coded initial guess for the portfolio
-weights. We conjecture that its poor initialization might be the reason for the convergence to a local solution.
+Depending on the condition number of the covariance matrix, we found that the packages `FinCovRegularization` and `RiskPortfolios` may fail unexpectedly. Apart from that, the other functions perform the same.
+
 
 # Appendix I: Risk concentration formulations
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
@@ -292,8 +293,8 @@ $$
 
 # Appendix II: Computational time
 In the subsections that follows we explore the computational time required by
-`method="sca"`, `method="alabama"`, and `method="slsqp"` for some of the formulations presented above.
-Additionally, we compare `method="alabama"` and `method="slsqp"` without using the
+`method = "sca"`, `method = "alabama"`, and `method = "slsqp"` for some of the formulations presented above.
+Additionally, we compare `method = "alabama"` and `method = "slsqp"` without using the
 gradient of the objective function.
 
 ## Experiment: formulation "rc-over-var vs b"
@@ -461,9 +462,9 @@ algorithm optimizes for one portfolio weight at a time while leaving the rest fi
 By iterativelly applying this procedure it is possible to show that the sequence of estimations reaches
 the global minimum of the convex function in roughly $O(N_{iter} \times N^2)$.
 
-The plot below illustrates the computational scaling of both `"newton"` and `"cyclical"` algorithms.
-Note that the `cyclical` algorithm is implemented for two different formulations used by [@Spinu2013]
-and [@Billion2013], respectively. Nonetheless, they output the same solution.
+The plot below illustrates the computational scaling of both Newton and cyclical algorithms.
+Note that the cyclical algorithm is implemented for two different formulations used by [@Spinu2013]
+and [@Billion2013], respectively. Nonetheless, they output the same solution, as they should.
 ```{r}
 library(microbenchmark)
 library(riskParityPortfolio)
@@ -486,7 +487,7 @@ for (i in size_seq) {
 
 colors <- c("#0B032D", "#FFB997", "red")
 plot(size_seq, times[1,], type = "b", pch=15, cex=.75, col = colors[1],
-     xlab = "Portfolio length", ylab = "CPU time [ms]", xaxt = "n")
+     xlab = "Portfolio size N", ylab = "CPU time [ms]", xaxt = "n")
 grid()
 lines(size_seq, times[2,], type = "b", pch=16, cex=.75, col = colors[2])
 lines(size_seq, times[3,], type = "b", pch=17, cex=.75, col = colors[3])
