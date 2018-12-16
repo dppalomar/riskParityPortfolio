@@ -106,7 +106,7 @@ If you have used this package in your research, please consider citing the follo
   Risk Parity Portfolio Design," _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
   pp. 5285-5300, Oct. 2015.  (https://doi.org/10.1109/TSP.2015.2452219)
 - F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
-  Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+  Available at SSRN: https://ssrn.com/abstract=2297383 or https://dx.doi.org/10.2139/ssrn.2297383
 - T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013.
   ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
 

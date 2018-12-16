@@ -100,7 +100,7 @@ the following sources:
     (<https://doi.org/10.1109/TSP.2015.2452219>)
 -   F. Spinu, “An Algorithm for Computing Risk Parity Weights,” 2013.
     Available at SSRN: <https://ssrn.com/abstract=2297383> or
-    <http://dx.doi.org/10.2139/ssrn.2297383>
+    <https://dx.doi.org/10.2139/ssrn.2297383>
 -   T. Griveau-Billion, J. Richard, and T. Roncalli, “A fast algorithm
     for computing High-dimensional risk parity portfolios,” 2013. ArXiv
     preprint: <https://arxiv.org/pdf/1311.4057.pdf>
