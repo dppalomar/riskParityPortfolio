@@ -6,23 +6,27 @@
 Documentation
 =============
 
-``riskParityPortfolio`` is an `R` package for designing portfolios
-that meet the risk parity criteria. It provides the implementation of the following
-algorithms:
-1) a Newton method for simple design of risk parity portfolios proposed by
-`Spinu (2013) <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383>`_,
-2) a variant of the cyclical coordinate descent algorithm for high dimensional portfolios proposed by
-`Griveau-Billion (2013) <https://arxiv.org/pdf/1311.4057.pdf>`_ and applied to the risk parity formulation
-presented in `Spinu (2013) <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383>`_,
-3) general purpose non-linear constrained optimization solvers such as ``alabama`` and ``slsqp``, and
-4) the successive convex approximation (SCA) proposed by
-`Feng & Palomar (2016) <http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf>`_.
+The package `riskParityPortfolio` provides tools to design risk-parity portfolios.
+In its simplest form, we consider the convex formulation with a unique solution
+proposed by `Spinu (2013) <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383>`_
+and use a cyclical method inspired by `Griveau-Billion (2013) <https://arxiv.org/pdf/1311.4057.pdf>`_.
+For more general formulations, which are usually nonconvex, we implement the successive convex
+approximation method proposed by `Feng & Palomar (2016) <http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf>`_.
 
 Please, see the `Getting started <_static/getting_started.html>`_
 tutorial for an introduction to risk parity portfolio design in R.
 
 Installation
 ------------
+
+The *stable* version can be installed from CRAN as follows:
+
+.. highlight:: r
+
+::
+
+   > install.packages("riskParityPortfolio")
+
 
 The *development* version can be installed from GitHub as follows:
 
@@ -51,4 +55,5 @@ If you made use of this package on your research, please consider citing the fol
 Bug Reports
 -----------
 
-If you found a bug, please consider opening an issue ticket at our GitHub `repo <https://github.com/dppalomar/riskParityPortfolio/issues>`_.
+If you found a bug, please consider opening an issue ticket at our GitHub
+`repo <https://github.com/dppalomar/riskParityPortfolio/issues>`_.

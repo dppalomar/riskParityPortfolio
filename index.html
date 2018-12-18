@@ -150,21 +150,20 @@
             
   <div class="section" id="documentation">
 <h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">riskParityPortfolio</span></code> is an <cite>R</cite> package for designing portfolios
-that meet the risk parity criteria. It provides the implementation of the following
-algorithms:
-1) a Newton method for simple design of risk parity portfolios proposed by
-<a class="reference external" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383">Spinu (2013)</a>,
-2) a variant of the cyclical coordinate descent algorithm for high dimensional portfolios proposed by
-<a class="reference external" href="https://arxiv.org/pdf/1311.4057.pdf">Griveau-Billion (2013)</a> and applied to the risk parity formulation
-presented in <a class="reference external" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383">Spinu (2013)</a>,
-3) general purpose non-linear constrained optimization solvers such as <code class="docutils literal notranslate"><span class="pre">alabama</span></code> and <code class="docutils literal notranslate"><span class="pre">slsqp</span></code>, and
-4) the successive convex approximation (SCA) proposed by
-<a class="reference external" href="http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf">Feng &amp; Palomar (2016)</a>.</p>
+<p>The package <cite>riskParityPortfolio</cite> provides tools to design risk-parity portfolios.
+In its simplest form, we consider the convex formulation with a unique solution
+proposed by <a class="reference external" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383">Spinu (2013)</a>
+and use a cyclical method inspired by <a class="reference external" href="https://arxiv.org/pdf/1311.4057.pdf">Griveau-Billion (2013)</a>.
+For more general formulations, which are usually nonconvex, we implement the successive convex
+approximation method proposed by <a class="reference external" href="http://www.ece.ust.hk/~palomar/Publications_files/2015/FengPalomar-TSP2015%20-%20risk_parity_portfolio.pdf">Feng &amp; Palomar (2016)</a>.</p>
 <p>Please, see the <a class="reference external" href="_static/getting_started.html">Getting started</a>
 tutorial for an introduction to risk parity portfolio design in R.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>The <em>stable</em> version can be installed from CRAN as follows:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> install.packages<span class="p">(</span><span class="s">&quot;riskParityPortfolio&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The <em>development</em> version can be installed from GitHub as follows:</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> devtools<span class="o">::</span>install_github<span class="p">(</span><span class="s">&quot;dppalomar/riskParityPortfolio&quot;</span><span class="p">)</span>
 </pre></div>
@@ -188,7 +187,8 @@ High-dimensional risk parity portfolios”, ArXiv preprint: <a class="reference 
 </div>
 <div class="section" id="bug-reports">
 <h2>Bug Reports<a class="headerlink" href="#bug-reports" title="Permalink to this headline">¶</a></h2>
-<p>If you found a bug, please consider opening an issue ticket at our GitHub <a class="reference external" href="https://github.com/dppalomar/riskParityPortfolio/issues">repo</a>.</p>
+<p>If you found a bug, please consider opening an issue ticket at our GitHub
+<a class="reference external" href="https://github.com/dppalomar/riskParityPortfolio/issues">repo</a>.</p>
 </div>
 </div>
 
