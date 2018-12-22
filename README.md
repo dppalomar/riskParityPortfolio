@@ -49,6 +49,11 @@ You can also get `riskParityPortfolio` from Docker as follows:
 
     docker pull mirca/riskparityportfolio
 
+### Windows
+
+On Windows environments, make sure to install the most recent version of
+`Rtools`.
+
 Usage of `riskParityPortfolio`
 ------------------------------
 
