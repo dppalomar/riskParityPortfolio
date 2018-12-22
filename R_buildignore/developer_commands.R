@@ -20,7 +20,6 @@ package?riskParityPortfolio
 devtools::load_all()  #or Ctrl-Shift-L
 devtools::install()
 library(riskParityPortfolio)
-#devtools::build()  # to generate the installation file
 
 # Documentation
 devtools::document()  # to generate all documentation via roxygen
@@ -34,16 +33,13 @@ devtools::test()
 #goodpractice::gp()  # overall checks
 
 
-# CRAN check and submission
+# CRAN check and submission (http://r-pkgs.had.co.nz/release.html)
+#  checklist: https://kalimu.github.io/post/checklist-for-r-package-submission-to-cran/
 devtools::check()
 rcmdcheck::rcmdcheck()
 devtools::build()
+#devtools::build_win()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
 #R CMD check riskParityPortfolio_0.1.0.tar.gz --as-cran  # this is before submission to CRAN
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
-
-# An alternative is to upload to CRAN via devtools:
-#devtools::build_win()  #to check under windows
-#devtools::release(args = "--compact-vignettes=gs+qpdf")  #for CRAN
-
