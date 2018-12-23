@@ -9,6 +9,10 @@ risk_parity_portfolio_ccd_roncalli <- function(Sigma, b, tol, maxiter) {
     .Call('_riskParityPortfolio_risk_parity_portfolio_ccd_roncalli', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
 }
 
+active_risk_parity_portfolio_ccd <- function(Sigma, b, mu, c, r, tol, maxiter) {
+    .Call('_riskParityPortfolio_active_risk_parity_portfolio_ccd', PACKAGE = 'riskParityPortfolio', Sigma, b, mu, c, r, tol, maxiter)
+}
+
 risk_parity_portfolio_nn <- function(Sigma, b, tol, maxiter) {
     .Call('_riskParityPortfolio_risk_parity_portfolio_nn', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
 }

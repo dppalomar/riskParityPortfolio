@@ -20,3 +20,19 @@ with_parameters_test_that("sca and gensolver portfolios are consistent when
   cases(list(risk_parity_portfolio_foo = riskParityPortfolioSCA),
         list(risk_parity_portfolio_foo = riskParityPortfolioGenSolver))
 )
+
+test_that("roncalli's formulation with mu converges to roncalli's formulation
+          without mu for sufficiently large mean_volatility_tradeoff", {
+  b <- rep(1/N, N)
+  mean_volatility_tradeoff <- 1e6
+  risk_free_return <- 0
+  rpp_mu <- riskParityPortfolio:::active_risk_parity_portfolio_ccd(Sigma, b, mu,
+                                                                   mean_volatility_tradeoff,
+                                                                   risk_free_return, 1e-6, 50)
+  rpp <- riskParityPortfolio:::risk_parity_portfolio_ccd_roncalli(Sigma, b, 1e-6, 50)
+  rc <- rpp_mu * (Sigma %*% rpp_mu)
+  print(rpp_mu)
+  print(rpp)
+  expect_that(all.equal(rpp_mu, rpp), is_true())
+  expect_that(all.equal(rc / sum(rc), b), is_true())
+})
