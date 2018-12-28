@@ -12,13 +12,13 @@ Description: Fast design of risk-parity portfolios for financial investment.
     objectives like the expected return and overall variance. See vignette for
     a detailed documentation and comparison, with several illustrative examples.
     The package is based on the papers:
-    Y. Feng, and D. P. Palomar (2015), "SCRIP: Successive Convex Optimization Methods
-    for Risk Parity Portfolio Design," IEEE Trans. on Signal Processing, vol. 63,
+    Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex Optimization Methods
+    for Risk Parity Portfolio Design. IEEE Trans. on Signal Processing, vol. 63,
     no. 19, pp. 5285-5300. <doi:10.1109/TSP.2015.2452219>.
-    F. Spinu (2013), "An Algorithm for Computing Risk Parity Weights".
+    F. Spinu (2013), An Algorithm for Computing Risk Parity Weights.
     <doi:10.2139/ssrn.2297383>.
-    T. Griveau-Billion, J. Richard, and T. Roncalli (2013), "A fast algorithm for computing 
-    High-dimensional risk parity portfolios".<arXiv:1311.4057>.
+    T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing 
+    High-dimensional risk parity portfolios. <arXiv:1311.4057>.
 Authors@R: c(
   person("Ze", "Vinicius", role = "aut", email = "jvmirca@gmail.com"),
   person(c("Daniel", "P."), "Palomar", role = c("cre", "aut"), email = "daniel.p.palomar@gmail.com")

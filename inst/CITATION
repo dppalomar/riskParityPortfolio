@@ -26,9 +26,9 @@ citEntry(entry = "Article",
          year         = "2018",
          url          = "https://doi.org/10.1109/TSP.2015.2452219",
          textVersion  =
-           paste("Y. Feng and D. P. Palomar (2015),",
-                 "\"SCRIP: Successive Convex Optimization Methods
-    for Risk Parity Portfolio Design,\"",
+           paste("Y. Feng and D. P. Palomar (2015).",
+                 "SCRIP: Successive Convex Optimization Methods
+    for Risk Parity Portfolio Design.",
                  "IEEE Transactions on Signal Processing,",
                  "vol. 63, no. 19, pp. 5285-5300.",
                  "https://doi.org/10.1109/TSP.2015.2452219")
