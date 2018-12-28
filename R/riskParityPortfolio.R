@@ -615,15 +615,15 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' #> [1] 0.40 0.40 0.10 0.05 0.05
 #'
 #' @references
-#' Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods
+#' Y. Feng, and D. P. Palomar (2015), "SCRIP: Successive Convex Optimization Methods
 #' for Risk Parity Portfolio Design," \emph{IEEE Trans. on Signal Processing},
-#' vol. 63, no. 19, pp. 5285-5300, Oct. 2015. (https://doi.org/10.1109/TSP.2015.2452219)
+#' vol. 63, no. 19, pp. 5285-5300. <https://doi.org/10.1109/TSP.2015.2452219>
 #'
-#' F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013.
-#' Available at SSRN: https://ssrn.com/abstract=2297383 or http://dx.doi.org/10.2139/ssrn.2297383
+#' F. Spinu (2013), "An Algorithm for Computing Risk Parity Weights".
+#' <http://dx.doi.org/10.2139/ssrn.2297383>
 #'
-#' T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional
-#' risk parity portfolios," 2013. ArXiv preprint: https://arxiv.org/pdf/1311.4057.pdf
+#' T. Griveau-Billion, J. Richard, and T. Roncalli (2013), "A fast algorithm for computing High-dimensional
+#' risk parity portfolios". <https://arxiv.org/pdf/1311.4057.pdf>
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #' @export

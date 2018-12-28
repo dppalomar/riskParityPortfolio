@@ -12,6 +12,7 @@ library(riskParityPortfolio)
 help(package = "riskParityPortfolio")
 package?riskParityPortfolio
 ?riskParityPortfolio
+citation("riskParityPortfolio")
 
 
 ##
