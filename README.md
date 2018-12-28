@@ -6,7 +6,7 @@
 riskParityPortfolio
 ===================
 
-The package `riskParityPortfolio` provides tools to design risk-parity portfolios. In its simplest form, we consider the convex formulation with a unique solution proposed by Spinu (2013) and use a cyclical method inspired by Griveau-Billion (2013). For more general formulations, which are usually nonconvex, we implement the successive convex approximation method proposed by Feng & Palomar (2015).
+The package `riskParityPortfolio` provides tools to design risk-parity portfolios. In its simplest form, we consider the convex formulation with a unique solution proposed by ![Spinu (2013)](https://dx.doi.org/10.2139/ssrn.2297383) and use a cyclical method inspired by ![Griveau-Billion (2013)](https://arxiv.org/pdf/1311.4057.pdf). For more general formulations, which are usually nonconvex, we implement the successive convex approximation method proposed by ![Feng & Palomar (2015)](https://doi.org/10.1109/TSP.2015.2452219).
 
 The latest stable version of `riskParityPortfolio` is available at <https://CRAN.R-project.org/package=riskParityPortfolio>.
 
@@ -85,15 +85,13 @@ Documentation
 
 For more detailed information, please check the [vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-html-vignette.html) or the [package webpage](https://mirca.github.io/riskParityPortfolio).
 
-Citation
---------
-
-If you have used this package in your research, please consider citing the following sources:
+References
+----------
 
 -   J. V. de M. Cardoso and D. P. Palomar (2018). riskParityPortfolio: Design of Risk Parity Portfolios. R package version 0.1.0. <https://CRAN.R-project.org/package=riskParityPortfolio>
--   Y. Feng, and D. P. Palomar, "SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design," *IEEE Trans. on Signal Processing*, vol. 63, no. 19, pp. 5285-5300, Oct. 2015. (<https://doi.org/10.1109/TSP.2015.2452219>)
--   F. Spinu, "An Algorithm for Computing Risk Parity Weights," 2013. Available at SSRN: <https://ssrn.com/abstract=2297383> or <https://dx.doi.org/10.2139/ssrn.2297383>
--   T. Griveau-Billion, J. Richard, and T. Roncalli, "A fast algorithm for computing High-dimensional risk parity portfolios," 2013. ArXiv preprint: <https://arxiv.org/pdf/1311.4057.pdf>
+-   Y. Feng, and D. P. Palomar (2015), "SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design," *IEEE Trans. on Signal Processing*, vol. 63, no. 19, pp. 5285-5300. <https://doi.org/10.1109/TSP.2015.2452219>
+-   F. Spinu (2013), "An Algorithm for Computing Risk Parity Weights." <https://dx.doi.org/10.2139/ssrn.2297383>
+-   T. Griveau-Billion, J. Richard, and T. Roncalli (2013), "A fast algorithm for computing High-dimensional risk parity portfolios." <https://arxiv.org/pdf/1311.4057.pdf>
 
 Links
 -----
