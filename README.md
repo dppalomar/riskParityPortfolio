@@ -8,6 +8,10 @@ riskParityPortfolio
 
 The package `riskParityPortfolio` provides tools to design risk-parity portfolios. In its simplest form, we consider the convex formulation with a unique solution proposed by Spinu (2013) and use a cyclical method inspired by Griveau-Billion (2013). For more general formulations, which are usually nonconvex, we implement the successive convex approximation method proposed by Feng & Palomar (2015).
 
+The latest stable version of `riskParityPortfolio` is available at <https://CRAN.R-project.org/package=riskParityPortfolio>.
+
+The latest development version of `riskParityPortfolio` is available at <https://github.com/dppalomar/riskParityPortfolio>.
+
 Installation
 ------------
 
