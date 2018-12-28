@@ -31,14 +31,14 @@ For more details see the vignette:
 }
 
 \references{
-Y. Feng, and D. P. Palomar (2015), "SCRIP: Successive Convex Optimization Methods
-for Risk Parity Portfolio Design," \emph{IEEE Trans. on Signal Processing},
+Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex Optimization Methods
+for Risk Parity Portfolio Design. \emph{IEEE Trans. on Signal Processing},
 vol. 63, no. 19, pp. 5285-5300. <https://doi.org/10.1109/TSP.2015.2452219>
 
-F. Spinu (2013), "An Algorithm for Computing Risk Parity Weights".
+F. Spinu (2013). An Algorithm for Computing Risk Parity Weights.
 <http://dx.doi.org/10.2139/ssrn.2297383>
 
-T. Griveau-Billion, J. Richard, and T. Roncalli (2013), "A fast algorithm for computing High-dimensional risk parity portfolios".
+T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing High-dimensional risk parity portfolios.
 <https://arxiv.org/pdf/1311.4057.pdf>
 }
 \author{

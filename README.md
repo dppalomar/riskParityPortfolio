@@ -89,9 +89,9 @@ References
 ----------
 
 -   J. V. de M. Cardoso and D. P. Palomar (2018). riskParityPortfolio: Design of Risk Parity Portfolios. R package version 0.1.0. <https://CRAN.R-project.org/package=riskParityPortfolio>
--   Y. Feng, and D. P. Palomar (2015), "SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design," *IEEE Trans. on Signal Processing*, vol. 63, no. 19, pp. 5285-5300. <https://doi.org/10.1109/TSP.2015.2452219>
--   F. Spinu (2013), "An Algorithm for Computing Risk Parity Weights." <https://dx.doi.org/10.2139/ssrn.2297383>
--   T. Griveau-Billion, J. Richard, and T. Roncalli (2013), "A fast algorithm for computing High-dimensional risk parity portfolios." <https://arxiv.org/pdf/1311.4057.pdf>
+-   Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design. *IEEE Trans. on Signal Processing*, vol. 63, no. 19, pp. 5285-5300. <https://doi.org/10.1109/TSP.2015.2452219>
+-   F. Spinu (2013). An Algorithm for Computing Risk Parity Weights. <https://dx.doi.org/10.2139/ssrn.2297383>
+-   T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing High-dimensional risk parity portfolios. <https://arxiv.org/pdf/1311.4057.pdf>
 
 Links
 -----
