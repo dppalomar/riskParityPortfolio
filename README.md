@@ -2,7 +2,7 @@
 riskParityPortfolio
 ===================
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/riskParityPotfolio)](https://cran.r-project.org/package=riskParityPortfolio)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
 [![CRAN
 Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
 ![CRAN Downloads
