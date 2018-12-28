@@ -37,7 +37,7 @@ package?riskParityPortfolio
 ?riskParityPortfolio
 ```
 
-Please cite `riskParityPortfolio` in publications""
+Please cite `riskParityPortfolio` in publications:
 
 ``` r
 citation("riskParityPortfolio")
