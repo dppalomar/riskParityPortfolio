@@ -1,6 +1,6 @@
-## Changes in riskParityPortfolio version 0.2.0 (2019-XX-XX)
+## Changes in riskParityPortfolio version 0.1.1 (2019-XX-XX)
 
-* Included a turnover constraint: ||w - w0|| <= alpha.
+* Fixed issue with vignette names.
 
 
 ## Changes in riskParityPortfolio version 0.1.0 (2018-12-15)

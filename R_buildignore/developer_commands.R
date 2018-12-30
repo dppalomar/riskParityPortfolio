@@ -42,5 +42,5 @@ devtools::build()
 #devtools::build_win()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
-#R CMD check riskParityPortfolio_0.1.0.tar.gz --as-cran  # this is before submission to CRAN
+#R CMD check riskParityPortfolio_0.1.0.9000.tar.gz --as-cran  # this is before submission to CRAN
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html

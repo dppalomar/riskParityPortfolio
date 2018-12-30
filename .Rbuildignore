@@ -14,10 +14,10 @@
 ^Dockerfile$
 ^Makefile$
 ^docs$
-^vignettes/RiskParityPortfolio-vignette_cache$
-^vignettes/RiskParityPortfolio-vignette_files$
+^vignettes/RiskParityPortfolio_cache$
+^vignettes/RiskParityPortfolio_files$
 ^vignettes/render_vignette\.sh$
-^vignettes/RiskParityPortfolio-vignette\.Rmd$
+^vignettes/RiskParityPortfolio\.Rmd$
 ^vignettes/ieee\.csl$
 ^vignettes/refs\.bib$
 

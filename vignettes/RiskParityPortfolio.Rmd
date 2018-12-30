@@ -43,10 +43,10 @@ opts_chunk$set(
 )
 knit_hooks$set(pngquant = hook_pngquant)
 #Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "all")
-#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "bookdown::html_document2")
-#rmarkdown::render("vignettes/RiskParityPortfolio-vignette.Rmd", "bookdown::pdf_document2")
-#tools::compactPDF("vignettes/RiskParityPortfolio-vignette.pdf", gs_quality = "ebook")
+#rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "all")
+#rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "bookdown::html_document2")
+#rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "bookdown::pdf_document2")
+#tools::compactPDF("vignettes/RiskParityPortfolio.pdf", gs_quality = "ebook")
 ```
 
 -----------

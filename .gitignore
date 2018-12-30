@@ -6,7 +6,7 @@ inst/doc
 README_cache
 *.aux
 *.log
-RiskParityPortfolio-vignette_cache/
-RiskParityPortfolio-vignette_files/
+RiskParityPortfolio_cache/
+RiskParityPortfolio_files/
 src/*.so
 src/*.o
