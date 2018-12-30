@@ -75,8 +75,8 @@ You can also get ``riskParityPortfolio`` from Docker as follows:
 docker pull mirca/riskparityportfolio
 ```
 
-### Windows
-On Windows environments, make sure to install the most recent version of
+#### Microsoft Windows
+On MS Windows environments, make sure to install the most recent version of
 ``Rtools``.
 
 
@@ -87,7 +87,7 @@ library(riskParityPortfolio)
 set.seed(0)
 # create covariance matrix
 N <- 5
-V <- matrix(rnorm(N^2), nrow = N)
+V <- matrix(rnorm(N^2), ncol = N)
 Sigma <- cov(V)
 
 # risk-parity portfolio
@@ -107,7 +107,9 @@ For more detailed information, please check the
 [vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-html-vignette.html)
 or the [package webpage](https://mirca.github.io/riskParityPortfolio).
 
-## References
+## Citation
+If you find this package useful in your research, please consider citing the following works:
+
 - J. V. de M. Cardoso and D. P. Palomar (2018). riskParityPortfolio:
   Design of Risk Parity Portfolios. R package version 0.1.0.
   <https://CRAN.R-project.org/package=riskParityPortfolio>
@@ -123,4 +125,3 @@ Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [Git
 README file: [GitHub-readme](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html).
 Vignette: [GitHub-html-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-html-vignette.html) and
 [GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf-vignette.pdf).
-
