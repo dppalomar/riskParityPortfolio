@@ -661,7 +661,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            "cyclical-roncalli" = {
              portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
            },
-           stop("method_init ", method_init, "is not included.")
+           stop("method_init ", method_init, " is not included.")
     )
   } else {
     if (is.null(w0)) {
@@ -675,7 +675,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
              "cyclical-roncalli" = {
                portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
              },
-             stop("method_init ", method_init, "is not included.")
+             stop("method_init ", method_init, " is not included.")
       )
     }
 
@@ -706,7 +706,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                         maxiter = maxiter, ftol = ftol, wtol = wtol)
 
            },
-           stop("method ", method, "is not included.")
+           stop("method ", method, " is not included.")
     )
   }
   return(portfolio)
