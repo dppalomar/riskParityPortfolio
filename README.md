@@ -9,6 +9,7 @@ Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=b
 [![Travis-CI-Badge](https://travis-ci.org/mirca/riskParityPortfolio.svg?branch=master)](https://travis-ci.org/mirca/riskParityPortfolio)
 [![Build
 status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/master?svg=true)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
+[![CircleCI](https://circleci.com/gh/mirca/riskParityPortfolio.svg?style=svg)](https://circleci.com/gh/mirca/riskParityPortfolio)
 [![Docker Build
 Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
