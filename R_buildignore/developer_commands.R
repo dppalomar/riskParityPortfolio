@@ -13,6 +13,7 @@ help(package = "riskParityPortfolio")
 package?riskParityPortfolio
 ?riskParityPortfolio
 citation("riskParityPortfolio")
+vignette(package = "riskParityPortfolio")
 
 
 ##
@@ -20,6 +21,7 @@ citation("riskParityPortfolio")
 ##
 devtools::load_all()  #or Ctrl-Shift-L
 devtools::install()
+#devtools::install(build_vignettes = TRUE)
 library(riskParityPortfolio)
 
 # Documentation
@@ -43,4 +45,5 @@ devtools::build()
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
 #R CMD check riskParityPortfolio_0.1.0.9000.tar.gz --as-cran  # this is before submission to CRAN
+#R CMD install riskParityPortfolio_0.1.0.9000.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
