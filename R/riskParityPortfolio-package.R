@@ -16,10 +16,14 @@
 #'
 #' @section Help:
 #' For a quick help see the README file:
+#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/readme/README.html}{CRAN-README} and 
 #' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html}{GitHub-README}.
 #'
 #' For more details see the vignette:
-#' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-html-vignette.html}{GitHub-html-vignette}.
+#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
+#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{CRAN-pdf-vignette},
+#' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html}{GitHub-html-vignette}, and
+#' \href{https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf}{GitHub-pdf-vignette}.
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #'
