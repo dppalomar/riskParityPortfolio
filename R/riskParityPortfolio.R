@@ -643,9 +643,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                     "rc-over-sd vs b-times-sd", "rc vs b-times-var",
                     "rc vs theta", "rc-over-b vs theta")
   has_formulation <- !is.null(formulation)
-  if (has_formulation && formulation == "diag") {
+  if (has_formulation && formulation == "diag")
     return(riskParityPortfolioDiagSigma(Sigma, b))
-  }
+  
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
@@ -685,9 +685,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       w_rc <- as.numeric(max(mu) == mu)
     else
       w_rc <- 0
-    theta_rc <- 1 / (1 + lmd_var + lmd_mu * sum(has_mu))
-    theta_er <- lmd_mu * sum(has_mu) / (1 + lmd_var + lmd_mu)
-    theta_var <- lmd_var / (1 + lmd_var + lmd_mu * sum(has_mu))
+    theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
+    theta_er <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu*sum(has_mu))
+    theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
     w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
 
     switch(match.arg(method),

@@ -1,0 +1,257 @@
+---
+title: "Simple example"
+author:
+- name: "Daniel P. Palomar"
+  affiliation: "Hong Kong University of Science and Technology (HKUST)"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    base_format: prettydoc::html_pretty
+    theme: tactile
+    highlight: vignette
+    fig_caption: yes
+    number_sections: no
+    toc: yes
+    toc_depth: 2
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+header-includes:
+  \allowdisplaybreaks
+indent: yes
+csl: ieee.csl
+bibliography: refs.bib
+---
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.retina = 2,
+  out.width = "75%",
+  dpi = 96
+)
+knit_hooks$set(pngquant = hook_pngquant)
+#Help on bookdown: https://bookdown.org/yihui/bookdown/
+#rmarkdown::render("vignettes/example.Rmd", "bookdown::html_document2")
+```
+
+-----------
+> This note contains an example under consideration by Alexis Nortier.
+
+
+# Risk-parity portfolio formulation
+The risk-parity portfolio formulation is of the form [@FengPal2015riskparity][@FengPal2016monograph]:
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & R(\mathbf{w})\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1\\
+ & \mathbf{w}\ge\mathbf{0},
+\end{array}$$
+where the risk term is of the form (double summation) $R(\mathbf{w}) = \sum_{i,j=1}^{N}(g_{ij}(\mathbf{w}))^{2}$ or simply (single summation) $R(\mathbf{w}) = \sum_{i=1}^{N}(g_{i}(\mathbf{w}))^{2}$.
+
+# Parameter definition for the test
+Consider the following parameters:
+$$\boldsymbol{\Sigma} = \left[
+\begin{array}{ccc}
+ 1.0000 &  0.0015 & -0.0119\\
+ 0.0015 &  1.0000 & -0.0308\\
+-0.0119 & -0.0308 &  1.0000
+\end{array}
+\right]$$
+$$\mathbf{b} = \left[
+\begin{array}{c}
+ 0.1594 \\
+ 0.0126 \\
+ 0.8280
+\end{array}
+\right]$$
+and the corresponding code:
+```{r}
+Sigma <- rbind(c(1.0000, 0.0015, -0.0119),
+               c(0.0015, 1.0000, -0.0308),
+               c(-0.0119, -0.0308, 1.0000))
+b <- c(0.1594, 0.0126, 0.8280)
+```
+
+The optimal solution is known to be
+$$\mathbf{w}^\star = \left[
+\begin{array}{c}
+ 0.2799 \\
+ 0.0877 \\
+ 0.6324
+\end{array}
+\right],$$
+but the Matlab implementation seems to converge to
+$$\mathbf{w} = \left[
+\begin{array}{c}
+ 0.3106 \\
+ 0.0000 \\
+ 0.6895
+\end{array}
+\right].$$
+Let's explore this problem with the R package [riskParityPortfolio](https://CRAN.R-project.org/package=riskParityPortfolio).
+
+# Vanilla formulation
+This problem is a vanilla formulation because it just contains the risk-parity term subject to the budget constraint and the no-shortselling constraint. Therefore, it can be reformulated as a convex problem and the global optimal solution can be obtained:
+```{r, message=FALSE}
+library(riskParityPortfolio)
+
+res <- riskParityPortfolio(Sigma, b = b)
+res$w
+res$risk_contribution/b
+```
+
+
+# Formulation "rc-over-var vs b"
+Even though we really have a vanilla formulation, we can still consider a direct nonconvex formulation. Consider the risk expression:
+$$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2}.$$
+The general solver `alabama` is sensitive to the initial point in this formulation (the first case gets stuck in a local minimum):
+```{r, message=FALSE}
+set.seed(234)
+res_ala1 <- riskParityPortfolio(Sigma, b = b, w0 = b, 
+                                formulation = "rc-over-var vs b", 
+                                method = "alabama")
+res_ala1$w
+tail(res_ala1$obj_fun, 1)
+
+res_ala2 <- riskParityPortfolio(Sigma, b = b, w0 = c(1, 1, 1)/3, 
+                                formulation = "rc-over-var vs b", 
+                                method = "alabama")
+res_ala2$w
+tail(res_ala2$obj_fun, 1)
+
+res_ala3 <- riskParityPortfolio(Sigma, b = b, w0 = (w0 <- runif(3))/sum(w0), 
+                                formulation = "rc-over-var vs b", 
+                                method = "alabama")
+res_ala3$w
+tail(res_ala3$obj_fun, 1)
+```
+```{r}
+# plot the portfolios
+barplot(rbind(res_ala1$w, res_ala2$w, res_ala3$w),
+        main = "Portfolios with different initial points", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE, col = heat.colors(3))
+# plot the risk contributions
+barplot(rbind(res_ala1$risk_contribution/b, res_ala2$risk_contribution/b, res_ala3$risk_contribution/b),
+        main = "Risk contribution of the portfolios", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE,  col = heat.colors(3))
+```
+
+The SCA method gives the same results:
+```{r}
+set.seed(234)
+res_sca1 <- riskParityPortfolio(Sigma, b = b, w0 = b, 
+                                formulation = "rc-over-var vs b", 
+                                method = "sca")
+res_sca1$w
+tail(res_sca1$obj_fun, 1)
+
+res_sca2 <- riskParityPortfolio(Sigma, b = b, w0 = c(1, 1, 1)/3, 
+                                formulation = "rc-over-var vs b", 
+                                method = "sca")
+res_sca2$w
+tail(res_sca2$obj_fun, 1)
+
+res_sca3 <- riskParityPortfolio(Sigma, b = b, w0 = (w0 <- runif(3))/sum(w0), 
+                                formulation = "rc-over-var vs b", 
+                                method = "sca")
+res_sca3$w
+tail(res_sca3$obj_fun, 1)
+```
+```{r}
+# plot the portfolios
+barplot(rbind(res_sca1$w, res_sca2$w, res_sca3$w),
+        main = "Portfolios with different initial points", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE, col = heat.colors(3))
+# plot the risk contributions
+barplot(rbind(res_sca1$risk_contribution/b, res_sca2$risk_contribution/b, res_sca3$risk_contribution/b),
+        main = "Risk contribution of the portfolios", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE,  col = heat.colors(3))
+```
+
+
+# Formulation "rc-over-sd vs b-times-sd"
+Consider now the risk expression:
+ $$R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2} = \sum_{i=1}^{N}\left(\frac{r_i}{\sqrt{\mathbf{1}^T\mathbf{r}}}-b_i\sqrt{\mathbf{1}^T\mathbf{r}}\right)^{2}.$$
+
+The general solver `alabama` is again sensitive to the initial point in this formulation (the third case gets stuck in a local minimum):
+```{r}
+set.seed(234)
+res_ala1 <- riskParityPortfolio(Sigma, b = b, w0 = b, 
+                                formulation = "rc-over-sd vs b-times-sd", 
+                                method = "alabama")
+res_ala1$w
+tail(res_ala1$obj_fun, 1)
+
+res_ala2 <- riskParityPortfolio(Sigma, b = b, w0 = c(1, 1, 1)/3, 
+                                formulation = "rc-over-sd vs b-times-sd", 
+                                method = "alabama")
+res_ala2$w
+tail(res_ala2$obj_fun, 1)
+
+res_ala3 <- riskParityPortfolio(Sigma, b = b, w0 = (w0 <- runif(3))/sum(w0), 
+                                formulation = "rc-over-sd vs b-times-sd", 
+                                method = "alabama")
+res_ala3$w
+tail(res_ala3$obj_fun, 1)
+```
+```{r}
+# plot the portfolios
+barplot(rbind(res_ala1$w, res_ala2$w, res_ala3$w),
+        main = "Portfolios with different initial points", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE, col = heat.colors(3))
+# plot the risk contributions
+barplot(rbind(res_ala1$risk_contribution/b, res_ala2$risk_contribution/b, res_ala3$risk_contribution/b),
+        main = "Risk contribution of the portfolios", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE,  col = heat.colors(3))
+```
+
+
+The SCA method is also sensitive to the initial point (the first case gets stuck in a local minimum):
+```{r}
+set.seed(234)
+res_sca1 <- riskParityPortfolio(Sigma, b = b, w0 = b, 
+                                formulation = "rc-over-sd vs b-times-sd", 
+                                method = "sca")
+res_sca1$w
+tail(res_sca1$obj_fun, 1)
+
+res_sca2 <- riskParityPortfolio(Sigma, b = b, w0 = c(1, 1, 1)/3, 
+                                formulation = "rc-over-sd vs b-times-sd", 
+                                method = "sca")
+res_sca2$w
+tail(res_sca2$obj_fun, 1)
+
+res_sca3 <- riskParityPortfolio(Sigma, b = b, w0 = (w0 <- runif(3))/sum(w0), 
+                                formulation = "rc-over-sd vs b-times-sd", 
+                                method = "sca")
+res_sca3$w
+tail(res_sca3$obj_fun, 1)
+```
+```{r}
+# plot the portfolios
+barplot(rbind(res_sca1$w, res_sca2$w, res_sca3$w),
+        main = "Portfolios with different initial points", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE, col = heat.colors(3))
+# plot the risk contributions
+barplot(rbind(res_sca1$risk_contribution/b, res_sca2$risk_contribution/b, res_sca3$risk_contribution/b),
+        main = "Risk contribution of the portfolios", 
+        xlab = "stocks", ylab = "dollars", beside = TRUE,  col = heat.colors(3))
+```
+
+# Conclusion
+The risk-parity portfolio problem is highly nonconvex so any numerical method can in principle give a suboptimal solution. From the experiments above, it seems that both methods (based on a general nonlinear solver and on the SCA [@FengPal2015riskparity]) give the correct solution if initialized with a proper initial point, but otherwise may give a suboptimal solution. Also, it seems that the formulation “rc-over-sd vs b-times-sd” gives more stable solutions than the formulation “rc-over-var vs b”. In any case, all these conclusions are only based on the numerical experiments above and more exhaustive tests should be performed.
+
+
+# References {-}
+\setlength{\parindent}{-0.2in}
+\setlength{\leftskip}{0.2in}
+\setlength{\parskip}{8pt}
+\noindent
+
+
+

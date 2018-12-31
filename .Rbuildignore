@@ -20,4 +20,5 @@
 ^vignettes/RiskParityPortfolio\.Rmd$
 ^vignettes/ieee\.csl$
 ^vignettes/refs\.bib$
-
+^vignettes/example\.Rmd$
+^vignettes/example\.html$
