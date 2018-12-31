@@ -1,3 +1,6 @@
 %\VignetteIndexEntry{Design of Risk Parity Portfolios (pdf)}
 %\VignetteEngine{R.rsp::asis}
-%\VignetteKeyword{portfolio, risk-parity, risk, optimization}
+%\VignetteKeyword{risk parity}
+%\VignetteKeyword{risk}
+%\VignetteKeyword{portfolio}
+%\VignetteKeyword{optimization}

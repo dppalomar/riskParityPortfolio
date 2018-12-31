@@ -25,7 +25,10 @@ csl: ieee.csl
 bibliography: refs.bib
 vignette: >
   %\VignetteIndexEntry{Design of Risk Parity Portfolios}
-  %\VignetteKeyword{portfolio, risk-parity, risk, optimization}
+  %\VignetteKeyword{risk parity}
+  %\VignetteKeyword{risk}
+  %\VignetteKeyword{portfolio}
+  %\VignetteKeyword{optimization}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
