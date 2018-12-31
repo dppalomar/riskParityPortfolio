@@ -1,10 +1,10 @@
 ---
 output:
-  md_document:
-    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true
+  md_document:
+    variant: markdown_github
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -105,7 +105,7 @@ res$risk_contribution/sum(res$risk_contribution)
 
 ## Documentation
 For more detailed information, please check the
-[vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio-html-vignette.html)
+[vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html)
 or the [package webpage](https://mirca.github.io/riskParityPortfolio).
 
 ## Citation
