@@ -97,16 +97,24 @@ consider the overall volatility of the portfolio as in the mean-variance
 Markowitz portfolio. In addition to the vanilla formulation, where the risk
 contributions are perfectly equalized subject to no shortselling and budget
 constraints, many other formulations are considered that allow for box
-constraints, as well as the inclusion of additional objectives like the expected
-return and overall variance. See the vignette for a detailed documentation and
-comparison, with several illustrative examples.
+constraints, as well as the inclusion of additional objectives like the
+expected return and overall variance. In short, this function solves the
+following problem
+
+      minimize   R(w) - lmd_mu*w'*mu + lmd_var*w'*Sigma*w
+      subject to  sum(w)=1, w>=0, w_lb <= w <= w_ub,
+
+where R is either a convex or non-convex formulation for the risk
+concentration. Please, check the vignette for the mathematical formulae of
+the possible formulations. The vignette also contains a detailed
+documentation and comparison, with several illustrative examples.
 }
 \examples{
 library(riskParityPortfolio)
 
 # create covariance matrix
 N <- 5
-V <- matrix(rnorm(N^2), nrow = N)
+V <- matrix(rnorm(N^2), ncol = N)
 Sigma <- cov(V)
 
 # risk-parity portfolio

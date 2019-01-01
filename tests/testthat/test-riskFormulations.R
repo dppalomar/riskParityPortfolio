@@ -14,9 +14,9 @@ test_that("sca, alabama, and slsq give similar results in low dimensional proble
                          "rc-over-sd vs b-times-sd", "rc vs b-times-var",
                          "rc vs theta", "rc-over-b vs theta")
   for(formulation in formulations_list) {
-    rpp_sca <- riskParityPortfolio(Sigma, method = "sca", formulation = formulation)
-    rpp_alabama <- riskParityPortfolio(Sigma, method = "alabama", formulation = formulation)
-    rpp_slsqp <- riskParityPortfolio(Sigma, method = "slsqp", formulation = formulation)
+    suppressWarnings(rpp_sca <- riskParityPortfolio(Sigma, method = "sca", formulation = formulation))
+    suppressWarnings(rpp_alabama <- riskParityPortfolio(Sigma, method = "alabama", formulation = formulation))
+    suppressWarnings(rpp_slsqp <- riskParityPortfolio(Sigma, method = "slsqp", formulation = formulation))
     expect_that(all(abs(rpp_sca$w - rpp_alabama$w) < 1e-3), is_true())
     expect_that(all(abs(rpp_sca$w - rpp_slsqp$w) < 1e-3), is_true())
   }

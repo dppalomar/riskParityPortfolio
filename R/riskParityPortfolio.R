@@ -529,9 +529,17 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #' Markowitz portfolio. In addition to the vanilla formulation, where the risk
 #' contributions are perfectly equalized subject to no shortselling and budget
 #' constraints, many other formulations are considered that allow for box
-#' constraints, as well as the inclusion of additional objectives like the expected
-#' return and overall variance. See the vignette for a detailed documentation and
-#' comparison, with several illustrative examples.
+#' constraints, as well as the inclusion of additional objectives like the
+#' expected return and overall variance. In short, this function solves the
+#' following problem
+#'
+#'       minimize   R(w) - lmd_mu*w'*mu + lmd_var*w'*Sigma*w
+#'       subject to  sum(w)=1, w>=0, w_lb <= w <= w_ub,
+#'
+#' where R is either a convex or non-convex formulation for the risk
+#' concentration. Please, check the vignette for the mathematical formulae of
+#' the possible formulations. The vignette also contains a detailed
+#' documentation and comparison, with several illustrative examples.
 #'
 #' @param Sigma covariance or correlation matrix
 #' @param b budget vector, aka risk budgeting targets. The default is the uniform
@@ -595,7 +603,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 #'
 #' # create covariance matrix
 #' N <- 5
-#' V <- matrix(rnorm(N^2), nrow = N)
+#' V <- matrix(rnorm(N^2), ncol = N)
 #' Sigma <- cov(V)
 #'
 #' # risk-parity portfolio
@@ -638,15 +646,28 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 use_gradient = TRUE) {
   if (is.null(b))
     b <- rep(1/nrow(Sigma), nrow(Sigma))
-  has_formulation <- !is.null(formulation)
-  if (has_formulation && formulation == "diag")
-    return(riskParityPortfolioDiagSigma(Sigma, b))
 
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
-  is_modern <- has_mu || has_theta || has_formulation || has_var
-  if (!is_modern) {
+  has_formulation <- !is.null(formulation)
+  has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
+
+  if (has_formulation && formulation == "diag") {
+    if(is_modern)
+      warning("the formulation chosen is 'diag' - additional constraints are",
+              " being ignored.")
+    return(riskParityPortfolioDiagSigma(Sigma, b))
+  }
+
+  is_convex <- !(has_mu || has_theta || has_var || has_fancy_box)
+  if (has_formulation && is_convex)
+      warning("The problem is convex, but a nonconvex formulation has been",
+              " chosen. Consider leaving formulation = NULL in order to get",
+              " the guaranteed global solution.")
+
+  is_convex <- is_convex && !has_formulation
+  if (is_convex) {
     switch(match.arg(method_init),
            "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
            "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
