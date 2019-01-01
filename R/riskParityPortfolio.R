@@ -652,15 +652,15 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
+  is_convex <- !(has_mu || has_theta || has_var || has_fancy_box)
 
   if (has_formulation && formulation == "diag") {
-    if (is_modern)
-      warning("The formulation chosen is 'diag' - additional constraints are",
-              " being ignored.")
+    if (!is_convex)
+      warning("The formulation chosen is 'diag' - additional constraints",
+              " or terms are being ignored.")
     return(riskParityPortfolioDiagSigma(Sigma, b))
   }
 
-  is_convex <- !(has_mu || has_theta || has_var || has_fancy_box)
   if (has_formulation && is_convex)
       warning("The problem is a vanilla risk-parity portofolio, but a nonconvex",
               " formulation has been chosen. Consider not specifying the formulation",
@@ -668,30 +668,33 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
 
   is_convex <- is_convex && !has_formulation
   if (is_convex) {
+    # in canse the problem falls in the vanilla category, we are done.
     switch(match.arg(method_init),
            "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
            "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
            "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
            stop("method_init ", method_init, " is not supported."))
   } else {
+    # if the problem is a modern one, and the user hasn't provide a initial
+    # point, we compute a pretty good one for them.
     if (is.null(w0)) {
       switch(match.arg(method_init),
              "newton" = w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
              "cyclical-spinu" = w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
-             "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
+             "cyclical-roncalli" = w0 <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)$w,
              stop("method_init ", method_init, " is not supported."))
-    }
 
-    w_gmvp <- 1 / diag(Sigma)
-    w_gmvp <- w_gmvp / sum(w_gmvp)
-    if(has_mu)
-      w_rc <- as.numeric(max(mu) == mu)
-    else
-      w_rc <- 0
-    theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
-    theta_er <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu)
-    theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
-    w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
+      w_gmvp <- 1 / diag(Sigma)
+      w_gmvp <- w_gmvp / sum(w_gmvp)
+      if(has_mu)
+        w_rc <- as.numeric(max(mu) == mu)
+      else
+        w_rc <- 0
+      theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
+      theta_er <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu)
+      theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
+      w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
+    }
 
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
