@@ -668,7 +668,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     else
       w_rc <- 0
     theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
-    theta_er <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu*sum(has_mu))
+    theta_er <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu)
     theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
     w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
 
