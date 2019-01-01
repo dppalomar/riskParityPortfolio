@@ -244,7 +244,7 @@ barplot(rbind(res_sca1$risk_contribution/b, res_sca2$risk_contribution/b, res_sc
 ```
 
 # Conclusion
-The risk-parity portfolio problem is highly nonconvex so any numerical method can in principle give a suboptimal solution. From the experiments above, it seems that both methods (based on a general nonlinear solver and on the SCA [@FengPal2015riskparity]) give the correct solution if initialized with a proper initial point, but otherwise may give a suboptimal solution. Also, it seems that the formulation “rc-over-sd vs b-times-sd” gives more stable solutions than the formulation “rc-over-var vs b”. In any case, all these conclusions are only based on the numerical experiments above and more exhaustive tests should be performed.
+The vanilla risk-parity portfolio is a convex problem and it can be solved optimally. However, if instead one uses a direct nonconvex formulation (which is required when having different constrains or additional objectives apart from the risk-parity one), there are local minima.
 
 
 # References {-}
