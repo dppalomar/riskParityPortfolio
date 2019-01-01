@@ -87,8 +87,7 @@ With the goal of designing risk budget portfolios, Spinu proposed in [@Spinu2013
 following convex optimization problem:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} & \frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w} - \sum_{i=1}^{N}b_i\log(w_i)\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1\\
- & \mathbf{w}\ge\mathbf{0}.
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
 \end{array}$$
 
 It turns out, as shown in [@Spinu2013], that the unique solution for the optimization problem
@@ -235,7 +234,7 @@ plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "blue",
 # Comparison with other packages
 Others R packages with the goal of designing risk parity portfolios do exist,
 such as `FinCovRegularization`, `cccp`, and `RiskPortfolios`. Let's check how
-do they perform against `riskParityPortfolio`. 
+do they perform against `riskParityPortfolio`.
 (Note that other packages like `FRAPO` use `cccp` under the hood.)
 
 ```{r, message=FALSE}
@@ -535,6 +534,89 @@ axis(side = 1, at = size_seq, labels = sizes)
 legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 ```
+
+# Appendix IV: Numerical algorithms
+In this appendix we describe the implementation of the cyclical
+(coordinate) descent algorithm inspired by the [@Billion2013] for the risk parity
+formulations presented in [@Billion2013] and [@Spinu2013].
+
+## Roncalli's Formulation
+We recollect that the risk formulation proposed by [@Billion2013] is given as
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & \sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}} - \sum_{i=1}^{N}b_i\log(w_i)\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
+\end{array}$$
+
+Note that the first order condition with respect to every
+$w_i, i = 1, 2, ..., n,$ is given as
+$$\begin{align}
+\dfrac{(\boldsymbol{\Sigma}\mathbf{w})_{i}}{\sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}} - \dfrac{b_i}{w_i} = 0,\nonumber\\
+w_i (\boldsymbol{\Sigma}\mathbf{w})_{i} - b_i\sigma(\mathbf{w}) = 0,\nonumber\\
+w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
+w_i\boldsymbol{\Sigma}_{ii}) - b_i\sigma(\mathbf{w}) = 0.
+\end{align}$$
+
+Since $w_i > 0$ and $\boldsymbol{\Sigma}_{ii} > 0$, then the LHS above is a convex second-order polynomial
+with respect to $w_i$. Also note that the discrimant, $\Delta$, is given by
+$$\begin{equation}
+\Delta = ((\boldsymbol{\Sigma}\mathbf{w})_{i} - w_i\boldsymbol{\Sigma}_{ii})^2
++ 4\boldsymbol{\Sigma}_{ii}b_{i}\sigma(\mathbf{w}).
+\end{equation}$$
+which satisfies $\Delta > 0$, therefore, the convex second-order polynomial always has two solutions.
+
+Additionally, since $-\boldsymbol{\Sigma}_{ii}b_i\sigma(\mathbf{w}) < 0$ -- i.e., the sign of the product of
+its roots is always negative -- then the two roots always have oppostive sings. Therefore, we conclude
+that
+$$\begin{equation}
+w^{\star}_i = \dfrac{w_i\boldsymbol{\Sigma}_{ii} - (\boldsymbol{\Sigma}\mathbf{w})_i +
+              \sqrt{(w_i\boldsymbol{\Sigma}_{ii} - (\boldsymbol{\Sigma}\mathbf{w})_i)^2 +
+            4\boldsymbol{\Sigma}_{ii}b_i\sigma(\mathbf{w})}}{2\boldsymbol{\Sigma}_{ii}}
+\end{equation}$$
+is the desired solution.
+
+The coordinate descent algorithm is accomplished by iterating the above
+equation until some convergence criterion is attained. Notice that we can save some computational
+effort if we exploit the following fact: the only terms that need to be updated are $\sigma(\mathbf{w})$
+and $\boldsymbol{\Sigma}\mathbf{w}$.
+
+Define $\mathbf{w}^{\star (i)} \triangleq (w^{\star}_{1}, w^{\star}_{2}, ..., w^{\star}_{i}, w_{i+1}, ..., w_n)^\intercal$
+as the vector of updated values up to the $i$-th coordinate. Note that
+$$\begin{equation}
+  \mathbf{w}^{\star (i)} = (w^{\star}_{1}, w^{\star}_{2}, ..., w_{i}, w_{i+1}, ..., w_n)^\intercal +
+                           (0, 0, ..., w^{\star}_{i}, 0, ..., 0)^\intercal +
+                           (0, 0, ..., -w_i, 0, ..., 0)^\intercal
+\end{equation}$$
+
+Hence, the updating formula for $\boldsymbol{\Sigma}\mathbf{w}$ is
+$$\begin{equation}
+  \boldsymbol{\Sigma}\mathbf{w}^{\star (i)} = \boldsymbol{\Sigma}\mathbf{w}^{\star (i - 1)} +
+                                              \boldsymbol{\Sigma}_{,i}\left(w^{\star}_{i} - w_i\right),
+\end{equation}$$
+where $\boldsymbol{\Sigma}_{,i}$ is the $i$-th column of the sample covariance matrix.
+
+Similarly, the updating formula for $\sigma(\mathbf{w})$ goes as
+$$\begin{equation}
+  \sigma^2\left(\mathbf{w}^{\star (i)}\right) = \sigma^{2}\left(\mathbf{w}^{\star (i-1)}\right) + (w^{\star}_i - w_i)^{2}\boldsymbol{\Sigma}_{ii}
+  + 2(w^{\star}_i - w_i)\boldsymbol{\Sigma}_{i,}\mathbf{w}^{\star (i-1)},
+\end{equation}$$
+where $\boldsymbol{\Sigma}_{i,}$ is the $i$-th row of the sample covariance matrix.
+
+## Spinu's Formulation
+The risk formulation proposed by [@Spinu2013] is given as
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} & \frac{1}{2}\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w} - \sum_{i=1}^{N}b_i\log(w_i)\\
+\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
+\end{array}$$
+
+The first order condition is given as
+$$\begin{equation}
+w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
+w_i\boldsymbol{\Sigma}_{ii}) - b_i = 0.
+\end{equation}$$
+
+By analogy, it turns out that derivation of the cyclical algorithm is very
+similar to the case presented previously, in which only the term
+$\boldsymbol(\Sigma\mathbf{w})$ needs to be updated.
 
 # References {-}
 \setlength{\parindent}{-0.2in}
