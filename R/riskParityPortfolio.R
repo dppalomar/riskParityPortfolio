@@ -654,17 +654,17 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
 
   if (has_formulation && formulation == "diag") {
-    if(is_modern)
-      warning("the formulation chosen is 'diag' - additional constraints are",
+    if (is_modern)
+      warning("The formulation chosen is 'diag' - additional constraints are",
               " being ignored.")
     return(riskParityPortfolioDiagSigma(Sigma, b))
   }
 
   is_convex <- !(has_mu || has_theta || has_var || has_fancy_box)
   if (has_formulation && is_convex)
-      warning("The problem is convex, but a nonconvex formulation has been",
-              " chosen. Consider leaving formulation = NULL in order to get",
-              " the guaranteed global solution.")
+      warning("The problem is a vanilla risk-parity portofolio, but a nonconvex",
+              " formulation has been chosen. Consider not specifying the formulation",
+              " argument in order to get the guaranteed global solution.")
 
   is_convex <- is_convex && !has_formulation
   if (is_convex) {
@@ -672,14 +672,14 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
            "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
            "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
-           stop("method_init ", method_init, " is not included."))
+           stop("method_init ", method_init, " is not supported."))
   } else {
     if (is.null(w0)) {
       switch(match.arg(method_init),
              "newton" = w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
              "cyclical-spinu" = w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
              "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
-             stop("method_init ", method_init, " is not included."))
+             stop("method_init ", method_init, " is not supported."))
     }
 
     w_gmvp <- 1 / diag(Sigma)
