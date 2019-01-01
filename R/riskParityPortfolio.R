@@ -652,6 +652,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
+  has_initial_point <- !is.null(w0)
   is_convex <- !(has_mu || has_theta || has_var || has_fancy_box)
 
   if (has_formulation && formulation == "diag") {
@@ -669,6 +670,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   is_convex <- is_convex && !has_formulation
   if (is_convex) {
     # in canse the problem falls in the vanilla category, we are done.
+    if (has_initial_point)
+      warning("The problem is a vanilla risk-parity portfolio, but a initial",
+              " point has been provided. The initial point is being ignored.")
     switch(match.arg(method_init),
            "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
            "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
@@ -677,7 +681,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   } else {
     # if the problem is a modern one, and the user hasn't provide a initial
     # point, we compute a pretty good one for them.
-    if (is.null(w0)) {
+    if (!has_initial_point) {
       switch(match.arg(method_init),
              "newton" = w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
              "cyclical-spinu" = w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
