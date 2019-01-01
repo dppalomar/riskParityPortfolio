@@ -1,15 +1,3 @@
-# @title Risk parity portfolio design for uncorrelated assets
-#
-# @description Risk parity portfolio optimization for the case of diagonal Sigma
-# that satisfies the constraints sum(w) = 1 and w >= 0.
-#
-# @param Sigma covariance or correlation matrix
-# @param b budget vector
-# @return a list containing the following elements:
-# \item{\code{w}}{optimal portfolio vector}
-# \item{\code{risk_contribution}}{the risk contribution of every asset}
-#
-# @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
   w <- sqrt(b) / sqrt(diag(Sigma))
   w <- w / sum(w)
@@ -17,51 +5,6 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 }
 
 
-# @title Fast risk parity portfolio design using successive convex
-#        approximation and a quadratic programming solver
-#
-# @description Risk parity portfolio optimization using successive convex
-#              approximation (SCA) to cast the optimization problem into a
-#              series of QP problems fastly solvable using quadprog::solve.QP.
-#
-# @param Sigma covariance or correlation matrix
-# @param b budget vector, aka, risk budgeting targets
-# @param mu vector of expected returns
-# @param lmd_mu scalar that controls the importance of the expected return term
-# @param lmd_var scalar that controls the importance of the variance term
-# @param formulation string indicating the formulation to be used for the risk
-#        parity optimization problem. It must be one of: "rc-double-index",
-#        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
-#        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#        "rc-over-b vs theta"
-# @param w0 initial value for the portfolio wieghts. If NULL, then the optimum
-#        portfolio weights for the case when Sigma is diagonal is used.
-# @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
-#        vector of portfolio weights will be used. Note that this parameter is only
-#        used if the formulation contains theta
-# @param gamma learning rate
-# @param zeta factor used to decrease the learning rate at each iteration
-# @param tau regularization factor. If NULL, a meaningful value will be used
-# @param maxiter maximum number of iterations for the SCA loop
-# @param ftol convergence tolerance on the value of the objective function
-# @param wtol convergence tolerance on the values of the parameters
-# @return a list containing the following elements:
-# \item{\code{w}}{optimal portfolio vector}
-# \item{\code{risk_contribution}}{the risk contribution of every asset}
-# \item{\code{theta}}{the optimal value for theta (in case that it is part of
-#                     the chosen formulation}
-# \item{\code{obj_fun}}{the sequence of values from the objective function at
-#                       each iteration}
-# \item{\code{risk_parity}}{the risk parity of the portfolio}
-# \item{\code{mean_return}}{the expected return of the portoflio if the mean
-#                           return term is included in the optimization}
-# \item{\code{variance}}{the variance of the portfolio if the variance term is
-#                        included in the optimization}
-# \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-# \item{\code{convergence}}{flag to indicate whether or not the optimization
-# converged. The value `1` means it has converged, and `0` otherwise.}
-#
-# @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
                                    w_lb = 0, w_ub = 1,
@@ -249,54 +192,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 }
 
 
-# @title Risk parity portfolio design using general constrained solvers
-#
-# @description Risk parity portfolio optimization using general purpose
-#              constrained solvers from the alabama and nloptr packages
-#
-# @param Sigma covariance or correlation matrix
-# @param b budget vector, aka, risk budgeting targets
-# @param mu vector of expected returns
-# @param lmd_mu scalar that controls the importance of the expected return term
-# @param lmd_var scalar that controls the importance of the variance term
-# @param budget boolean indicating whether to consider sum(w) = 1 as a
-#        constraint
-# @param shortselling boolean indicating whether to allow short-selling, i.e.,
-#        w < 0
-# @param formulation string indicating the formulation to be used for the risk
-#        parity optimization problem. It must be one of: "rc-double-index",
-#        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
-#        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#        "rc-over-b vs theta"
-# @param method which solver to use. It must be one of: "slsqp" or "alabama"
-# @param use_gradient if TRUE, gradients of the objective function wrt to the
-#        parameters will be used. This is strongly recommended to achive faster
-#        results
-# @param w0 initial value for the portfolio wieghts. Default is the optimum
-#        portfolio weights for the case when Sigma is diagonal
-# @param theta0 initial value for theta. If NULL, the optimum solution for a fixed
-#        vector of portfolio weights will be used
-# @param gamma learning rate
-# @param zeta factor used to decrease the learning rate at each iteration
-# @param tau regularization factor. If NULL, a meaningful value will be used
-# @param maxiter maximum number of iterations for the outer loop of the solver
-# @param ftol convergence tolerance on the value of the objective function
-# @param wtol convergence tolerance on the values of the parameters
-# @return a list containing the following elements:
-# \item{\code{w}}{optimal portfolio vector}
-# \item{\code{risk_contribution}}{the risk contribution of every asset}
-# \item{\code{theta}}{the optimal value for theta (in case that it is part of
-#                     the chosen formulation}
-# \item{\code{obj_fun}}{the sequence of values from the objective function at
-#                       each iteration}
-# \item{\code{risk_parity}}{the risk parity of the portfolio}
-# \item{\code{mean_return}}{the expected return of the portoflio if the mean
-#                           return term is included in the optimization}
-# \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-# \item{\code{convergence}}{flag to indicate whether or not the optimization
-# converged. The value `1` means it has converged, and `0` otherwise.}
-#
-# @author Daniel Palomar and Ze Vinicius
 riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
@@ -474,18 +369,6 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
 }
 
 
-# @title Fast vanilla risk parity portfolio design using the Newton method
-#
-# @description Risk parity portfolio optimization using the Newton method
-#              proposed by Spinu (2013)
-#
-# @param Sigma covariance or correlation matrix
-# @param b budget vector
-# @param maxiter maximum number of iterations of both damped and quadratic phases
-# @param ftol tolerance of the stopping criteria
-# @return a list containing the following elements:
-# \item{\code{w}}{optimal portfolio vector}
-# \item{\code{risk_contribution}}{the risk contribution of every asset}
 riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                       maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_nn(Sigma, b, ftol, maxiter)
@@ -493,19 +376,6 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 }
 
 
-# @title Fast vanilla risk parity algorithm for high dimensional portfolio
-#        design using the cyclical coordinate descent method.
-#
-# @description Risk parity portfolio optimization using the cyclical method
-#              proposed by Griveau-Billion (2013)
-#
-# @param Sigma covariance or correlation matrix
-# @param b budget vector
-# @param maxiter maximum number of iterations of both damped and quadratic phases
-# @param ftol tolerance of the stopping criteria
-# @return a list containing the following elements:
-# \item{\code{w}}{optimal portfolio vector}
-# \item{\code{risk_contribution}}{the risk contribution of every asset}
 riskParityPortfolioCyclicalRoncalli <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                         maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_roncalli(Sigma, b, ftol, maxiter)
@@ -513,7 +383,6 @@ riskParityPortfolioCyclicalRoncalli <- function(Sigma, b = rep(1/nrow(Sigma), nr
 }
 
 
-# same as above but for Spinu's risk parity formulation
 riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                              maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_spinu(Sigma, b, ftol, maxiter)
