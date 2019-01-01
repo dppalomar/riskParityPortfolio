@@ -638,45 +638,27 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 use_gradient = TRUE) {
   if (is.null(b))
     b <- rep(1/nrow(Sigma), nrow(Sigma))
-  formulations <- c("rc-double-index", "rc-over-b-double-index",
-                    "rc-over-var vs b", "rc-over-var",
-                    "rc-over-sd vs b-times-sd", "rc vs b-times-var",
-                    "rc vs theta", "rc-over-b vs theta")
   has_formulation <- !is.null(formulation)
   if (has_formulation && formulation == "diag")
     return(riskParityPortfolioDiagSigma(Sigma, b))
-  
+
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
   is_modern <- has_mu || has_theta || has_formulation || has_var
   if (!is_modern) {
     switch(match.arg(method_init),
-           "newton" = {
-             portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)
-           },
-           "cyclical-spinu" = {
-             portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)
-           },
-           "cyclical-roncalli" = {
-             portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
-           },
-           stop("method_init ", method_init, " is not included.")
-    )
+           "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
+           "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
+           "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
+           stop("method_init ", method_init, " is not included."))
   } else {
     if (is.null(w0)) {
       switch(match.arg(method_init),
-             "newton" = {
-               w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w
-             },
-             "cyclical-spinu" = {
-               w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w
-             },
-             "cyclical-roncalli" = {
-               portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)
-             },
-             stop("method_init ", method_init, " is not included.")
-      )
+             "newton" = w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
+             "cyclical-spinu" = w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
+             "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
+             stop("method_init ", method_init, " is not included."))
     }
 
     w_gmvp <- 1 / diag(Sigma)
@@ -691,23 +673,17 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
 
     switch(match.arg(method),
-           "sca" = {
-              portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
-                                                  lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
-                                                  formulation = formulation, w0 = w0,
-                                                  theta0 = theta0, gamma = gamma, zeta = zeta,
-                                                  tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol)
-           },
+           "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
+                                                       lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
+                                                       formulation = formulation, w0 = w0,
+                                                       theta0 = theta0, gamma = gamma, zeta = zeta,
+                                                       tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol),
            "slsqp" =,
-           "alabama" = {
-              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
-                                                        formulation = formulation, method = method,
-                                                        use_gradient = use_gradient, w0 = w0, theta0 = theta0,
-                                                        maxiter = maxiter, ftol = ftol, wtol = wtol)
-
-           },
-           stop("method ", method, " is not included.")
-    )
+           "alabama" = portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
+                                                                 formulation = formulation, method = method,
+                                                                 use_gradient = use_gradient, w0 = w0, theta0 = theta0,
+                                                                 maxiter = maxiter, ftol = ftol, wtol = wtol),
+           stop("method ", method, " is not included."))
   }
   return(portfolio)
 }
