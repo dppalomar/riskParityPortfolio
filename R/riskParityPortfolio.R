@@ -19,16 +19,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (length(w_ub) == 1)
-    w_ub <- rep(w_ub, N)
-  if (length(w_lb) == 1)
-    w_lb <- rep(w_lb, N)
 
-  if (is.null(w0))
+  if (is.null(w0)) {
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-
-  w0 <- pmin(w_ub, w0)
-  w0 <- pmax(w_lb, w0)
+    w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
+  }
 
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
@@ -401,8 +396,17 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 # s.t.     sum(w) = 1
 #          w_lb <= w <= w_ub
 projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
-  # TODO{Vinicius}
-  #
+#  N <- length(w0)
+#  if (length(w_ub) == 1)
+#    w_ub <- rep(w_ub, N)
+#  if (length(w_lb) == 1)
+#    w_lb <- rep(w_lb, N)
+#  Dmat <- diag(N)
+#  dvec <- w0
+#  Amat <- cbind(rep(1, N), diag(N), -diag(N))
+#  bvec <- c(1, w_lb, -w_ub)
+#  meq <- 1
+#  return(quadprog::solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = meq)$solution)
 }
 
 
@@ -542,8 +546,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
 
   if (has_formulation && formulation == "diag") {
     if (!is_vanilla_formulation)
-      warning("The formulation chosen is 'diag' - additional box constraints",
-              " or terms in the objective (expected return or variance) are being ignored.")
+      stop("Additional constraints (box-constraints) or terms (expected return",
+           " or variance) are not supported by the 'diag' formulation.")
     return(riskParityPortfolioDiagSigma(Sigma, b))
   }
 
@@ -552,11 +556,11 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
               " formulation has been chosen. Consider not specifying the formulation",
               " argument in order to get the guaranteed global solution.")
   is_vanilla_formulation <- is_vanilla_formulation && !has_formulation
-  
+
   if (is_vanilla_formulation) {
     # in case the problem falls in the vanilla category, we are done.
     if (has_initial_point)
-      warning("The problem is a vanilla risk-parity portfolio, but a initial",
+      warning("The problem is a vanilla risk-parity portfolio, but an initial",
               " point has been provided. The initial point is being ignored.")
     switch(match.arg(method_init),
            "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
@@ -575,8 +579,10 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       # create fancy initial point for the case of additional objectives
       w_gmvp <- 1 / diag(Sigma)
       w_gmvp <- w_gmvp / sum(w_gmvp)
-      if(has_mu)
-        w_mu <- as.numeric(max(mu) == mu) / sum(as.numeric(max(mu) == mu))
+      if(has_mu) {
+        w_mu <- as.numeric(max(mu) == mu)
+        w_mu <- w_mu / sum(w_mu)
+      }
       else
         w_mu <- 0
       theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
@@ -585,8 +591,10 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       w0 <- theta_rc*w0 + theta_mu*w_mu + theta_var*w_gmvp
     }
     # make w0 feasible
-    if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 < w_lb))
+    if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
+      warning("Projecting initial point onto the feasible set.")
       w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
+    }
 
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
@@ -595,10 +603,16 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                        theta0 = theta0, gamma = gamma, zeta = zeta,
                                                        tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol),
            "slsqp" =,
-           "alabama" = portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
-                                                                 formulation = formulation, method = method,
-                                                                 use_gradient = use_gradient, w0 = w0, theta0 = theta0,
-                                                                 maxiter = maxiter, ftol = ftol, wtol = wtol),
+           "alabama" = {
+             if (has_fancy_box)
+               stop("Box constraints are not supported for method ", method)
+             if (has_var)
+               stop("Variance term is not supported for method ", method)
+             portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
+                                                       formulation = formulation, method = method,
+                                                       use_gradient = use_gradient, w0 = w0, theta0 = theta0,
+                                                       maxiter = maxiter, ftol = ftol, wtol = wtol)
+           },
            stop("method ", method, " is not included."))
   }
   return(portfolio)
