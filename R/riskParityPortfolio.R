@@ -396,6 +396,17 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 # s.t.     sum(w) = 1
 #          w_lb <= w <= w_ub
 projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
+  if (sum(w_lb) > 1 || sum(w_ub) < 1)
+    stop("Problem infeasible: relax the bounds!")
+  
+  obj_fun <- function(mu, w0) {
+    sum(pmax(pmin(w0 - mu, w_ub), w_lb)) - 1
+  }
+  mu_ub <- max(w0 - w_lb)
+  mu_lb <- min(w0 - w_ub)
+  mu <- uniroot(obj_fun, interval = c(mu_lb, mu_ub), w0, tol = 1e-8)$root
+  w <- pmax(pmin(w0 - mu, w_ub), w_lb)
+  
 #  N <- length(w0)
 #  if (length(w_ub) == 1)
 #    w_ub <- rep(w_ub, N)
@@ -535,7 +546,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 use_gradient = TRUE) {
   if (is.null(b))
     b <- rep(1/nrow(Sigma), nrow(Sigma))
-
+  
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
@@ -568,8 +579,13 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
            stop("method_init ", method_init, " is not supported."))
   } else {
-    # if the problem is a modern one, and the user hasn't provide a initial
-    # point, we compute a pretty good one for them.
+    # check problem feasibility
+    if (sum(w_lb) > 1)
+      stop("Problem infeasible: relax the lower bounds")
+    if (sum(w_ub) < 1)
+      stop("Problem infeasible: relax the upper bounds")
+    
+    # create initial point if needed
     if (!has_initial_point) {
       switch(match.arg(method_init),
              "newton" = w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
@@ -592,7 +608,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     }
     # make w0 feasible
     if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
-      warning("Projecting initial point onto the feasible set.")
+      if (has_initial_point)
+        warning("Initial point is infeasible. Projecting it onto the feasible set.")
       w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
     }
 
