@@ -20,6 +20,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
 
+  if (length(w_ub) == 1)
+    w_ub <- rep(w_ub, N)
+  if (length(w_lb) == 1)
+    w_lb <- rep(w_lb, N)
+
   if (is.null(w0)) {
     w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
     w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
@@ -398,7 +403,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
   if (sum(w_lb) > 1 || sum(w_ub) < 1)
     stop("Problem infeasible: relax the bounds!")
-  
+
   obj_fun <- function(mu, w0) {
     sum(pmax(pmin(w0 - mu, w_ub), w_lb)) - 1
   }
@@ -406,7 +411,8 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
   mu_lb <- min(w0 - w_ub)
   mu <- uniroot(obj_fun, interval = c(mu_lb, mu_ub), w0, tol = 1e-8)$root
   w <- pmax(pmin(w0 - mu, w_ub), w_lb)
-  
+  return(w)
+
 #  N <- length(w0)
 #  if (length(w_ub) == 1)
 #    w_ub <- rep(w_ub, N)

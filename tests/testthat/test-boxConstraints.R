@@ -7,8 +7,8 @@ set.seed(123)
 N <- 10
 V <- matrix(rnorm(N^2), N, N)
 Sigma <- cov(V)
-w_lb <- .01
-w_ub <- .2
+w_lb <- -1
+w_ub <- 2
 
 test_that("box constraints behave correctly", {
   formulations_list <- c("rc-double-index", "rc-over-b-double-index",
