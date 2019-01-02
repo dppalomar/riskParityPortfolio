@@ -522,23 +522,23 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
   has_initial_point <- !is.null(w0)
-  is_convex <- !(has_mu || has_theta || has_var || has_fancy_box)
+  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box)
 
   if (has_formulation && formulation == "diag") {
-    if (!is_convex)
-      warning("The formulation chosen is 'diag' - additional constraints",
-              " or terms are being ignored.")
+    if (!is_vanilla_formulation)
+      warning("The formulation chosen is 'diag' - additional box constraints",
+              " or terms in the objective (expected return or variance) are being ignored.")
     return(riskParityPortfolioDiagSigma(Sigma, b))
   }
 
-  if (has_formulation && is_convex)
+  if (has_formulation && is_vanilla_formulation)
       warning("The problem is a vanilla risk-parity portofolio, but a nonconvex",
               " formulation has been chosen. Consider not specifying the formulation",
               " argument in order to get the guaranteed global solution.")
-
-  is_convex <- is_convex && !has_formulation
-  if (is_convex) {
-    # in canse the problem falls in the vanilla category, we are done.
+  is_vanilla_formulation <- is_vanilla_formulation && !has_formulation
+  
+  if (is_vanilla_formulation) {
+    # in case the problem falls in the vanilla category, we are done.
     if (has_initial_point)
       warning("The problem is a vanilla risk-parity portfolio, but a initial",
               " point has been provided. The initial point is being ignored.")
@@ -556,18 +556,22 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
              "cyclical-spinu" = w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
              "cyclical-roncalli" = w0 <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)$w,
              stop("method_init ", method_init, " is not supported."))
-
+      # create fancy initial point for the case of additional objectives
       w_gmvp <- 1 / diag(Sigma)
       w_gmvp <- w_gmvp / sum(w_gmvp)
       if(has_mu)
-        w_rc <- as.numeric(max(mu) == mu)
+        w_mu <- as.numeric(max(mu) == mu) / sum(as.numeric(max(mu) == mu))
       else
-        w_rc <- 0
+        w_mu <- 0
       theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
-      theta_er <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu)
+      theta_mu <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu*sum(has_mu))
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
-      w0 <- w0 * theta_rc + w_rc * theta_rc + w_gmvp * theta_var
+      w0 <- theta_rc*w0 + theta_mu*w_mu + theta_var*w_gmvp
     }
+    # make w0 feasible (box constraint!)
+    #
+    #
+    #
 
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
