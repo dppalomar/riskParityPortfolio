@@ -389,6 +389,14 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
   return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
 }
 
+# minimize ||w - w0||^2
+# s.t.     sum(w) = 1
+#          w_lb <= w <= w_ub
+projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
+  # TODO{Vinicius}
+  #
+}
+
 
 #' @title Design of Risk Parity Portfolios
 #'
@@ -568,10 +576,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
       w0 <- theta_rc*w0 + theta_mu*w_mu + theta_var*w_gmvp
     }
-    # make w0 feasible (box constraint!)
-    #
-    #
-    #
+    # make w0 feasible
+    if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 < w_lb))
+      w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
 
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
