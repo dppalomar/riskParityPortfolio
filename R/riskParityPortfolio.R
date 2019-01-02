@@ -33,8 +33,13 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
-    if (is.null(theta0))
-      theta0 <- mean(w0 * (Sigma %*% w0))
+    if (is.null(theta0)) {
+      r0 <- w0 * (Sigma %*% w0)
+      if (formulation == "rc vs theta")
+        theta0 <- mean(r0)
+      else if (formulation == "rc-over-b vs theta")
+        theta0 <- mean(r0 / b)
+    }
     w0 <- as.vector(c(w0, theta0))
   }
 
@@ -216,7 +221,10 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
   if (has_theta) {
     if (is.null(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
-      theta0 <- mean(r0 / b)
+      if (formulation == "rc vs theta")
+        theta0 <- mean(r0)
+      else if (formulation == "rc-over-b vs theta")
+        theta0 <- mean(r0 / b)
     }
     w0 <- as.vector(c(w0, theta0))
   }
