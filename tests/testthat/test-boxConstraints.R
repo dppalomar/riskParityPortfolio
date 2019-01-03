@@ -20,7 +20,9 @@ test_that("box constraints behave correctly", {
 
 test_that("box constraints feasibility checks work", {
   expect_error(riskParityPortfolio(Sigma, w_lb = 0.5))
+  expect_error(riskParityPortfolio(Sigma, w_lb = 2))
   expect_error(riskParityPortfolio(Sigma, w_ub = 0.01))
+  expect_error(riskParityPortfolio(Sigma, w_ub = rep(0.01, N)))
   expect_silent(riskParityPortfolio(Sigma, w_lb = 0.05, w_ub = 0.3))
 })
 
