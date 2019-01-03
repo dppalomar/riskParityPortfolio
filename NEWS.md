@@ -1,6 +1,9 @@
 ## Changes in riskParityPortfolio version 0.1.1 (2019-XX-XX)
 
-* Fixed issue with vignette names.
+* Revised vignette (fix name issue and include new section on algorithm description).
+* Revise the error control of riskParityPortfolio().
+* Check feasibility in riskParityPortfolio().
+* Improved tests.
 
 
 ## Changes in riskParityPortfolio version 0.1.0 (2018-12-15)
