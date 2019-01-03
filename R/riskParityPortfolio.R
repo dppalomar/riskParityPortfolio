@@ -346,14 +346,16 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                       maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_nn(Sigma, b, ftol, maxiter)
-  return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
+  return(list(w = w, risk_contribution = c(w * (Sigma %*% w)),
+              obj_fun = obj_function_spinu(Sigma, w, b)))
 }
 
 
 riskParityPortfolioCyclicalRoncalli <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                         maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_roncalli(Sigma, b, ftol, maxiter)
-  return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
+  return(list(w = w, risk_contribution = c(w * (Sigma %*% w)),
+              obj_fun = obj_function_roncalli(Sigma, w, b)))
 }
 
 

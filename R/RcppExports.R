@@ -17,3 +17,11 @@ risk_parity_portfolio_nn <- function(Sigma, b, tol, maxiter) {
     .Call('_riskParityPortfolio_risk_parity_portfolio_nn', PACKAGE = 'riskParityPortfolio', Sigma, b, tol, maxiter)
 }
 
+obj_function_spinu <- function(Sigma, x, b) {
+    .Call('_riskParityPortfolio_obj_function_spinu', PACKAGE = 'riskParityPortfolio', Sigma, x, b)
+}
+
+obj_function_roncalli <- function(Sigma, x, b) {
+    .Call('_riskParityPortfolio_obj_function_roncalli', PACKAGE = 'riskParityPortfolio', Sigma, x, b)
+}
+
