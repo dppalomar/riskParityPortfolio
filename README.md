@@ -26,12 +26,6 @@ formulations, which are usually nonconvex, we implement the successive
 convex approximation method proposed by [Feng & Palomar
 (2015)](https://doi.org/10.1109/TSP.2015.2452219).
 
-The latest stable version of `riskParityPortfolio` is available at
-<https://CRAN.R-project.org/package=riskParityPortfolio>.
-
-The latest development version of `riskParityPortfolio` is available at
-<https://github.com/dppalomar/riskParityPortfolio>.
-
 Installation
 ------------
 
