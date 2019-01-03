@@ -35,8 +35,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)),
     w0 <- as.vector(c(w0, theta0))
   }
 
-  if (is.null(tau))
-    tau <- .05 * sum(diag(Sigma)) / (2*N)
+  if (is.null(tau)) tau <- .05 * sum(diag(Sigma)) / (2*N)
 
   if (has_theta) {
     Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
@@ -96,18 +95,14 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)),
   wk <- w0
   fun_k <- R(wk, Sigma, b)
   if (has_mu) {
-    if (has_theta)
-      fun_k <- fun_k - lmd_mu * t(mu) %*% wk[1:N]
-    else
-      fun_k <- fun_k - lmd_mu * t(mu) %*% wk
+    if (has_theta) fun_k <- fun_k - lmd_mu * t(mu) %*% wk[1:N]
+    else fun_k <- fun_k - lmd_mu * t(mu) %*% wk
   }
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
-  if (has_theta)
-    tauI <- diag(rep(tau, N + 1))
-  else
-    tauI <- diag(rep(tau, N))
+  if (has_theta) tauI <- diag(rep(tau, N + 1))
+  else tauI <- diag(rep(tau, N))
   has_var <- lmd_var > 0
 
   start_time <- proc.time()[3]
@@ -124,16 +119,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)),
     g_wk <- g(wk, Sigma, b, r = rk)
     Qk <- 2 * crossprod(Ak) + tauI
     if (has_var)
-      if (has_theta)
-        Qk <- Qk + lmd_var * cbind(rbind(Sigma, rep(0, N)), rep(0, N+1))
-      else
-        Qk <- Qk + lmd_var * Sigma
+      if (has_theta) Qk <- Qk + lmd_var * cbind(rbind(Sigma, rep(0, N)), rep(0, N+1))
+      else Qk <- Qk + lmd_var * Sigma
     qk <- 2 * t(Ak) %*% g_wk - Qk %*% wk
     if (has_mu)
-      if (has_theta)
-        qk <- qk - lmd_mu * c(mu, 0)
-      else
-        qk <- qk - lmd_mu * mu
+      if (has_theta) qk <- qk - lmd_mu * c(mu, 0)
+      else qk <- qk - lmd_mu * mu
     # build and solve problem (39) as in Feng & Palomar TSP2015
     w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
                                 meq = meq)$solution
@@ -142,22 +133,17 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)),
     time_seq <- c(time_seq, proc.time()[3] - start_time)
     fun_next <- R(w_next, Sigma, b)
     if (has_mu)
-      if (has_theta)
-        fun_next <- fun_next - lmd_mu * t(mu) %*% w_next[1:N]
-      else
-        fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
+      if (has_theta) fun_next <- fun_next - lmd_mu * t(mu) %*% w_next[1:N]
+      else fun_next <- fun_next - lmd_mu * t(mu) %*% w_next
     if (has_var)
-      if (has_theta)
-        fun_next <- fun_next + lmd_var * (t(w_next[1:N]) %*% Sigma %*% w_next[1:N])
-      else
-        fun_next <- fun_next + lmd_var * (t(w_next) %*% Sigma %*% w_next)
+      if (has_theta) fun_next <- fun_next + lmd_var * (t(w_next[1:N]) %*% Sigma %*% w_next[1:N])
+      else fun_next <- fun_next + lmd_var * (t(w_next) %*% Sigma %*% w_next)
     fun_seq <- c(fun_seq, fun_next)
     # check convergence
     # check convergence on parameters and objective function
     werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
     ferr <- abs(fun_next - fun_k) / max(1, abs(fun_k))
-    if (k > 1 && (werr < wtol && ferr < ftol))
-      break
+    if (k > 1 && (werr < wtol && ferr < ftol)) break
     # update variables
     wk <- w_next
     fun_k <- fun_next
@@ -285,8 +271,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)
          },
          stop("formulation ", formulation, " is not included.")
   )
-  if (!use_gradient)
-    R_grad <- NULL
+  if (!use_gradient) R_grad <- NULL
   has_mu <- !is.null(mu)
   if (has_mu) {
     wrap_R <- function(R, lmd_mu, mu, has_theta, N) {
@@ -392,8 +377,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
 # s.t.     sum(w) = 1
 #          w_lb <= w <= w_ub
 projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
-  if (sum(w_lb) > 1 || sum(w_ub) < 1)
-    stop("Problem infeasible: relax the bounds!")
+  if (sum(w_lb) > 1 || sum(w_ub) < 1) stop("Problem infeasible: relax the bounds!")
 
   obj_fun <- function(mu, w0) {
     sum(pmax(pmin(w0 - mu, w_ub), w_lb)) - 1
@@ -550,7 +534,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds")
   if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds")  
   
-  
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
@@ -622,7 +605,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                        formulation = formulation, w0 = w0,
                                                        theta0 = theta0, gamma = gamma, zeta = zeta,
                                                        tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol),
-           "slsqp" =,
+           "slsqp" = ,
            "alabama" = {
              if (has_fancy_box)
                stop("Box constraints are not supported for method ", method)
@@ -633,7 +616,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                        use_gradient = use_gradient, w0 = w0, theta0 = theta0,
                                                        maxiter = maxiter, ftol = ftol, wtol = wtol)
            },
-           stop("method ", method, " is not included."))
+           stop("method ", method, " is not included.")
+    )
   }
   return(portfolio)
 }
