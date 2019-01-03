@@ -3,7 +3,8 @@ context("Formulations")
 # generate a random Sigma and mu
 set.seed(123)
 N <- 5
-V <- matrix(rnorm(N^2), N, N)
+T <- 1000
+V <- matrix(rnorm(N * T), T, N)
 Sigma <- cov(V)
 
 test_that("sca, alabama, and slsq give similar results in low dimensional problems", {
@@ -15,7 +16,6 @@ test_that("sca, alabama, and slsq give similar results in low dimensional proble
     suppressWarnings(rpp_sca <- riskParityPortfolio(Sigma, method = "sca", formulation = formulation))
     suppressWarnings(rpp_alabama <- riskParityPortfolio(Sigma, method = "alabama", formulation = formulation))
     suppressWarnings(rpp_slsqp <- riskParityPortfolio(Sigma, method = "slsqp", formulation = formulation))
-    
     expect_equal(rpp_sca$w, rpp_alabama$w, tolerance = 1e-3)
     expect_equal(rpp_sca$w, rpp_slsqp$w, tolerance = 1e-3)
   }

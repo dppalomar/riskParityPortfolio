@@ -6,19 +6,21 @@ V <- matrix(rnorm(N^2), N, N)
 Sigma <- V %*% t(V)
 mu <- runif(N)
 
-test_that("sca and gensolver portfolios are consistent when lmd_mu equals zero or no mu is given", {
-  rpp_lmb_zero <- riskParityPortfolioSCA(Sigma, mu = mu, lmd_mu = 0)
-  rpp_no_mu <- riskParityPortfolioSCA(Sigma)
+test_that("sca and gensolver portfolios are consistent when lmd_mu equals zero
+          or no mu is given", {
+  rpp_lmb_zero <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = 0, method = "sca")
+  rpp_no_mu <- riskParityPortfolio(Sigma, method = "sca")
   expect_equal(rpp_lmb_zero$w, rpp_no_mu$w)
   expect_equal(rpp_lmb_zero$risk_contributions, rpp_no_mu$risk_contributions)
-  
-  rpp_lmb_zero <- riskParityPortfolioGenSolver(Sigma, mu = mu, lmd_mu = 0)
-  rpp_no_mu <- riskParityPortfolioGenSolver(Sigma)
+
+  rpp_lmb_zero <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = 0, method = "alabama")
+  rpp_no_mu <- riskParityPortfolio(Sigma, method = "alabama")
   expect_equal(rpp_lmb_zero$w, rpp_no_mu$w)
   expect_equal(rpp_lmb_zero$risk_contributions, rpp_no_mu$risk_contributions)
 })
 
-test_that("roncalli's formulation with mu converges to roncalli's formulation without mu for sufficiently large mean_volatility_tradeoff", {
+test_that("roncalli's formulation with mu converges to roncalli's formulation
+          without mu for sufficiently large mean_volatility_tradeoff", {
   b <- rep(1/N, N)
   mean_volatility_tradeoff <- 1e6
   risk_free_return <- 0
