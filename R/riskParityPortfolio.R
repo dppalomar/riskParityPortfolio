@@ -593,8 +593,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     
     # make w0 feasible
     if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
-      if (has_initial_point)
-        warning("Initial point is infeasible. Projecting it onto the feasible set.")
+      if (has_initial_point) warning("Initial point is infeasible. Projecting it onto the feasible set.")
       w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
     }
 
@@ -607,10 +606,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                        tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol),
            "slsqp" = ,
            "alabama" = {
-             if (has_fancy_box)
-               stop("Box constraints are not supported for method ", method)
-             if (has_var)
-               stop("Variance term is not supported for method ", method)
+             if (has_fancy_box) stop("Box constraints are not supported for method ", method)
+             if (has_var) stop("Variance term is not supported for method ", method)
              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        formulation = formulation, method = method,
                                                        use_gradient = use_gradient, w0 = w0, theta0 = theta0,
