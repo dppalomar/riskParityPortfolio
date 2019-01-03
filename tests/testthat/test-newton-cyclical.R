@@ -1,6 +1,4 @@
-context("test-newton-cyclical.R")
-library(riskParityPortfolio)
-library(testthat)
+context("Newton cyclical")
 
 N <- 5
 V <- matrix(rnorm(N^2), N, N)

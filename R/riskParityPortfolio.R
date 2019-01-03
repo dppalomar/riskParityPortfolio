@@ -5,9 +5,9 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 }
 
 
-riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+riskParityPortfolioSCA <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
-                                   w_lb = 0, w_ub = 1,
+                                   w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
                                    formulation = c("rc-double-index",
                                                    "rc-over-b-double-index",
                                                    "rc-over-var vs b",
@@ -20,15 +20,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
 
-  if (length(w_ub) == 1)
-    w_ub <- rep(w_ub, N)
-  if (length(w_lb) == 1)
-    w_lb <- rep(w_lb, N)
-
-  if (is.null(w0)) {
-    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-    w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
-  }
+  if (is.null(w0)) w0 <- projectBudgetLineAndBox(riskParityPortfolioDiagSigma(Sigma, b)$w, w_lb, w_ub)
 
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
@@ -197,7 +189,8 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 }
 
 
-riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-4,
+riskParityPortfolioGenSolver <- function(Sigma, b = rep(nrow(Sigma), nrow(Sigma)), 
+                                         mu = NULL, lmd_mu = 1e-4,
                                          formulation = c("rc-double-index",
                                                          "rc-over-b-double-index",
                                                          "rc-over-var vs b",
@@ -210,10 +203,8 @@ riskParityPortfolioGenSolver <- function(Sigma, b = NULL, mu = NULL, lmd_mu = 1e
                                          use_gradient = TRUE, w0 = NULL, theta0 = NULL,
                                          maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (is.null(b))
-    b <- rep(1/N, N)
-  if (is.null(w0))
-    w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  
+  if (is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
 
   formulation <- match.arg(formulation)
   # set initial value for theta
@@ -550,8 +541,15 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
                                 maxiter = 50, ftol = 1e-8, wtol = 1e-6,
                                 use_gradient = TRUE) {
-  if (is.null(b))
-    b <- rep(1/nrow(Sigma), nrow(Sigma))
+  # default values
+  N <- nrow(Sigma)
+  if (is.null(b)) b <- rep(N, N)
+  if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
+  if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
+  # check problem feasibility
+  if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds")
+  if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds")  
+  
   
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
@@ -565,6 +563,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     if (!is_vanilla_formulation)
       stop("Additional constraints (box-constraints) or terms (expected return",
            " or variance) are not supported by the 'diag' formulation.")
+    if (has_initial_point)
+      warning("The problem is a naive (diagonal) risk-parity portfolio, but an initial",
+              " point has been provided: The initial point is being ignored.")
     return(riskParityPortfolioDiagSigma(Sigma, b))
   }
 
@@ -578,19 +579,13 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     # in case the problem falls in the vanilla category, we are done.
     if (has_initial_point)
       warning("The problem is a vanilla risk-parity portfolio, but an initial",
-              " point has been provided. The initial point is being ignored.")
+              " point has been provided: The initial point is being ignored.")
     switch(match.arg(method_init),
            "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
            "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
            "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
            stop("method_init ", method_init, " is not supported."))
   } else {
-    # check problem feasibility
-    if (sum(w_lb) > 1)
-      stop("Problem infeasible: relax the lower bounds")
-    if (sum(w_ub) < 1)
-      stop("Problem infeasible: relax the upper bounds")
-    
     # create initial point if needed
     if (!has_initial_point) {
       switch(match.arg(method_init),
@@ -612,6 +607,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
       w0 <- theta_rc*w0 + theta_mu*w_mu + theta_var*w_gmvp
     }
+    
     # make w0 feasible
     if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
       if (has_initial_point)
@@ -619,6 +615,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
     }
 
+    # solve nonvanilla formulation
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,

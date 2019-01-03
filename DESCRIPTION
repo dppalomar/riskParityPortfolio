@@ -49,7 +49,6 @@ Suggests:
     knitr,
     microbenchmark,
     numDeriv,
-    patrick,
     prettydoc,
     RiskPortfolios,
     rmarkdown,
