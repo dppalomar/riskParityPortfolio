@@ -8,8 +8,8 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
                                    w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
-                                   formulation = c("rc-double-index",
-                                                   "rc-over-b-double-index",
+                                   formulation = c("rc-over-b-double-index",
+                                                   "rc-double-index",
                                                    "rc-over-var vs b",
                                                    "rc-over-var",
                                                    "rc-over-sd vs b-times-sd",
@@ -135,7 +135,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
       if (has_theta) fun_next <- fun_next + lmd_var * (t(w_next[1:N]) %*% Sigma %*% w_next[1:N])
       else fun_next <- fun_next + lmd_var * (t(w_next) %*% Sigma %*% w_next)
     fun_seq <- c(fun_seq, fun_next)
-    # check convergence
     # check convergence on parameters and objective function
     werr <- sum(abs(w_next - wk)) / max(1, sum(abs(wk)))
     ferr <- abs(fun_next - fun_k) / max(1, abs(fun_k))
@@ -166,15 +165,15 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
-  portfolio_results$convergence <- sum(!(k == maxiter))
+  portfolio_results$convergence <- !(k == maxiter)
   return(portfolio_results)
 }
 
 
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                          mu = NULL, lmd_mu = 1e-4,
-                                         formulation = c("rc-double-index",
-                                                         "rc-over-b-double-index",
+                                         formulation = c("rc-over-b-double-index",
+                                                         "rc-double-index",
                                                          "rc-over-var vs b",
                                                          "rc-over-var",
                                                          "rc-over-sd vs b-times-sd",
@@ -411,18 +410,26 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 #'       minimize   R(w) - lmd_mu*w'*mu + lmd_var*w'*Sigma*w
 #'       subject to  sum(w)=1, w>=0, w_lb <= w <= w_ub,
 #'
-#' where R is either a convex or non-convex formulation for the risk
-#' concentration. Please, check the vignette for the mathematical formulae of
-#' the possible formulations. The vignette also contains a detailed
-#' documentation and comparison, with several illustrative examples.
+#' where \code{R} is a formulation for the risk concentration, \code{lmd_mu}
+#' and \code{lmd_var} are the trade-off factors for the expected return and
+#' the variance, respectively, and \code{w_lb} and \code{w_ub} are the vector
+#' representations of the lower and upper bound values for the portfolio vector
+#' \code{w}.
+#' Consider checking the vignette for the mathematical formulae of
+#' the possible formulations for the risk concentration function. The vignette
+#' also contains a detailed documentation with several illustrative examples.
+#' Note that, in case the additional terms (expected return or variance) or
+#' box constraints are not desired, then this function will solve a convex
+#' problem proposed by Spinu (2013) and by Roncalli (2013) with guaranteed
+#' global solution as long as the covariance matrix is positive semidefinite.
 #'
 #' @param Sigma covariance or correlation matrix
-#' @param b budget vector, aka risk budgeting targets. The default is the uniform
-#'        1/N vector.
+#' @param b budget vector, i.e. the risk budgeting targets. The default is the
+#'        uniform 1/N vector.
 #' @param mu vector of expected returns (only needed if the expected return term
-#'        is desired in the objective)
-#' @param lmd_mu scalar that controls the importance of the expected return term
-#' @param lmd_var scalar that controls the importance of the variance term
+#'        is desired in the objective).
+#' @param lmd_mu scalar that controls the importance of the expected return term.
+#' @param lmd_var scalar that controls the importance of the variance term.
 #'        (only available for the SCA method for now).
 #' @param w_lb lower bound on the value of each portfolio weight. If a vector,
 #'        then the lower bound is applied element-wise
@@ -431,29 +438,29 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 #'        then the upper bound is applied element-wise
 #'        (only available for the SCA method for now).
 #' @param method_init which algorithm to use for computing the initial portfolio
-#'        solution. We recommend choosing cyclical over Newton for high-dimensional
-#'        (N > 500) portfolios since it scales better in that regime. The
-#'        default is \code{"cyclical-spinu"}.
+#'        solution or the global vanilla solution. The default is \code{"cyclical-spinu"}.
 #' @param method which optimization method to use. The default is \code{"sca"}.
-#' @param formulation string indicating the formulation to be used for the risk
-#'        parity optimization problem. It must be one of: \code{"diag", "rc-double-index",
+#' @param formulation string indicating the risk concentration formulation to be used.
+#'        It must be one of: \code{"diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 #'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
 #'        "rc-over-b vs theta"}. If \code{formulation} is \code{NULL} and no additional terms
 #'        or constraints are set, such as expected return or shortselling, then
 #'        the vanilla risk parity portfolio will be returned. If formulation is
 #'        \code{"diag"} then the analytical solution of the risk parity optimization for
-#'        for a diagonal covariance matrix will be returned.
-#' @param w0 initial value for the portfolio weights. Default is the vanilla
-#'        portfolio computed either with cyclical or Newton methods.
+#'        for a diagonal covariance matrix will be returned. In the latter case,
+#'        if additional terms or constraints are given, then an error will be raised.
+#' @param w0 initial value for the portfolio weights. Default is a convex
+#'        combination among the risk-parity, the (uncorrelated) minimum variance,
+#'        and the maximum return portfolios.
 #' @param theta0 initial value for theta (in case formulation uses theta). If \code{NULL},
 #'        the optimum solution for a fixed vector of portfolio weights will be used.
 #' @param gamma learning rate for the SCA method.
 #' @param zeta factor used to decrease the learning rate at each iteration for the SCA method.
-#' @param tau regularization factor. If \code{NULL}, a meaningful value will be used
-#' @param maxiter maximum number of iterations for the SCA loop
-#' @param ftol convergence tolerance on the risk contribution target
-#' @param wtol convergence tolerance on the values of the portfolio weights
+#' @param tau regularization factor. If \code{NULL}, a meaningful value will be used.
+#' @param maxiter maximum number of iterations for the SCA loop.
+#' @param ftol convergence tolerance on the risk contribution target.
+#' @param wtol convergence tolerance on the values of the portfolio weights.
 #' @param use_gradient (this parameter is meaningful only if method is either
 #'        \code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt
 #'        to the parameters will be used. This is strongly recommended to achieve faster results.
@@ -525,17 +532,22 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
   if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
   # check problem feasibility
-  if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds")
-  if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds")
+  if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
+  if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds.")
+  if (length(b) != N) stop("Shape mismatch: b has to have nrow(Sigma) number of elements.")
 
   has_mu <- !is.null(mu)
+  if (has_mu && (length(mu) != N))
+    stop("Shape mismatch: mu has to have nrow(Sigma) number of elements")
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
   has_initial_point <- !is.null(w0)
-  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box)
+  if (has_initial_point && (length(w0) != N))
+    stop("Shape mismatch: w0 has to have nrow(Sigma) number of elements")
 
+  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box)
   if (has_formulation && formulation == "diag") {
     if (!is_vanilla_formulation)
       stop("Additional constraints (box-constraints) or terms (expected return",
@@ -549,7 +561,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       warning("The problem is a vanilla risk-parity portofolio, but a nonconvex",
               " formulation has been chosen. Consider not specifying the formulation",
               " argument in order to get the guaranteed global solution.")
-
   is_vanilla_formulation <- is_vanilla_formulation && !has_formulation
   if (is_vanilla_formulation) {
     if (has_initial_point)

@@ -15,15 +15,15 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
 \arguments{
 \item{Sigma}{covariance or correlation matrix}
 
-\item{b}{budget vector, aka risk budgeting targets. The default is the uniform
-1/N vector.}
+\item{b}{budget vector, i.e. the risk budgeting targets. The default is the
+uniform 1/N vector.}
 
 \item{mu}{vector of expected returns (only needed if the expected return term
-is desired in the objective)}
+is desired in the objective).}
 
-\item{lmd_mu}{scalar that controls the importance of the expected return term}
+\item{lmd_mu}{scalar that controls the importance of the expected return term.}
 
-\item{lmd_var}{scalar that controls the importance of the variance term
+\item{lmd_var}{scalar that controls the importance of the variance term.
 (only available for the SCA method for now).}
 
 \item{w_lb}{lower bound on the value of each portfolio weight. If a vector,
@@ -35,24 +35,24 @@ then the upper bound is applied element-wise
 (only available for the SCA method for now).}
 
 \item{method_init}{which algorithm to use for computing the initial portfolio
-solution. We recommend choosing cyclical over Newton for high-dimensional
-(N > 500) portfolios since it scales better in that regime. The
-default is \code{"cyclical-spinu"}.}
+solution or the global vanilla solution. The default is \code{"cyclical-spinu"}.}
 
 \item{method}{which optimization method to use. The default is \code{"sca"}.}
 
-\item{formulation}{string indicating the formulation to be used for the risk
-parity optimization problem. It must be one of: \code{"diag", "rc-double-index",
+\item{formulation}{string indicating the risk concentration formulation to be used.
+It must be one of: \code{"diag", "rc-double-index",
 "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
 "rc-over-b vs theta"}. If \code{formulation} is \code{NULL} and no additional terms
 or constraints are set, such as expected return or shortselling, then
 the vanilla risk parity portfolio will be returned. If formulation is
 \code{"diag"} then the analytical solution of the risk parity optimization for
-for a diagonal covariance matrix will be returned.}
+for a diagonal covariance matrix will be returned. In the latter case,
+if additional terms or constraints are given, then an error will be raised.}
 
-\item{w0}{initial value for the portfolio weights. Default is the vanilla
-portfolio computed either with cyclical or Newton methods.}
+\item{w0}{initial value for the portfolio weights. Default is a convex
+combination among the risk-parity, the (uncorrelated) minimum variance,
+and the maximum return portfolios.}
 
 \item{theta0}{initial value for theta (in case formulation uses theta). If \code{NULL},
 the optimum solution for a fixed vector of portfolio weights will be used.}
@@ -61,13 +61,13 @@ the optimum solution for a fixed vector of portfolio weights will be used.}
 
 \item{zeta}{factor used to decrease the learning rate at each iteration for the SCA method.}
 
-\item{tau}{regularization factor. If \code{NULL}, a meaningful value will be used}
+\item{tau}{regularization factor. If \code{NULL}, a meaningful value will be used.}
 
-\item{maxiter}{maximum number of iterations for the SCA loop}
+\item{maxiter}{maximum number of iterations for the SCA loop.}
 
-\item{ftol}{convergence tolerance on the risk contribution target}
+\item{ftol}{convergence tolerance on the risk contribution target.}
 
-\item{wtol}{convergence tolerance on the values of the portfolio weights}
+\item{wtol}{convergence tolerance on the values of the portfolio weights.}
 
 \item{use_gradient}{(this parameter is meaningful only if method is either
 \code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt
@@ -104,10 +104,18 @@ following problem
       minimize   R(w) - lmd_mu*w'*mu + lmd_var*w'*Sigma*w
       subject to  sum(w)=1, w>=0, w_lb <= w <= w_ub,
 
-where R is either a convex or non-convex formulation for the risk
-concentration. Please, check the vignette for the mathematical formulae of
-the possible formulations. The vignette also contains a detailed
-documentation and comparison, with several illustrative examples.
+where \code{R} is a formulation for the risk concentration, \code{lmd_mu}
+and \code{lmd_var} are the trade-off factors for the expected return and
+the variance, respectively, and \code{w_lb} and \code{w_ub} are the vector
+representations of the lower and upper bound values for the portfolio vector
+\code{w}.
+Consider checking the vignette for the mathematical formulae of
+the possible formulations for the risk concentration function. The vignette
+also contains a detailed documentation with several illustrative examples.
+Note that, in case the additional terms (expected return or variance) or
+box constraints are not desired, then this function will solve a convex
+problem proposed by Spinu (2013) and by Roncalli (2013) with guaranteed
+global solution as long as the covariance matrix is positive semidefinite.
 }
 \examples{
 library(riskParityPortfolio)
