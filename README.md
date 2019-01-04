@@ -27,8 +27,9 @@ convex approximation method proposed by [Feng & Palomar
 (2015)](https://doi.org/10.1109/TSP.2015.2452219).
 
 The latest stable version of `riskParityPortfolio` is available at
-<https://CRAN.R-project.org/package=riskParityPortfolio>. The latest
-development version of `riskParityPortfolio` is available at
+<https://CRAN.R-project.org/package=riskParityPortfolio>.
+
+The latest development version of `riskParityPortfolio` is available at
 <https://github.com/dppalomar/riskParityPortfolio>.
 
 Installation
@@ -79,7 +80,7 @@ Usage of `riskParityPortfolio`
 ``` r
 library(riskParityPortfolio)
 
-set.seed(0)
+set.seed(42)
 # create covariance matrix
 N <- 5
 V <- matrix(rnorm(N^2), ncol = N)
@@ -90,11 +91,11 @@ res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
 res$w
-#> [1] 0.1817376 0.1432048 0.2031782 0.2129650 0.2589145
+#> [1] 0.32715962 0.27110678 0.14480081 0.09766356 0.15926922
 res$risk_contribution
-#> [1] 0.01504086 0.01504086 0.01504085 0.01504086 0.01504086
+#> [1] 0.03857039 0.03857039 0.03857039 0.03857039 0.03857039
 c(res$w * (Sigma %*% res$w))
-#> [1] 0.01504086 0.01504086 0.01504085 0.01504086 0.01504086
+#> [1] 0.03857039 0.03857039 0.03857039 0.03857039 0.03857039
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
