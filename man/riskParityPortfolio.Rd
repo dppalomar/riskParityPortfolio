@@ -76,43 +76,24 @@ the optimum solution for a fixed vector of portfolio weights will be used.}
 to the parameters will be used. This is strongly recommended to achieve faster results.}
 }
 \value{
-a list containing possibly the following elements:
+A list containing possibly the following elements:
 \item{\code{w}}{optimal portfolio vector}
 \item{\code{risk_contribution}}{the risk contribution of every asset}
 \item{\code{theta}}{the optimal value for theta (in case that it is part of
                     the chosen formulation)}
 \item{\code{obj_fun}}{the sequence of values from the objective function at
                       each iteration}
-\item{\code{risk_parity}}{the risk parity of the portfolio}
-\item{\code{mean_return}}{the expected return of the portoflio if the mean
-                          return term is included in the optimization}
-\item{\code{variance}}{the variance of the portfolio if the variance term is
-                       included in the optimization}
+\item{\code{risk_parity}}{the risk concentration term of the portfolio R(w)}
+\item{\code{mean_return}}{the expected return term of the portoflio w'*mu, 
+                          if the term is included in the optimization}
+\item{\code{variance}}{the variance term of the portfolio w'*Sigma*w, 
+                       if the variance term is included in the optimization}
 \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 \item{\code{convergence}}{flag to indicate whether or not the optimization
-converged. The value \code{TRUE} means it has converged and \code{FALSE} otherwise.}
+converged}
 }
 \description{
-This function designs risk-parity portfolios to equalize/distribute
-the risk contributions of the different assets, which is missing if we simply
-consider the overall volatility of the portfolio as in the mean-variance
-Markowitz portfolio. In addition to the vanilla formulation, where the risk
-contributions are perfectly equalized subject to no shortselling and budget
-constraints, many other formulations are considered that allow for box
-constraints, as well as the inclusion of additional objectives like the
-expected return and overall variance. In short, this function solves the
-following problem:
-
-      \code{minimize   R(w) - lmd_mu*w'*mu + lmd_var*w'*Sigma*w}
-      
-      subject to  sum(w)=1, w_lb <= w <= w_ub,
-
-where \code{R} denotes the risk concentration, 
-\code{w'*mu} is the expected return, \code{w'*Sigma*w} is the overall variance,
-\code{lmd_mu} and \code{lmd_var} are the trade-off factors for the expected return and
-the variance, respectively, and \code{w_lb} and \code{w_ub} are the vector
-representations of the lower and upper bound values for the portfolio vector
-\code{w}.
+Design of Risk Parity Portfolios
 }
 \details{
 By default, the problem considered is the vanilla risk-parity portfolio: 
