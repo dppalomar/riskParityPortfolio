@@ -405,46 +405,71 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 #' constraints, many other formulations are considered that allow for box
 #' constraints, as well as the inclusion of additional objectives like the
 #' expected return and overall variance. In short, this function solves the
-#' following problem
+#' following problem:
 #'
-#'       minimize   R(w) - lmd_mu*w'*mu + lmd_var*w'*Sigma*w
-#'       subject to  sum(w)=1, w>=0, w_lb <= w <= w_ub,
+#'       \code{minimize   R(w) - lmd_mu * w'%*%mu + lmd_var * w'%*%Sigma%*%w}
+#'       
+#'       subject to  sum(w)=1, w_lb <= w <= w_ub,
 #'
-#' where \code{R} is a formulation for the risk concentration, \code{lmd_mu}
-#' and \code{lmd_var} are the trade-off factors for the expected return and
+#' where \code{R} denotes the risk concentration, 
+#' \code{w'*mu} is the expected return, \code{w'*Sigma*w} is the overall variance,
+#' \code{lmd_mu} and \code{lmd_var} are the trade-off factors for the expected return and
 #' the variance, respectively, and \code{w_lb} and \code{w_ub} are the vector
 #' representations of the lower and upper bound values for the portfolio vector
 #' \code{w}.
-#' Consider checking the vignette for the mathematical formulae of
-#' the possible formulations for the risk concentration function. The vignette
-#' also contains a detailed documentation with several illustrative examples.
+#' 
+#' @details 
+#' By default, the problem considered is the vanilla risk-parity portfolio: 
+#' w>=0, no other box constraints, no expected return, and no variance. In this case,
+#' the optimal solution is computed and risk concentration is zero: R(w) = 0. By default, 
+#' we use the formulation by Spinu (2013) (method_init = ""), but the user can also select
+#' the formulation by Roncalli et al. (2013) (method_init = "").
+#' 
+#' In case of additional box constraints, or additional expected return term, 
+#' or additional variance term, then the problem is nonconvex and the global
+#' optimal solution cannot be guaranteed, just a local optimal. We use the method
+#' in Feng&Paloamr (2015), where the user can choose among many different risk concentration
+#' terms (with the argument \code{method}), namely:
+#' \item{\code{method="asdfa"}}{sum_{i,j} (r_i - r_j)^2 (by default)}
+#' \item{\code{method="asdfa"}}{sum_{i,j} (r_i - r_j)^2 (by default)}
+#' - \code{method="asdfa"}: sum_{i,j} (r_i - r_j)^2 (by default)
+#' - \code{method="asdfas"l}: dasfasdf
+#' - \code{method="asdfasd"}: adfadf
+#' where r_i = w_i * (Sigma %*% w)_i
+#' 
+#' 
+#' This is what you wrote:
 #' Note that, in case the additional terms (expected return or variance) or
 #' box constraints are not desired, then this function will solve a convex
 #' problem proposed by Spinu (2013) and by Roncalli (2013) with guaranteed
 #' global solution as long as the covariance matrix is positive semidefinite.
+#' 
+#' For more details, please check the vignette.
 #'
-#' @param Sigma covariance or correlation matrix
-#' @param b budget vector, i.e. the risk budgeting targets. The default is the
+#' @param Sigma covariance or correlation matrix (this is the only mandatory argument)
+#' @param b budget vector, i.e., the risk budgeting targets. The default is the
 #'        uniform 1/N vector.
 #' @param mu vector of expected returns (only needed if the expected return term
-#'        is desired in the objective).
-#' @param lmd_mu scalar that controls the importance of the expected return term.
-#' @param lmd_var scalar that controls the importance of the variance term.
-#'        (only available for the SCA method for now).
+#'        is desired in the objective)
+#' @param lmd_mu scalar to control the importance of the expected return term
+#' @param lmd_var scalar to control the importance of the variance term
+#'        (only currently available for the SCA method).
 #' @param w_lb lower bound on the value of each portfolio weight. If a vector,
 #'        then the lower bound is applied element-wise
-#'        (only available for the SCA method for now).
+#'        (only currently available for the SCA method). If a scalar, ...
 #' @param w_ub upper bound on the value of each portfolio weight. If a vector,
 #'        then the upper bound is applied element-wise
 #'        (only available for the SCA method for now).
-#' @param method_init which algorithm to use for computing the initial portfolio
-#'        solution or the global vanilla solution. The default is \code{"cyclical-spinu"}.
-#' @param method which optimization method to use. The default is \code{"sca"}.
+#' @param method_init method to compute the vanilla solution. In case of additional blah blah blah,
+#'        this solution is used as the initial point for the subsequent method. The default is 
+#'        \code{"cyclical-spinu"}.
+#' @param method method to solve the non-vanilla formulation. The default is \code{"sca"}.
 #' @param formulation string indicating the risk concentration formulation to be used.
 #'        It must be one of: \code{"diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b", "rc-over-var",
 #'        "rc-over-sd vs b-times-sd", "rc vs b-times-var", "rc vs theta", or
-#'        "rc-over-b vs theta"}. If \code{formulation} is \code{NULL} and no additional terms
+#'        "rc-over-b vs theta"}. The default is XXXX. 
+#'        If \code{formulation} is not provided and no additional terms
 #'        or constraints are set, such as expected return or shortselling, then
 #'        the vanilla risk parity portfolio will be returned. If formulation is
 #'        \code{"diag"} then the analytical solution of the risk parity optimization for
@@ -453,32 +478,32 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 #' @param w0 initial value for the portfolio weights. Default is a convex
 #'        combination among the risk-parity, the (uncorrelated) minimum variance,
 #'        and the maximum return portfolios.
-#' @param theta0 initial value for theta (in case formulation uses theta). If \code{NULL},
+#' @param theta0 initial value for theta (in case formulation uses theta). If not provided,
 #'        the optimum solution for a fixed vector of portfolio weights will be used.
-#' @param gamma learning rate for the SCA method.
-#' @param zeta factor used to decrease the learning rate at each iteration for the SCA method.
-#' @param tau regularization factor. If \code{NULL}, a meaningful value will be used.
-#' @param maxiter maximum number of iterations for the SCA loop.
-#' @param ftol convergence tolerance on the risk contribution target.
-#' @param wtol convergence tolerance on the values of the portfolio weights.
+#' @param gamma learning rate for the SCA method
+#' @param zeta factor used to decrease the learning rate at each iteration for the SCA method
+#' @param tau regularization factor. If not provided, a meaningful value will be used.
+#' @param maxiter maximum number of iterations for the SCA loop
+#' @param ftol convergence tolerance on the objective function
+#' @param wtol convergence tolerance on the values of the portfolio weights
 #' @param use_gradient (this parameter is meaningful only if method is either
 #'        \code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the objective function wrt
 #'        to the parameters will be used. This is strongly recommended to achieve faster results.
-#' @return a list containing possibly the following elements:
+#' @return A list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
 #' \item{\code{risk_contribution}}{the risk contribution of every asset}
 #' \item{\code{theta}}{the optimal value for theta (in case that it is part of
 #'                     the chosen formulation)}
 #' \item{\code{obj_fun}}{the sequence of values from the objective function at
 #'                       each iteration}
-#' \item{\code{risk_parity}}{the risk parity of the portfolio}
-#' \item{\code{mean_return}}{the expected return of the portoflio if the mean
-#'                           return term is included in the optimization}
-#' \item{\code{variance}}{the variance of the portfolio if the variance term is
-#'                        included in the optimization}
+#' \item{\code{risk_parity}}{the risk concentration term of the portfolio R(w)}
+#' \item{\code{mean_return}}{the expected return term of the portoflio w'*mu, 
+#'                           if the term is included in the optimization}
+#' \item{\code{variance}}{the variance term of the portfolio w'*Sigma*w, 
+#'                        if the variance term is included in the optimization}
 #' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 #' \item{\code{convergence}}{flag to indicate whether or not the optimization
-#' converged. The value \code{TRUE} means it has converged and \code{FALSE} otherwise.}
+#' converged}
 #'
 #' @examples
 #' library(riskParityPortfolio)
@@ -510,7 +535,7 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 #' vol. 63, no. 19, pp. 5285-5300. <https://doi.org/10.1109/TSP.2015.2452219>
 #'
 #' F. Spinu (2013). An Algorithm for Computing Risk Parity Weights.
-#' <http://dx.doi.org/10.2139/ssrn.2297383>
+#' <https://dx.doi.org/10.2139/ssrn.2297383>
 #'
 #' T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing High-dimensional
 #' risk parity portfolios. <https://arxiv.org/pdf/1311.4057.pdf>

@@ -2,7 +2,7 @@
 ## User installation
 ##
 # Local installation
-install.packages(file.choose(), repos = NULL, type="source")
+install.packages(file.choose(), repos = NULL, type = "source")
 # Installation from GitHub
 devtools::install_github("dppalomar/riskParityPortfolio")
 # Installation from CRAN
