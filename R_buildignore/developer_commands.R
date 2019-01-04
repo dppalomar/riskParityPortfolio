@@ -17,7 +17,10 @@ vignette(package = "riskParityPortfolio")
 
 # Downloads
 # https://ipub.com/dev-corner/apps/r-package-downloads/
-# cranlogs::cran_downloads(from = "2018-12-25", package = c("riskParityPortfolio"))
+# res <- cranlogs::cran_downloads(from = "2018-12-25", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
+# print(res)
+# library(ggplot2)
+# ggplot(res, aes(x=date, y=count, color=package)) + geom_line()
 
 
 ##
