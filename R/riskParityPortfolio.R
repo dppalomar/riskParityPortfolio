@@ -19,6 +19,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
+  if (is.null(w0)) w0 <- projectBudgetLineAndBox(riskParityPortfolioDiagSigma(Sigma, b)$w, w_lb, w_ub)
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
@@ -184,6 +185,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                          use_gradient = TRUE, w0 = NULL, theta0 = NULL,
                                          maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
+  if (is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
   formulation <- match.arg(formulation)
   # set initial value for theta
   has_theta <- grepl("theta", formulation)
