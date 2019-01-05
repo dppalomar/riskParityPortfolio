@@ -615,17 +615,22 @@ w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
 w_i\boldsymbol{\Sigma}_{ii}) - b_i = 0.
 \end{equation}$$
 
+
+By analogy, it turns out that derivation of the cyclical algorithm is very
+similar to the case presented previously, in which only the term
+$\boldsymbol(\Sigma\mathbf{w})$ needs to be updated.
+
 In a similar fashion, the cyclical algorithm for this formulation
 has the exact same structure as in the previous case, but with
 $\sigma(\mathbf{w}) = 1$ and $\boldsymbol{\Sigma}\mathbf{w}$ updated as
 derived in the previously.
 
-## Sucessive convex approximation
 
+## Sucessive convex approximation
 Many practical formulations deployed to design risk parity portfolios lead to nonconvex problems,
 specially when additional objective terms such as mean return or variance, or additional
 constraints, namely, shortselling, are taken into account. To circumvent the complications
-that arise in such formulations, Feng & Palomar proposed a method called sucessive convex
+that arise in such formulations, Feng & Palomar [@FengPal2015riskparity] proposed a method called sucessive convex
 approximation (SCA). The SCA method works by linearizing the risk concentration term at some
 pre-defined point, casting the nonconvex problem into a much simpler strictly convex
 optimization problem. This procedure is then iterated until convergence is achieved. It's important
@@ -641,7 +646,7 @@ At the k-th iteration, the SCA method aims to solve
 where the term under the summation is the first order Taylor expasion of the risk concentration
 $R$.
 
-After some mathematical manipulations described in detail in [@FengPalomar2015], the optimization
+After some mathematical manipulations described in detail in [@FengPal2015riskparity], the optimization
 problem above can be rewritten as
 \begin{align}\begin{array}{ll}
     \underset{\mathbf{w}}{\textsf{minimize}} & \dfrac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w} +
