@@ -536,12 +536,12 @@ legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
 ```
 
 # Appendix IV: Numerical algorithms
-In this appendix we describe the implementation of the cyclical
-(coordinate) descent algorithm inspired by the [@Billion2013] for the risk parity
-formulations presented in [@Billion2013] and [@Spinu2013].
+In this appendix we describe the implementation of a cyclical
+(coordinate) descent algorithm inspired by the works in [@Billion2013] for the risk parity
+formulations presented in [@Spinu2013] and [@Billion2013].
 
 ## Roncalli's Formulation
-We recollect that the risk formulation proposed by [@Billion2013] is given as
+We recollect that the risk parity formulation proposed in [@Billion2013] is given as
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} & \sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}} - \sum_{i=1}^{N}b_i\log(w_i)\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
@@ -550,21 +550,22 @@ $$\begin{array}{ll}
 Note that the first order condition with respect to every
 $w_i, i = 1, 2, ..., n,$ is given as
 $$\begin{align}
-\dfrac{(\boldsymbol{\Sigma}\mathbf{w})_{i}}{\sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}} - \dfrac{b_i}{w_i} = 0,\nonumber\\
-w_i (\boldsymbol{\Sigma}\mathbf{w})_{i} - b_i\sigma(\mathbf{w}) = 0,\nonumber\\
+\dfrac{(\boldsymbol{\Sigma}\mathbf{w})_{i}}{\sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}} - \dfrac{b_i}{w_i} = 0,\\
+w_i (\boldsymbol{\Sigma}\mathbf{w})_{i} - b_i\sigma(\mathbf{w}) = 0,\\
 w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
 w_i\boldsymbol{\Sigma}_{ii}) - b_i\sigma(\mathbf{w}) = 0.
 \end{align}$$
 
-Since $w_i > 0$ and $\boldsymbol{\Sigma}_{ii} > 0$, then the LHS above is a convex second-order polynomial
-with respect to $w_i$. Also note that the discrimant, $\Delta$, is given by
+Since $w_i > 0$ and $\boldsymbol{\Sigma}_{ii} > 0$, then the LHS of the expression above
+is a convex second-order polynomial with respect to $w_i$. Also note that its discriminant,
+$\Delta$, is given by
 $$\begin{equation}
 \Delta = ((\boldsymbol{\Sigma}\mathbf{w})_{i} - w_i\boldsymbol{\Sigma}_{ii})^2
 + 4\boldsymbol{\Sigma}_{ii}b_{i}\sigma(\mathbf{w}).
 \end{equation}$$
 which satisfies $\Delta > 0$, therefore, the convex second-order polynomial always has two solutions.
 
-Additionally, since $-\boldsymbol{\Sigma}_{ii}b_i\sigma(\mathbf{w}) < 0$ -- i.e., the sign of the product of
+Additionally, since $-\boldsymbol{\Sigma}_{ii}b_i\sigma(\mathbf{w}) < 0$, i.e., the sign of the product of
 its roots is always negative -- then the two roots always have oppostive sings. Therefore, we conclude
 that
 $$\begin{equation}
@@ -602,7 +603,7 @@ $$\begin{equation}
 where $\boldsymbol{\Sigma}_{i,}$ is the $i$-th row of the sample covariance matrix.
 
 ## Spinu's Formulation
-The risk formulation proposed by [@Spinu2013] is given as
+In [@Spinu2013], Spinu proposed the following risk parity formulation:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} & \frac{1}{2}\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w} - \sum_{i=1}^{N}b_i\log(w_i)\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
@@ -614,9 +615,55 @@ w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
 w_i\boldsymbol{\Sigma}_{ii}) - b_i = 0.
 \end{equation}$$
 
-By analogy, it turns out that derivation of the cyclical algorithm is very
-similar to the case presented previously, in which only the term
-$\boldsymbol(\Sigma\mathbf{w})$ needs to be updated.
+In a similar fashion, the cyclical algorithm for this formulation
+has the exact same structure as in the previous case, but with
+$\sigma(\mathbf{w}) = 1$ and $\boldsymbol{\Sigma}\mathbf{w}$ updated as
+derived in the previously.
+
+## Sucessive convex approximation
+
+Many practical formulations deployed to design risk parity portfolios lead to nonconvex problems,
+specially when additional objective terms such as mean return or variance, or additional
+constraints, namely, shortselling, are taken into account. To circumvent the complications
+that arise in such formulations, Feng & Palomar [@FengPal2015riskparity] proposed a method called sucessive convex
+approximation (SCA). The SCA method works by linearizing the risk concentration term at some
+pre-defined point, casting the nonconvex problem into a much simpler strictly convex
+optimization problem. This procedure is then iterated until convergence is achieved. It's important
+to highlight that the SCA method always converge to a stationary point.
+
+At the k-th iteration, the SCA method aims to solve
+\begin{align}\begin{array}{ll}
+    \underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i=1}^{n}\left(g_i(\mathbf{w}^k) +
+    (\nabla g_i(\mathbf{w}^{k}))^{\intercal}(\mathbf{w} - \mathbf{w}^{k})\right)^2 +
+    \tau ||\mathbf{w} - \mathbf{w}^{k}||^{2}_{2} + \lambda F(\mathbf{w})\\
+\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
+\end{array}\end{align}
+where the term under the summation is the first order Taylor expasion of the risk concentration
+$R$.
+
+After some mathematical manipulations described in detail in [@FengPal2015riskparity], the optimization
+problem above can be rewritten as
+\begin{align}\begin{array}{ll}
+    \underset{\mathbf{w}}{\textsf{minimize}} & \dfrac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w} +
+    \mathbf{w}^{T}\mathbf{q}^{k} + \lambda F(\mathbf{w})\\
+\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
+\end{array}\end{align}
+where
+\begin{align}
+    \mathbf{Q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{A}^{k} + \tau \mathbf{I},\\
+    \mathbf{q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{g}(\mathbf{w}^{k}) - \mathbf{Q}^{k}\mathbf{w}^{k},
+\end{align}
+and
+\begin{align}
+    \mathbf{A}^{k} & \triangleq \left[\nabla_{\mathbf{w}} g_{1}\left(\mathbf{w}^{k}\right), ...,
+                              \nabla_{\mathbf{w}} g_{n}\left(\mathbf{w}^{k}\right)\right]^{T} \\
+    \mathbf{g}\left(\mathbf{w}^{k}\right) & \triangleq \left[g_{1}\left(\mathbf{w}^{k}\right), ...,
+                                                   g_{n}\left(\mathbf{w}^{k}\right)\right]^{T}.
+\end{align}
+
+The above problem is a quadratic program (QP) which can be efficiently solved by
+standard R libraries. Furthermore, it is straightforward that adding the mean return
+or variance terms still keeps the structure of the problem intact.
 
 # References {-}
 \setlength{\parindent}{-0.2in}
