@@ -16,14 +16,14 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
 \item{Sigma}{covariance or correlation matrix (this is the only mandatory argument)}
 
 \item{b}{budget vector, i.e., the risk budgeting targets. The default is the
-uniform 1/N vector}
+uniform 1/N vector.}
 
 \item{mu}{vector of expected returns (only needed if the expected return term
 is desired in the objective)}
 
-\item{lmd_mu}{scalar to control the importance of the expected return term}
+\item{lmd_mu}{scalar weight to control the importance of the expected return term}
 
-\item{lmd_var}{scalar to control the importance of the variance term
+\item{lmd_var}{scalar weight to control the importance of the variance term
 (only currently available for the SCA method)}
 
 \item{w_lb}{lower bound (either a vector or a scalar) on the value of each
@@ -35,9 +35,10 @@ portfolio weight (only currently available for the SCA method)}
 \item{method_init}{method to compute the vanilla solution. In case of
 additional constraints or objective terms, this solution is used as
 the initial point for the subsequent method. The default is
-\code{"cyclical-spinu"}}
+\code{"cyclical-spinu"}. See details below.}
 
-\item{method}{method to solve the non-vanilla formulation. The default is \code{"sca"}}
+\item{method}{method to solve the non-vanilla formulation. The default is \code{"sca"}.
+See details below.}
 
 \item{formulation}{string indicating the risk concentration formulation to be used.
 It must be one of: "diag", "rc-double-index",
@@ -47,23 +48,22 @@ It must be one of: "diag", "rc-double-index",
 "rc-over-b vs theta". The default is "rc-over-b-double-index".
 If \code{formulation} is not provided and no additional terms or
 constraints are set, such as expected return or shortselling, then the
-vanilla risk parity portfolio will be returned. If formulation is
-"diag" then the analytical solution of the risk parity optimization for
-for a diagonal covariance matrix will be returned. In the latter case,
-if additional terms or constraints are given, then an error will be raised}
+vanilla risk-parity portfolio will be returned. If formulation is
+"diag" then the analytical solution of the risk-parity optimization for
+for a diagonal covariance matrix will be returned. See details below.}
 
 \item{w0}{initial value for the portfolio weights. Default is a convex
-combination among the risk-parity, the (uncorrelated) minimum variance,
-and the maximum return portfolios}
+combination of the risk-parity portfolio, the (uncorrelated) minimum variance
+portfolio, and the maximum return portfolio.}
 
 \item{theta0}{initial value for theta (in case formulation uses theta). If not provided,
-the optimum solution for a fixed vector of portfolio weights will be used}
+the optimum solution for a fixed vector of portfolio weights will be used.}
 
 \item{gamma}{learning rate for the SCA method}
 
 \item{zeta}{factor used to decrease the learning rate at each iteration for the SCA method}
 
-\item{tau}{regularization factor. If not provided, a meaningful value will be used}
+\item{tau}{regularization factor}
 
 \item{maxiter}{maximum number of iterations for the SCA loop}
 
@@ -71,10 +71,9 @@ the optimum solution for a fixed vector of portfolio weights will be used}
 
 \item{wtol}{convergence tolerance on the values of the portfolio weights}
 
-\item{use_gradient}{(this parameter is meaningful only if method is either
-\code{"alabama"} or \code{"slsqp"}) if \code{TRUE}, gradients of the
-objective function wrt to the parameters will be used. This is strongly
-recommended to achieve faster results.}
+\item{use_gradient}{this parameter is meaningful only if method is either
+\code{"alabama"} or \code{"slsqp"}. If \code{TRUE} (default value), analytical gradients of the
+objective function will be used (strongly recommended to achieve faster results).}
 }
 \value{
 A list containing possibly the following elements:
@@ -82,16 +81,15 @@ A list containing possibly the following elements:
 \item{\code{risk_contribution}}{the risk contribution of every asset}
 \item{\code{theta}}{the optimal value for theta (in case that it is part of
                     the chosen formulation)}
-\item{\code{obj_fun}}{the sequence of values from the objective function at
+\item{\code{obj_fun}}{the sequence of values of the objective function at
                       each iteration}
-\item{\code{risk_parity}}{the risk concentration term of the portfolio R(w)}
-\item{\code{mean_return}}{the expected return term of the portoflio w'*mu,
+\item{\code{risk_parity}}{the risk concentration term of the portfolio \code{R(w)}}
+\item{\code{mean_return}}{the expected return term of the portoflio \code{t(w)\%*\%mu},
                           if the term is included in the optimization}
-\item{\code{variance}}{the variance term of the portfolio w'*Sigma*w,
+\item{\code{variance}}{the variance term of the portfolio \code{t(w)\%*\%Sigma\%*\%w},
                        if the term is included in the optimization}
 \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
-\item{\code{convergence}}{flag to indicate whether or not the optimization
-converged}
+\item{\code{convergence}}{boolean flag to indicate whether or not the optimization converged}
 }
 \description{
 This function designs risk-parity portfolios to equalize/distribute
@@ -104,41 +102,41 @@ constraints, as well as the inclusion of additional objectives like the
 expected return and overall variance. In short, this function solves the
 following problem:
 
-      \code{minimize R(w) - lmd_mu*t(w)\%*\%mu + lmd_var*t(w)\%*\%Sigma\%*\%w}
+      \code{minimize R(w) - lmd_mu * t(w)\%*\%mu + lmd_var * t(w)\%*\%Sigma\%*\%w}
 
-      \code{subject to sum(w)=1, w_lb <= w <= w_ub},
+      \code{subject to sum(w) = 1, w_lb <= w <= w_ub},
 
-where \code{R} denotes the risk concentration,
-\code{t(w)*mu} is the expected return, \code{t(w)*Sigma*w} is the
-overall variance, \code{lmd_mu} and \code{lmd_var} are the trade-off factors
-for the expected return and the variance, respectively, and \code{w_lb} and
-\code{w_ub} are the vector representations of the lower and upper bound
-values for the portfolio vector \code{w}.
+where \code{R(w)} denotes the risk concentration,
+\code{t(w)\%*\%mu} is the expected return, \code{t(w)\%*\%Sigma\%*\%w} is the
+overall variance, \code{lmd_mu} and \code{lmd_var} are the trade-off weights
+for the expected return and the variance terms, respectively, and \code{w_lb} and
+\code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w}.
 }
 \details{
 By default, the problem considered is the vanilla risk-parity portfolio:
-0 <= w <= 1, sum(w) = 1, no expected return, and no variance. In this case, the
-optimal solution is guaranteed to exist while the risk concentration achieves
-zero, i.e., R(w) = 0. By default, we use the formulation by Spinu (2013)
-(method_init = "cyclical-spinu"), but the user can also select the formulation
-by Roncalli et al. (2013) (method_init = "cyclical-roncalli").
+\code{w >= 0, sum(w) = 1}, with no expected return term, and no variance term. In this case, 
+the problem formulation is convex and the optimal solution is guaranteed to be achieved with
+a perfect risk concentration, i.e., \code{R(w) = 0}. By default, we use the formulation by 
+Spinu (2013) (\code{method_init = "cyclical-spinu"}), but the user can also select the formulation
+by Roncalli et al. (2013) (\code{method_init = "cyclical-roncalli"}).
 
 In case of additional box constraints, expected return term, or variance term,
 then the problem is nonconvex and the global optimal solution cannot be
-guaranteed, just a local optimal. To circumvent that, we use the sucessive
+guaranteed, just a local optimal. We use the efficient sucessive
 convex approximation (SCA) method proposed in Feng & Palomar (2015),
 where the user can choose among many different risk concentration
 terms (through the argument \code{formulation}), namely:
 \itemize{
-\item{\code{formulation}="rc-double-index": }{\code{sum_{i,j} (r_i - r_j)^2}}
-\item{\code{formulation}="rc-vs-theta": }{\code{sum_{i} (r_i - theta)^2}}
-\item{\code{formulation}="rc-over-var-vs-b": }{\code{sum_{i} (r_i / r - b_i)^2}}
-\item{\code{formulation}="rc-over-b double-index": }{\code{sum_{i, j} (r_i / b_i - r_j / b_j)^2}}
-\item{\code{formulation}="rc-vs-b-times-var": }{\code{sum_{i} (r_i - b_i * r)^2}}
-\item{\code{formulation}="rc-over-sd vs b-times-sd": }{\code{sum_{i} (r_i / sqrt(r) - b_i * sqrt(r))^2}}
-\item{\code{formulation}="rc-over-b vs theta": }{\code{sum_{i} (r_i / b_i - theta)^2}}
-\item{\code{formulation}="rc-over-var": }{\code{sum_{i} (r_i / r)^2}}}
-where \code{r_i = w_i * (Sigma \%*\% w)_i} and \code{r = t(w) \%*\% Sigma \%*\% w}
+\item{\code{formulation = "rc-double-index":} }{\code{sum_{i,j} (r_i - r_j)^2}}
+\item{\code{formulation = "rc-vs-theta":} }{\code{sum_{i} (r_i - theta)^2}}
+\item{\code{formulation = "rc-over-var-vs-b":} }{\code{sum_{i} (r_i/r - b_i)^2}}
+\item{\code{formulation = "rc-over-b double-index":} }{\code{sum_{i,j} (r_i/b_i - r_j/b_j)^2}}
+\item{\code{formulation = "rc-vs-b-times-var":} }{\code{sum_{i} (r_i - b_i*r)^2}}
+\item{\code{formulation = "rc-over-sd vs b-times-sd":} }{\code{sum_{i} (r_i/sqrt(r) - b_i*sqrt(r))^2}}
+\item{\code{formulation = "rc-over-b vs theta":} }{\code{sum_{i} (r_i/b_i - theta)^2}}
+\item{\code{formulation = "rc-over-var":} }{\code{sum_{i} (r_i/r)^2}}}
+where \code{r_i = w_i*(Sigma\%*\%w)_i} is the risk contribution and 
+\code{r = t(w)\%*\%Sigma\%*\%w} is the overall risk (i.e., variance).
 
 For more details, please check the vignette.
 }

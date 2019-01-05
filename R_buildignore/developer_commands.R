@@ -15,12 +15,11 @@ package?riskParityPortfolio
 citation("riskParityPortfolio")
 vignette(package = "riskParityPortfolio")
 
-# Downloads
-# https://ipub.com/dev-corner/apps/r-package-downloads/
-# res <- cranlogs::cran_downloads(from = "2018-12-25", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
-# print(res)
-# library(ggplot2)
-# ggplot(res, aes(x=date, y=count, color=package)) + geom_line()
+# Downloads (https://ipub.com/dev-corner/apps/r-package-downloads/)
+res <- cranlogs::cran_downloads(from = "2018-12-25", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
+print(res)
+library(ggplot2)
+ggplot(res, aes(x=date, y=count, color=package)) + geom_line()
 
 
 ##
@@ -36,7 +35,7 @@ devtools::document()  # to generate all documentation via roxygen
 ?riskParityPortfolio
 
 
-# Code tests
+# Code tests (https://codecov.io/gh/mirca/riskParityPortfolio)
 #devtools::use_testthat()  # the first time
 devtools::test()
 #covr::package_coverage()  # coverage of tests
