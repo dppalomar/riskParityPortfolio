@@ -1,8 +1,8 @@
 ---
 title: "Fast Design of Risk Parity Portfolios"
-author: |
-  | Zé Vinícius and Daniel P. Palomar
-  | Hong Kong University of Science and Technology (HKUST)
+author: Zé Vinícius and Daniel P. Palomar
+institute: Hong Kong University of Science and Technology (HKUST)
+documentclass: report
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
@@ -53,7 +53,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 -----------
-> This vignette illustrates the design of risk-parity portfolios, widely
+> This vignette illustrates the design of risk parity portfolios, widely
 used by practitioners in the financial industry, with the package
 `riskParityPortfolio`, gives a description of the algorithms used, and
 compares the performance against existing packages.
@@ -127,41 +127,8 @@ barplot(portfolio$risk_contribution,
 ```
 
 As presented earlier, the risk parity portfolios are designed in
-such a way as to ensure equal risk contribution from the assests, which can be noted in the chart above.
-
-Now, let's see a comparison, in terms of computational time, of our cyclical coordinate descent
-implementation against the `rp()` function from the `cccp` package and the `optimalPortfolio()` function
-from the `RiskPortfolios` package. (For a fair comparison, instead of calling our function `riskParityPortfolio()`,
-we call directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
-computes the risk parity weights, just like `rp()` and `optimalPortfolio()`.)
-```{r}
-library(microbenchmark)
-library(cccp)
-library(RiskPortfolios)
-library(riskParityPortfolio)
-
-N <- 100
-V <- matrix(rnorm(N^2), nrow = N)
-Sigma <- cov(V)
-b <- rep(1/N, N)
-
-# use risk_parity_portfolio_nn with default values of tolerance and number of iterations
-op <- microbenchmark(
-          rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-          cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
-          optPort = optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo')),
-          times = 10L)
-print(op)
-par(mar = c(7, 4, 4, 2))
-boxplot(op, main = "Time comparison [milliseconds]", 
-        xlab = NULL, ylab = NULL,
-        unit = "ms", outline = FALSE, las = 2)
-```
-
-As it can be observed, our implementation is orders of maginitude faster than the interior-point method
-used by `cccp` and the formulation used by `RiskPortfolios`. We suggest the interested reader to check
-out Chapter 11 of reference [@BoydCVXBook] for a thorough explanation on interior-point methods.
-
+such a way as to ensure equal risk contribution from the assests,
+which can be noted in the chart above.
 
 # Modern risk parity portfolio
 The design of risk parity portfolios as solved by [@Spinu2013] and [@Billion2013] is of paramount importance
@@ -281,10 +248,43 @@ barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contrib
         args.legend = list(x = "bottomright", bg = "white"))
 ```
 
-Depending on the condition number of the covariance matrix, we found that the packages `FinCovRegularization` and `RiskPortfolios` may fail unexpectedly. Apart from that, the other functions perform the same.
+Depending on the condition number of the covariance matrix, we found that the
+packages `FinCovRegularization` and `RiskPortfolios` may fail unexpectedly.
+Apart from that, the other functions perform the same.
 
+Now, let's see a comparison, in terms of computational time, of our cyclical coordinate descent
+implementation against the `rp()` function from the `cccp` package and the `optimalPortfolio()` function
+from the `RiskPortfolios` package. (For a fair comparison, instead of calling our function `riskParityPortfolio()`,
+we call directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
+computes the risk parity weights, just like `rp()` and `optimalPortfolio()`.)
+```{r}
+library(microbenchmark)
+library(cccp)
+library(RiskPortfolios)
+library(riskParityPortfolio)
 
-# Appendix I: Risk concentration formulations
+N <- 100
+V <- matrix(rnorm(N^2), ncol = N)
+Sigma <- cov(V)
+b <- rep(1/N, N)
+
+# use risk_parity_portfolio_nn with default values of tolerance and number of iterations
+op <- microbenchmark(
+          rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
+          cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
+          optPort = optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo')),
+          times = 10L)
+print(op)
+par(mar = c(7, 4, 4, 2))
+boxplot(op, main = "Time comparison [milliseconds]",
+        xlab = NULL, ylab = NULL,
+        unit = "ms", outline = FALSE, las = 2)
+```
+
+As it can be observed, our implementation is orders of maginitude faster than
+the interior-point method used by `cccp` and the formulation used by `RiskPortfolios`.
+
+# Appendix I: Risk concentration formulations {-}
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
 minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
 A double-index summation can also be used:
@@ -335,7 +335,122 @@ R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{
 $$
 
 
-# Appendix II: Computational time
+# Appendix II: Numerical algorithms for the risk parity portfolio {-}
+In this appendix we describe the algorithms implemented for both the vanilla
+risk parity portfolio and the modern risk parity portfolio that may contain
+additional objective terms and constraints.
+
+## Algorithms for the vanilla risk parity formulation
+We now describe the implementation of the Newton method and the cyclical (coordinate) descent algorithm for the vanilla risk parity formulations presented in [@Spinu2013] and [@Billion2013].
+
+Consider the risk budgeting equations
+$$w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = b_i \;\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}, \qquad i=1,\ldots,N$$
+with $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$.
+
+If we define $\mathbf{x}=\mathbf{w}/\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$, then we can rewrite the risk budgeting equations compactly as
+$$\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$$ with $\mathbf{x} \ge \mathbf{0}$ and we can always recover the portfolio by normalizing: $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
+
+Spinu [@Spinu2013] realized that precisely that equation corresponds to the gradient of the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$ set to zero, which is the optimality condition for its minimization.
+
+So we can finally formulate the risk budgeting problem as the following convex optimization problem:
+$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x}).$$
+
+Roncalli et al. [@Billion2013] proposed a slightly different formulation (also convex):
+$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x}).$$
+
+Unfortunately, even though these two problems are convex, they do not conform with the typical classes that most solvers embrace (i.e., LP, QP, QCQP, SOCP, SDP, GP, etc.).
+
+Nevertheless, there are several simple iterative algorithms that can be used, like the Newton method and the cyclical coordinate descent algorithm.
+
+### Newton method
+The Newton method obtains the iterates based on the gradient $\nabla f$ and the Hessian ${\sf H}$ of the objective function $f(\mathbf{x})$ as follows:
+$$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} - {\sf H}^{-1}(\mathbf{x}^{(k)})\nabla f(\mathbf{x}^{(k)})$$
+
+In practice, one may need to use the backtracking method to properly adjust the step size of each iteration [@BoydCVXBook].
+
+* For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} -
+  \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
+    $$\begin{array}{ll}
+    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}/\mathbf{x}\\
+    {\sf H}(\mathbf{x}) &= \boldsymbol{\Sigma} + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
+    \end{array}$$
+
+* For the function $f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
+  \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
+    $$\begin{array}{ll}
+    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x}/\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
+    \mathbf{b}/\mathbf{x}\\
+    {\sf H}(\mathbf{x}) &= \left(\boldsymbol{\Sigma}\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
+                           \boldsymbol{\Sigma}\mathbf{x}\left(\boldsymbol{\Sigma}\mathbf{x}\right)^{T}/\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}}\right) / \mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}
+                           + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
+    \end{array}$$
+
+### Cyclical coordinate descent algorithm
+This method simply minimizes in a cyclical manner with respect to each element
+of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\cdots,x_{i-1},0,x_{i+1},\cdots,x_N]^T$),
+while helding the other elements fixed.
+
+* For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} -
+  \mathbf{b}^T\log(\mathbf{x})$, the minimization w.r.t. $x_i$ is
+    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i}) - b_i\log{x_i}$$
+with gradient $\nabla_i f = x_i\boldsymbol{\Sigma}_{ii} + (\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i/x_i$.
+Setting the gradient to zero gives us the second order equation
+$$x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i = 0$$
+with positive solution given by
+$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})^2+
+4\boldsymbol{\Sigma}_{ii} b_i}}{2\boldsymbol{\Sigma}_{ii}}.$$
+
+* The derivation for the function
+$f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x})$
+follows similarly. The update for $x_i$, $x^{\star}_i$ is given by
+$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})^2+
+4\boldsymbol{\Sigma}_{ii} b_i \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}}}}{2\boldsymbol{\Sigma}_{ii}}.$$
+
+## Successive convex approximation algorithm for the modern risk parity formulation
+Many practical formulations deployed to design risk parity portfolios lead to nonconvex problems,
+specially when additional objective terms such as mean return or variance, or additional
+constraints, namely, shortselling, are taken into account. To circumvent the complications
+that arise in such formulations, Feng & Palomar [@FengPal2015riskparity] proposed a method called sucessive convex
+approximation (SCA). The SCA method works by linearizing the risk concentration term at some
+pre-defined point, casting the nonconvex problem into a much simpler strictly convex
+optimization problem. This procedure is then iterated until convergence is achieved. It's important
+to highlight that the SCA method always converge to a stationary point.
+
+At the k-th iteration, the SCA method aims to solve
+\begin{align}\begin{array}{ll}
+    \underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i=1}^{n}\left(g_i(\mathbf{w}^k) +
+    (\nabla g_i(\mathbf{w}^{k}))^{\intercal}(\mathbf{w} - \mathbf{w}^{k})\right)^2 +
+    \tau ||\mathbf{w} - \mathbf{w}^{k}||^{2}_{2} + \lambda F(\mathbf{w})\\
+\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
+\end{array}\end{align}
+where the term under the summation is the first order Taylor expasion of the risk concentration
+$R$.
+
+After some mathematical manipulations described in detail in [@FengPal2015riskparity], the optimization
+problem above can be rewritten as
+\begin{align}\begin{array}{ll}
+    \underset{\mathbf{w}}{\textsf{minimize}} & \dfrac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w} +
+    \mathbf{w}^{T}\mathbf{q}^{k} + \lambda F(\mathbf{w})\\
+\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
+\end{array}\end{align}
+where
+\begin{align}
+    \mathbf{Q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{A}^{k} + \tau \mathbf{I},\\
+    \mathbf{q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{g}(\mathbf{w}^{k}) - \mathbf{Q}^{k}\mathbf{w}^{k},
+\end{align}
+and
+\begin{align}
+    \mathbf{A}^{k} & \triangleq \left[\nabla_{\mathbf{w}} g_{1}\left(\mathbf{w}^{k}\right), ...,
+                              \nabla_{\mathbf{w}} g_{n}\left(\mathbf{w}^{k}\right)\right]^{T} \\
+    \mathbf{g}\left(\mathbf{w}^{k}\right) & \triangleq \left[g_{1}\left(\mathbf{w}^{k}\right), ...,
+                                                   g_{n}\left(\mathbf{w}^{k}\right)\right]^{T}.
+\end{align}
+
+The above problem is a quadratic program (QP) which can be efficiently solved by
+standard R libraries. Furthermore, it is straightforward that adding the mean return
+or variance terms still keeps the structure of the problem intact.
+
+# Appendix III: Computational time {-}
 In the subsections that follows we explore the computational time required by
 `method = "sca"`, `method = "alabama"`, and `method = "slsqp"` for some of the formulations presented above.
 Additionally, we compare `method = "alabama"` and `method = "slsqp"` without using the
@@ -345,7 +460,7 @@ gradient of the objective function.
 ```{r, message = FALSE}
 set.seed(42)
 N <- 100
-V <- matrix(rnorm(N^2), nrow = N)
+V <- matrix(rnorm(N^2), ncol = N)
 Sigma <- V %*% t(V)
 w0 <- riskParityPortfolio(Sigma, formulation = "diag")$w
 
@@ -449,7 +564,6 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
-
 ## Experiment with real market data
 Now, let us query some real market data (from the package `sparseIndexTracking`)
 and check the time comparison of the different methods.
@@ -499,12 +613,10 @@ information. Despite that fact, the `"sca"` method still performs faster. Additi
 in some cases, the `"sca"` method attains a better solution than the other methods.
 
 
-# Appendix III: Design of high dimensional risk parity portfolio
+## Design of high dimensional risk parity portfolio
 In order to efficiently design high dimensional portfolios that follows the risk parity criterion,
 we implement the cyclical coordinate descent algorithm proposed by [@Billion2013]. In brief, this
 algorithm optimizes for one portfolio weight at a time while leaving the rest fixed.
-By iterativelly applying this procedure it is possible to show that the sequence of estimations reaches
-the global minimum of the convex function in roughly $O(N_{iter} \times N^2)$.
 
 The plot below illustrates the computational scaling of both Newton and cyclical algorithms.
 Note that the cyclical algorithm is implemented for two different formulations used by [@Spinu2013]
@@ -539,198 +651,6 @@ axis(side = 1, at = size_seq, labels = sizes)
 legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 ```
-
-
-# Appendix IV: Numerical algorithms for the risk-parity portfolio
-In this appendix we describe the algorithms implemented for both the vanilla risk parity portfolio and the modern risk parity portfolio that may contain additional objective terms and constraints.
-
-## Algorithms for the vanilla risk parity formulation
-We now describe the implementation of the Newton method and the cyclical (coordinate) descent algorithm for the vanilla risk parity formulations presented in [@Spinu2013] and [@Billion2013].
-
-Consider the risk budgeting equations
-$$w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = b_i \;\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}, \qquad i=1,\ldots,N$$
-with $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$.
-
-If we define $\mathbf{x}=\mathbf{w}/\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$, then we can rewrite the risk budgeting equations compactly as
-$$\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$$ with $\mathbf{x} \ge \mathbf{0}$ and we can always recover the portfolio by normalizing: $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
-
-Spinu [@Spinu2013] realized that precisely that equation corresponds to the gradient of the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$ set to zero, which is the optimality condition for its minimization. 
-
-So we can finally formulate the risk budgeting problem as the following convex optimization problem:
-$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x}).$$
-
-Roncalli et al. [@Billion2013] proposed a slightly different formulation (also convex):
-$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x}).$$
-
-Unfortunately, even though these two problems are convex, they do not conform with the typical classes that most solvers embrace (i.e., LP, QP, QCQP, SOCP, SDP, GP, etc.).
-
-Nevertheless, there are several simple iterative algorithms that can be used, like the Newton method and the cyclical coordinate descent algorithm.
-
-### Newton method
-The Newton method obtains the iterates based on the gradient $\nabla f$ and the Hessian ${\sf H}$ of the objective function $f(\mathbf{x})$ as follows:
-$$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} - {\sf H}^{-1}(\mathbf{x}^{(k)})\nabla f(\mathbf{x}^{(k)})$$
-
-In practice, one may need to use the backtracking method to properly adjust the step size of each iteration [@BoydCVXBook].
-
-* For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
-    $$\begin{array}{ll}
-    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}/\mathbf{x}\\
-    {\sf H}(\mathbf{x}) &= \boldsymbol{\Sigma} + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
-    \end{array}$$
-
-* For the function $f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
-    $$\begin{array}{ll}
-    \nabla f(\mathbf{x}) &= ?????\\
-    {\sf H}(\mathbf{x}) &= ????.
-    \end{array}$$
-
-
-### Cyclical coordinate descent algorithm
-This method simply minimizes in a cyclical manner with respect to each element of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\cdots,x_{i-1},0,x_{i+1},\cdots,x_N]^T$).
-    
-* For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$, the minimization w.r.t. $x_i$ is
-    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\sigma_i^2 + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i}) - b_i\log{x_i}$$
-with gradient $\nabla_i f = x_i\sigma_i^2 + (\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i}) - b_i/x_i$. Setting the gradient to zero gives us the second order equation
-$$x_i^2\sigma_i^2 + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i}) - b_i = 0$$
-with positive solution given by
-$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i})^2+4\sigma_i^2b_i}}{2\sigma_i^2}.$$
-
-* For the function $f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x})$, XXX
-
-
-
-## Successive convex approximation algorithm for the modern risk parity formulation
-Many practical formulations deployed to design risk parity portfolios lead to nonconvex problems,
-specially when additional objective terms such as mean return or variance, or additional
-constraints, namely, shortselling, are taken into account. To circumvent the complications
-that arise in such formulations, Feng & Palomar [@FengPal2015riskparity] proposed a method called sucessive convex
-approximation (SCA). The SCA method works by linearizing the risk concentration term at some
-pre-defined point, casting the nonconvex problem into a much simpler strictly convex
-optimization problem. This procedure is then iterated until convergence is achieved. It's important
-to highlight that the SCA method always converge to a stationary point.
-
-At the k-th iteration, the SCA method aims to solve
-\begin{align}\begin{array}{ll}
-    \underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i=1}^{n}\left(g_i(\mathbf{w}^k) +
-    (\nabla g_i(\mathbf{w}^{k}))^{\intercal}(\mathbf{w} - \mathbf{w}^{k})\right)^2 +
-    \tau ||\mathbf{w} - \mathbf{w}^{k}||^{2}_{2} + \lambda F(\mathbf{w})\\
-\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
-\end{array}\end{align}
-where the term under the summation is the first order Taylor expasion of the risk concentration
-$R$.
-
-After some mathematical manipulations described in detail in [@FengPal2015riskparity], the optimization
-problem above can be rewritten as
-\begin{align}\begin{array}{ll}
-    \underset{\mathbf{w}}{\textsf{minimize}} & \dfrac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w} +
-    \mathbf{w}^{T}\mathbf{q}^{k} + \lambda F(\mathbf{w})\\
-\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
-\end{array}\end{align}
-where
-\begin{align}
-    \mathbf{Q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{A}^{k} + \tau \mathbf{I},\\
-    \mathbf{q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{g}(\mathbf{w}^{k}) - \mathbf{Q}^{k}\mathbf{w}^{k},
-\end{align}
-and
-\begin{align}
-    \mathbf{A}^{k} & \triangleq \left[\nabla_{\mathbf{w}} g_{1}\left(\mathbf{w}^{k}\right), ...,
-                              \nabla_{\mathbf{w}} g_{n}\left(\mathbf{w}^{k}\right)\right]^{T} \\
-    \mathbf{g}\left(\mathbf{w}^{k}\right) & \triangleq \left[g_{1}\left(\mathbf{w}^{k}\right), ...,
-                                                   g_{n}\left(\mathbf{w}^{k}\right)\right]^{T}.
-\end{align}
-
-The above problem is a quadratic program (QP) which can be efficiently solved by
-standard R libraries. Furthermore, it is straightforward that adding the mean return
-or variance terms still keeps the structure of the problem intact.
-
-
-
-## Vinicius's Roncalli's Formulation
-The risk parity formulation proposed in [@Billion2013] is 
-$$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}} - \sum_{i=1}^{N}b_i\log(w_i)\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
-\end{array}$$
-
-Note that the first order condition with respect to every
-$w_i, i = 1, 2, ..., n,$ is given as
-$$\begin{align}
-\dfrac{(\boldsymbol{\Sigma}\mathbf{w})_{i}}{\sqrt{\mathbf{w}^{T}\Sigma\mathbf{w}}} - \dfrac{b_i}{w_i} = 0,\\
-w_i (\boldsymbol{\Sigma}\mathbf{w})_{i} - b_i\sigma(\mathbf{w}) = 0,\\
-w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
-w_i\boldsymbol{\Sigma}_{ii}) - b_i\sigma(\mathbf{w}) = 0.
-\end{align}$$
-
-Since $w_i > 0$ and $\boldsymbol{\Sigma}_{ii} > 0$, then the LHS of the expression above
-is a convex second-order polynomial with respect to $w_i$. Also note that its discriminant,
-$\Delta$, is given by
-$$\begin{equation}
-\Delta = ((\boldsymbol{\Sigma}\mathbf{w})_{i} - w_i\boldsymbol{\Sigma}_{ii})^2
-+ 4\boldsymbol{\Sigma}_{ii}b_{i}\sigma(\mathbf{w}).
-\end{equation}$$
-which satisfies $\Delta > 0$, therefore, the convex second-order polynomial always has two solutions.
-
-Additionally, since $-\boldsymbol{\Sigma}_{ii}b_i\sigma(\mathbf{w}) < 0$, i.e., the sign of the product of
-its roots is always negative -- then the two roots always have oppostive sings. Therefore, we conclude
-that
-$$\begin{equation}
-w^{\star}_i = \dfrac{w_i\boldsymbol{\Sigma}_{ii} - (\boldsymbol{\Sigma}\mathbf{w})_i +
-              \sqrt{(w_i\boldsymbol{\Sigma}_{ii} - (\boldsymbol{\Sigma}\mathbf{w})_i)^2 +
-            4\boldsymbol{\Sigma}_{ii}b_i\sigma(\mathbf{w})}}{2\boldsymbol{\Sigma}_{ii}}
-\end{equation}$$
-is the desired solution.
-
-The coordinate descent algorithm is accomplished by iterating the above
-equation until some convergence criterion is attained. Notice that we can save some computational
-effort if we exploit the following fact: the only terms that need to be updated are $\sigma(\mathbf{w})$
-and $\boldsymbol{\Sigma}\mathbf{w}$.
-
-Define $\mathbf{w}^{\star (i)} \triangleq (w^{\star}_{1}, w^{\star}_{2}, ..., w^{\star}_{i}, w_{i+1}, ..., w_n)^\intercal$
-as the vector of updated values up to the $i$-th coordinate. Note that
-$$\begin{equation}
-  \mathbf{w}^{\star (i)} = (w^{\star}_{1}, w^{\star}_{2}, ..., w_{i}, w_{i+1}, ..., w_n)^\intercal +
-                           (0, 0, ..., w^{\star}_{i}, 0, ..., 0)^\intercal +
-                           (0, 0, ..., -w_i, 0, ..., 0)^\intercal
-\end{equation}$$
-
-Hence, the updating formula for $\boldsymbol{\Sigma}\mathbf{w}$ is
-$$\begin{equation}
-  \boldsymbol{\Sigma}\mathbf{w}^{\star (i)} = \boldsymbol{\Sigma}\mathbf{w}^{\star (i - 1)} +
-                                              \boldsymbol{\Sigma}_{,i}\left(w^{\star}_{i} - w_i\right),
-\end{equation}$$
-where $\boldsymbol{\Sigma}_{,i}$ is the $i$-th column of the sample covariance matrix.
-
-Similarly, the updating formula for $\sigma(\mathbf{w})$ goes as
-$$\begin{equation}
-  \sigma^2\left(\mathbf{w}^{\star (i)}\right) = \sigma^{2}\left(\mathbf{w}^{\star (i-1)}\right) + (w^{\star}_i - w_i)^{2}\boldsymbol{\Sigma}_{ii}
-  + 2(w^{\star}_i - w_i)\boldsymbol{\Sigma}_{i,}\mathbf{w}^{\star (i-1)},
-\end{equation}$$
-where $\boldsymbol{\Sigma}_{i,}$ is the $i$-th row of the sample covariance matrix.
-
-## Viniciu's Spinu's Formulation
-In [@Spinu2013], Spinu proposed the following risk parity formulation:
-$$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \frac{1}{2}\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w} - \sum_{i=1}^{N}b_i\log(w_i)\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
-\end{array}$$
-
-The first order condition is given as
-$$\begin{equation}
-w^2_i\boldsymbol{\Sigma}_{ii} + w_i((\boldsymbol{\Sigma}\mathbf{w})_{i} -
-w_i\boldsymbol{\Sigma}_{ii}) - b_i = 0.
-\end{equation}$$
-
-
-By analogy, it turns out that derivation of the cyclical algorithm is very
-similar to the case presented previously, in which only the term
-$\boldsymbol(\Sigma\mathbf{w})$ needs to be updated.
-
-In a similar fashion, the cyclical algorithm for this formulation
-has the exact same structure as in the previous case, but with
-$\sigma(\mathbf{w}) = 1$ and $\boldsymbol{\Sigma}\mathbf{w}$ updated as
-derived in the previously.
-
-
 
 # References {-}
 \setlength{\parindent}{-0.2in}
