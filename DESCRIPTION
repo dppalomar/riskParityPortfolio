@@ -44,27 +44,15 @@ Imports:
     Rcpp
 Suggests:
     bookdown,
-    cccp,
-    FinCovRegularization,
     knitr,
-    microbenchmark,
     numDeriv,
     prettydoc,
-    RiskPortfolios,
     rmarkdown,
     R.rsp,    
-    sparseIndexTracking,
-    testthat,
-    xts
+    testthat
 VignetteBuilder:
     bookdown,
-    cccp,
-    FinCovRegularization,
     knitr,
-    microbenchmark,
     prettydoc,
-    RiskPortfolios,
     rmarkdown,
-    R.rsp,
-    sparseIndexTracking,
-    xts
+    R.rsp
