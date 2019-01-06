@@ -380,18 +380,6 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
   mu <- uniroot(obj_fun, interval = c(mu_lb, mu_ub), w0, tol = 1e-8)$root
   w <- pmax(pmin(w0 - mu, w_ub), w_lb)
   return(w)
-
-#  N <- length(w0)
-#  if (length(w_ub) == 1)
-#    w_ub <- rep(w_ub, N)
-#  if (length(w_lb) == 1)
-#    w_lb <- rep(w_lb, N)
-#  Dmat <- diag(N)
-#  dvec <- w0
-#  Amat <- cbind(rep(1, N), diag(N), -diag(N))
-#  bvec <- c(1, w_lb, -w_ub)
-#  meq <- 1
-#  return(quadprog::solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = meq)$solution)
 }
 
 
