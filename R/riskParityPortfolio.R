@@ -377,7 +377,7 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
   }
   mu_ub <- max(w0 - w_lb)
   mu_lb <- min(w0 - w_ub)
-  mu <- uniroot(obj_fun, interval = c(mu_lb, mu_ub), w0, tol = 1e-8)$root
+  mu <- stats::uniroot(obj_fun, interval = c(mu_lb, mu_ub), w0, tol = 1e-8)$root
   w <- pmax(pmin(w0 - mu, w_ub), w_lb)
   return(w)
 }
