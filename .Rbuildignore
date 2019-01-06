@@ -10,6 +10,7 @@
 ^.compileAttributes\.R$
 ^.roxygenize\.R$
 ^.travis\.yml$
+^.circleci$
 ^appveyor\.yml$
 ^Dockerfile$
 ^Makefile$
