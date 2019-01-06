@@ -1,7 +1,7 @@
 #' Package riskParityPortfolio
 #'
-#' Fast design of risk-parity portfolios for financial investment.
-#' The goal of the risk-parity portfolio formulation is to equalize or distribute
+#' Fast design of risk parity portfolios for financial investment.
+#' The goal of the risk parity portfolio formulation is to equalize or distribute
 #' the risk contributions of the different assets, which is missing if we simply
 #' consider the overall volatility of the portfolio as in the mean-variance
 #' Markowitz portfolio. In addition to the vanilla formulation, where the risk
@@ -16,7 +16,7 @@
 #'
 #' @section Help:
 #' For a quick help see the README file:
-#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/readme/README.html}{CRAN-README} and 
+#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/readme/README.html}{CRAN-README} and
 #' \href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html}{GitHub-README}.
 #'
 #' For more details see the vignette:
@@ -34,7 +34,7 @@
 #'
 #' F. Spinu (2013). An Algorithm for Computing Risk Parity Weights.
 #' <https://dx.doi.org/10.2139/ssrn.2297383>
-#' 
+#'
 #' T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing High-dimensional risk parity portfolios.
 #' <https://arxiv.org/pdf/1311.4057.pdf>
 #'
