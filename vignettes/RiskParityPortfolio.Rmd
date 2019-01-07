@@ -4,7 +4,6 @@ author: |
  | Zé Vinícius and Daniel P. Palomar
  |
  | Hong Kong University of Science and Technology (HKUST)
-documentclass: report
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
