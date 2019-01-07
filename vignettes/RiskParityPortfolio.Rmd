@@ -393,7 +393,7 @@ while helding the other elements fixed.
 
 * For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} -
   \mathbf{b}^T\log(\mathbf{x})$, the minimization w.r.t. $x_i$ is
-    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{:,i}) - b_i\log{x_i}$$
+    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i\log{x_i}$$
 with gradient $\nabla_i f = x_i\boldsymbol{\Sigma}_{ii} + (\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i/x_i$.
 Setting the gradient to zero gives us the second order equation
 $$x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i = 0$$
