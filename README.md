@@ -106,8 +106,10 @@ res$risk_contribution/sum(res$risk_contribution)
 Documentation
 -------------
 
-For more detailed information, please check the
-[vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html)
+For more detailed information, please check the [CRAN
+vignette](https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio.html),
+[GitHub
+vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html),
 or the [package webpage](https://mirca.github.io/riskParityPortfolio).
 
 Citation
