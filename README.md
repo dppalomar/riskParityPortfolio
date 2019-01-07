@@ -16,7 +16,7 @@ Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](http
 riskParityPortfolio
 ===================
 
-The package `riskParityPortfolio` provides tools to design risk-parity
+The package `riskParityPortfolio` provides tools to design risk parity
 portfolios. In its simplest form, we consider the convex formulation
 with a unique solution proposed by [Spinu
 (2013)](https://dx.doi.org/10.2139/ssrn.2297383) and use a cyclical
@@ -86,7 +86,7 @@ N <- 5
 V <- matrix(rnorm(N^2), ncol = N)
 Sigma <- cov(V)
 
-# risk-parity portfolio
+# risk parity portfolio
 res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"

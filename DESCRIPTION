@@ -1,8 +1,8 @@
 Package: riskParityPortfolio
 Title: Design of Risk Parity Portfolios
 Version: 0.1.0.9000
-Description: Fast design of risk-parity portfolios for financial investment.
-    The goal of the risk-parity portfolio formulation is to equalize or distribute
+Description: Fast design of risk parity portfolios for financial investment.
+    The goal of the risk parity portfolio formulation is to equalize or distribute
     the risk contributions of the different assets, which is missing if we simply
     consider the overall volatility of the portfolio as in the mean-variance
     Markowitz portfolio. In addition to the vanilla formulation, where the risk
