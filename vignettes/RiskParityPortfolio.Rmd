@@ -1,9 +1,8 @@
 ---
 title: "Fast Design of Risk Parity Portfolios"
 author: |
- | Zé Vinícius and Daniel P. Palomar
- |
- | Hong Kong University of Science and Technology (HKUST)
+  | Zé Vinícius and Daniel P. Palomar
+  | Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
@@ -86,10 +85,8 @@ However, for non-diagonal $\boldsymbol{\Sigma}$ or with other additional constra
 
 With the goal of designing risk budget portfolios, Spinu proposed in [@Spinu2013] to solve the
 following convex optimization problem:
-$$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w} - \sum_{i=1}^{N}b_i\log(w_i)\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1,~\mathbf{w}\ge\mathbf{0}.
-\end{array}$$
+$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \sum_{i=1}^{N}b_i\log(x_i),$$
+where the portfolio can be recovered as $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
 
 It turns out, as shown in [@Spinu2013], that the unique solution for the optimization problem
 stated above precisely attains the desired risk budget requirements. Such solution can be
@@ -379,32 +376,29 @@ In practice, one may need to use the backtracking method to properly adjust the 
 * For the function $f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
   \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
     $$\begin{array}{ll}
-    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x}/\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
-    \mathbf{b}/\mathbf{x}\\
-    {\sf H}(\mathbf{x}) &= \left(\boldsymbol{\Sigma}\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
-                           \boldsymbol{\Sigma}\mathbf{x}\left(\boldsymbol{\Sigma}\mathbf{x}\right)^{T}/\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}}\right) / \mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}
-                           + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
+    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x}/\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}/\mathbf{x}\\
+    {\sf H}(\mathbf{x}) &= \left(\boldsymbol{\Sigma} - \boldsymbol{\Sigma}\mathbf{x}\mathbf{x}^T\boldsymbol{\Sigma}/\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}\right) / \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
     \end{array}$$
 
 ### Cyclical coordinate descent algorithm
 This method simply minimizes in a cyclical manner with respect to each element
-of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\cdots,x_{i-1},0,x_{i+1},\cdots,x_N]^T$),
+of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\ldots,x_{i-1},0,x_{i+1},\ldots,x_N]^T$),
 while helding the other elements fixed.
 
 * For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} -
   \mathbf{b}^T\log(\mathbf{x})$, the minimization w.r.t. $x_i$ is
-    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i\log{x_i}$$
-with gradient $\nabla_i f = x_i\boldsymbol{\Sigma}_{ii} + (\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i/x_i$.
+    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i}) - b_i\log{x_i}$$
+with gradient $\nabla_i f = x_i\boldsymbol{\Sigma}_{ii} + (\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i}) - b_i/x_i$.
 Setting the gradient to zero gives us the second order equation
-$$x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i}) - b_i = 0$$
+$$x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i}) - b_i = 0$$
 with positive solution given by
-$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})^2+
+$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})^2+
 4\boldsymbol{\Sigma}_{ii} b_i}}{2\boldsymbol{\Sigma}_{ii}}.$$
 
 * The derivation for the function
 $f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x})$
-follows similarly. The update for $x_i$, $x^{\star}_i$ is given by
-$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{.,i})^2+
+follows similarly. The update for $x_i$ is given by
+$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})^2+
 4\boldsymbol{\Sigma}_{ii} b_i \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}}}}{2\boldsymbol{\Sigma}_{ii}}.$$
 
 ## Successive convex approximation algorithm for the modern risk parity formulation
@@ -412,20 +406,19 @@ Many practical formulations deployed to design risk parity portfolios lead to no
 specially when additional objective terms such as mean return or variance, or additional
 constraints, namely, shortselling, are taken into account. To circumvent the complications
 that arise in such formulations, Feng & Palomar [@FengPal2015riskparity] proposed a method called sucessive convex
-approximation (SCA). The SCA method works by linearizing the risk concentration term at some
-pre-defined point, casting the nonconvex problem into a much simpler strictly convex
-optimization problem. This procedure is then iterated until convergence is achieved. It's important
-to highlight that the SCA method always converge to a stationary point.
+approximation (SCA). The SCA method works by convexifying the risk concentration term at some
+pre-defined point, casting the nonconvex problem into a much simpler strongly convex
+optimization problem. This procedure is then iterated until convergence is achieved. It is important
+to highlight that the SCA method always converges to a stationary point.
 
-At the k-th iteration, the SCA method aims to solve
+At the $k$-th iteration, the SCA method aims to solve
 \begin{align}\begin{array}{ll}
     \underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i=1}^{n}\left(g_i(\mathbf{w}^k) +
-    (\nabla g_i(\mathbf{w}^{k}))^{\intercal}(\mathbf{w} - \mathbf{w}^{k})\right)^2 +
+    (\nabla g_i(\mathbf{w}^{k}))^{T}(\mathbf{w} - \mathbf{w}^{k})\right)^2 +
     \tau ||\mathbf{w} - \mathbf{w}^{k}||^{2}_{2} + \lambda F(\mathbf{w})\\
 \textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
 \end{array}\end{align}
-where the term under the summation is the first order Taylor expasion of the risk concentration
-$R$.
+where the first order Taylor expasion of $g_i(\mathbf{w})$ has been used.
 
 After some mathematical manipulations described in detail in [@FengPal2015riskparity], the optimization
 problem above can be rewritten as
