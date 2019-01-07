@@ -16,12 +16,12 @@
 #'
 #' @section Help:
 #' For a quick help see the README file:
-#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/readme/README.html}{CRAN-README} and
+#' \href{https://cran.r-project.org/package=riskParityPortfolio/readme/README.html}{CRAN-README} and
 #' \href{https://raw.githack.com/dppalomar/riskParityPortfolio/master/README.html}{GitHub-README}.
 #'
 #' For more details see the vignette:
-#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
-#' \href{https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{CRAN-pdf-vignette},
+#' \href{https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
+#' \href{https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{CRAN-pdf-vignette},
 #' \href{https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html}{GitHub-html-vignette}, and
 #' \href{https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf}{GitHub-pdf-vignette}.
 #'

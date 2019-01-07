@@ -5,8 +5,8 @@
 \alias{riskParityPortfolio-package}
 \title{Package riskParityPortfolio}
 \description{
-Fast design of risk-parity portfolios for financial investment.
-The goal of the risk-parity portfolio formulation is to equalize or distribute
+Fast design of risk parity portfolios for financial investment.
+The goal of the risk parity portfolio formulation is to equalize or distribute
 the risk contributions of the different assets, which is missing if we simply
 consider the overall volatility of the portfolio as in the mean-variance
 Markowitz portfolio. In addition to the vanilla formulation, where the risk
@@ -24,13 +24,13 @@ a detailed documentation and comparison, with several illustrative examples.
 \section{Help}{
 
 For a quick help see the README file:
-\href{https://cran.r-project.org/web/packages/riskParityPortfolio/readme/README.html}{CRAN-README} and 
-\href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html}{GitHub-README}.
+\href{https://cran.r-project.org/package=riskParityPortfolio/readme/README.html}{CRAN-README} and
+\href{https://raw.githack.com/dppalomar/riskParityPortfolio/master/README.html}{GitHub-README}.
 
 For more details see the vignette:
-\href{https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
-\href{https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{CRAN-pdf-vignette},
-\href{https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html}{GitHub-html-vignette}, and
+\href{https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
+\href{https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{CRAN-pdf-vignette},
+\href{https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html}{GitHub-html-vignette}, and
 \href{https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf}{GitHub-pdf-vignette}.
 }
 

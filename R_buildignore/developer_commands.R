@@ -16,8 +16,9 @@ citation("riskParityPortfolio")
 vignette(package = "riskParityPortfolio")
 
 # Downloads (https://ipub.com/dev-corner/apps/r-package-downloads/)
-res <- cranlogs::cran_downloads(from = "2018-12-25", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
+res <- cranlogs::cran_downloads(from = "2017-12-20", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
 print(res)
+subset(res, package == "riskParityPortfolio", select = c("date", "count"))
 library(ggplot2)
 ggplot(res, aes(x=date, y=count, color=package)) + geom_line()
 
@@ -50,6 +51,6 @@ devtools::build()
 #devtools::build_win()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
-#R CMD check riskParityPortfolio_0.1.0.9000.tar.gz --as-cran  # this is before submission to CRAN
-#R CMD install riskParityPortfolio_0.1.0.9000.tar.gz
+#R CMD check riskParityPortfolio_0.1.1.9000.tar.gz --as-cran  # this is before submission to CRAN
+#R CMD install riskParityPortfolio_0.1.1.9000.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html

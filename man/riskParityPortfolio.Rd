@@ -48,12 +48,12 @@ It must be one of: "diag", "rc-double-index",
 "rc-over-b vs theta". The default is "rc-over-b-double-index".
 If \code{formulation} is not provided and no additional terms or
 constraints are set, such as expected return or shortselling, then the
-vanilla risk-parity portfolio will be returned. If formulation is
-"diag" then the analytical solution of the risk-parity optimization for
+vanilla risk parity portfolio will be returned. If formulation is
+"diag" then the analytical solution of the risk parity optimization for
 for a diagonal covariance matrix will be returned. See details below.}
 
 \item{w0}{initial value for the portfolio weights. Default is a convex
-combination of the risk-parity portfolio, the (uncorrelated) minimum variance
+combination of the risk parity portfolio, the (uncorrelated) minimum variance
 portfolio, and the maximum return portfolio.}
 
 \item{theta0}{initial value for theta (in case formulation uses theta). If not provided,
@@ -92,7 +92,7 @@ A list containing possibly the following elements:
 \item{\code{convergence}}{boolean flag to indicate whether or not the optimization converged}
 }
 \description{
-This function designs risk-parity portfolios to equalize/distribute
+This function designs risk parity portfolios to equalize/distribute
 the risk contributions of the different assets, which is missing if we simply
 consider the overall volatility of the portfolio as in the mean-variance
 Markowitz portfolio. In addition to the vanilla formulation, where the risk
@@ -113,8 +113,8 @@ for the expected return and the variance terms, respectively, and \code{w_lb} an
 \code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w}.
 }
 \details{
-By default, the problem considered is the vanilla risk-parity portfolio:
-\code{w >= 0, sum(w) = 1}, with no expected return term, and no variance term. In this case, 
+By default, the problem considered is the vanilla risk parity portfolio:
+\code{w >= 0, sum(w) = 1}, with no expected return term, and no variance term. In this case,
 the problem formulation is convex and the optimal solution is guaranteed to be achieved with
 a perfect risk concentration, i.e., \code{R(w) = 0}. By default, we use the formulation by 
 Spinu (2013) (\code{method_init = "cyclical-spinu"}), but the user can also select the formulation
@@ -148,7 +148,7 @@ N <- 5
 V <- matrix(rnorm(N^2), ncol = N)
 Sigma <- cov(V)
 
-# risk-parity portfolio
+# risk parity portfolio
 res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
