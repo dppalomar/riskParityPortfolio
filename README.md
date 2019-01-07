@@ -144,7 +144,7 @@ and
 
 Vignette:
 [CRAN-html-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
-[CRAN-pdf-vignette](https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
+[CRAN-pdf-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
 [GitHub-html-vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html),
 and
 [GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf).
