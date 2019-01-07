@@ -109,7 +109,7 @@ Documentation
 For more detailed information, please check the [CRAN
 vignette](https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio.html),
 [GitHub
-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html),
+vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html),
 or the [package webpage](https://mirca.github.io/riskParityPortfolio).
 
 Citation
@@ -140,11 +140,11 @@ and [GitHub](https://github.com/dppalomar/riskParityPortfolio).
 README file:
 [CRAN-readme](https://cran.r-project.org/web/packages/riskParityPortfolio/readme/README.html)
 and
-[GitHub-readme](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/README.html).
+[GitHub-readme](https://raw.githack.com/dppalomar/riskParityPortfolio/master/README.html).
 
 Vignette:
 [CRAN-html-vignette](https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio.html),
 [CRAN-pdf-vignette](https://cran.r-project.org/web/packages/riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
-[GitHub-html-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/riskParityPortfolio/blob/master/vignettes/RiskParityPortfolio.html),
+[GitHub-html-vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html),
 and
 [GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf).
