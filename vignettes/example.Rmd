@@ -5,6 +5,12 @@ author:
   affiliation: "Hong Kong University of Science and Technology (HKUST)"
 date: "`r Sys.Date()`"
 output:
+  rticles::jss_article:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 1
+    latex_engine: xelatex
   bookdown::html_document2:
     base_format: prettydoc::html_pretty
     theme: tactile
@@ -13,13 +19,7 @@ output:
     number_sections: no
     toc: yes
     toc_depth: 2
-  bookdown::pdf_document2:
-    fig_caption: yes
-    number_sections: yes
-    toc: yes
-    toc_depth: 2
 header-includes:
-  \allowdisplaybreaks
 indent: yes
 csl: ieee.csl
 bibliography: refs.bib
@@ -36,8 +36,9 @@ opts_chunk$set(
   dpi = 96
 )
 knit_hooks$set(pngquant = hook_pngquant)
-#Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/example.Rmd", "bookdown::html_document2")
+# Help on bookdown: https://bookdown.org/yihui/bookdown/
+# rmarkdown::render("vignettes/example.Rmd", "bookdown::html_document2")
+# rmarkdown::render("vignettes/example.Rmd", "rticles::jss_article")
 ```
 
 -----------
