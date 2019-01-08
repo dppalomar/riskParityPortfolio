@@ -1,11 +1,12 @@
 ---
-title: "Simple example"
-author:
-- name: "Daniel P. Palomar"
-  affiliation: "Hong Kong University of Science and Technology (HKUST)"
+title: |
+  | Simple example \vspace{0.2cm}
+author: |
+  | Daniel P. Palomar \vspace{0.2cm}
+  | Hong Kong University of Science and Technology (HKUST) \vspace{0.2cm}
 date: "`r Sys.Date()`"
 output:
-  rticles::jss_article:
+  bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
     toc: yes
@@ -38,7 +39,7 @@ opts_chunk$set(
 knit_hooks$set(pngquant = hook_pngquant)
 # Help on bookdown: https://bookdown.org/yihui/bookdown/
 # rmarkdown::render("vignettes/example.Rmd", "bookdown::html_document2")
-# rmarkdown::render("vignettes/example.Rmd", "rticles::jss_article")
+# rmarkdown::render("vignettes/example.Rmd", "bookdown::pdf_document2")
 ```
 
 -----------
