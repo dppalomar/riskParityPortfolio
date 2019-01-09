@@ -118,8 +118,8 @@ Citation
 If you find this package useful in your research, please consider citing
 the following works:
 
--   J. V. de M. Cardoso and D. P. Palomar (2018). riskParityPortfolio:
-    Design of Risk Parity Portfolios. R package version 0.1.0.
+-   J. V. de M. Cardoso and D. P. Palomar (2019). riskParityPortfolio:
+    Design of Risk Parity Portfolios. R package version 0.1.1.
     <https://CRAN.R-project.org/package=riskParityPortfolio>
 -   Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex
     Optimization Methods for Risk Parity Portfolio Design. *IEEE Trans.
