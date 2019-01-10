@@ -15,12 +15,16 @@ package?riskParityPortfolio
 citation("riskParityPortfolio")
 vignette(package = "riskParityPortfolio")
 
+
 # Downloads (https://ipub.com/dev-corner/apps/r-package-downloads/)
-res <- cranlogs::cran_downloads(from = "2017-12-20", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
-print(res)
-subset(res, package == "riskParityPortfolio", select = c("date", "count"))
+library(cranlogs)
 library(ggplot2)
-ggplot(res, aes(x=date, y=count, color=package)) + geom_line()
+library(dplyr)
+downloads <- cran_downloads(from = "2017-12-20", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
+subset(downloads, package == "riskParityPortfolio" & date >= "2018-12-25" , select = c("date", "count"))
+downloads <- downloads %>% group_by(package) %>% mutate(cum_count = cumsum(count))
+ggplot(downloads, aes(x=date, y=count, color=package)) + geom_line() + ggtitle("Downloads")
+ggplot(downloads_cum, aes(x=date, y=cum_count, color=package)) + geom_line() + ggtitle("Cumulative downloads")
 
 
 ##
@@ -37,9 +41,8 @@ devtools::document()  # to generate all documentation via roxygen
 
 
 # Code tests (https://codecov.io/gh/mirca/riskParityPortfolio)
-#devtools::use_testthat()  # the first time
 devtools::test()
-#covr::package_coverage()  # coverage of tests
+covr::package_coverage()  # coverage of tests
 #goodpractice::gp()  # overall checks
 
 
