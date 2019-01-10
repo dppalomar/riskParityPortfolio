@@ -5,7 +5,7 @@ def test():
     n = 1000
     t = 1000 * n
     x = np.random.normal(size=t).reshape((n, -1))
-    corr = x @ x.T
+    corr = x @ x.T / t
     b = np.ones(len(corr)) / len(corr)
     w = rpp.design(corr, b, )
     rc = w @ (corr * w)
