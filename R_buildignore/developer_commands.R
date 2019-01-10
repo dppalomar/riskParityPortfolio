@@ -24,7 +24,7 @@ downloads <- cran_downloads(from = "2017-12-20", package = c("riskParityPortfoli
 downloads <- downloads %>% group_by(package) %>% mutate(cum_count = cumsum(count))
 downloads %>% subset(package == "riskParityPortfolio" & date >= "2018-12-25" , select = c("date", "count", "cum_count"))
 ggplot(downloads, aes(x=date, y=count, color=package)) + geom_line() + ggtitle("Downloads")
-ggplot(downloads_cum, aes(x=date, y=cum_count, color=package)) + geom_line() + ggtitle("Cumulative downloads")
+ggplot(downloads, aes(x=date, y=cum_count, color=package)) + geom_line() + ggtitle("Cumulative downloads")
 
 
 ##
