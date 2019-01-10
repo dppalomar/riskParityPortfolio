@@ -5,7 +5,8 @@
 #include <cmath>
 
 using namespace Eigen;
-VectorXd risk_parity_portfolio_ccd(const MatrixXd&, const VectorXd&, const double, const int);
+VectorXd risk_parity_portfolio_ccd_spinu(const MatrixXd&, const VectorXd&, const double, const int);
+VectorXd risk_parity_portfolio_ccd_roncalli(const MatrixXd&, const VectorXd&, const double, const int);
 VectorXd active_risk_parity_portfolio_ccd(const MatrixXd&, const VectorXd&, const VectorXd&,
                                           const double, const double, const double, const unsigned int);
 #endif
