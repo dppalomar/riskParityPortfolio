@@ -7,7 +7,7 @@
 Documentation
 *************
 
-The package `riskParityPortfolio` provides tools to design risk-parity portfolios.
+`riskParityPortfolio` provides tools to design risk-parity portfolios.
 In its simplest form, we consider the convex formulation with a unique solution
 proposed by `Spinu (2013) <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2297383>`_
 and use a cyclical method inspired by `Griveau-Billion (2013) <https://arxiv.org/pdf/1311.4057.pdf>`_.
@@ -64,7 +64,7 @@ The *development* version can be installed from GitHub as follows:
    pip install -e .
 
 Citation
---------
+========
 
 If you made use of this package on your research, please consider citing the following resources:
 
@@ -72,12 +72,13 @@ If you made use of this package on your research, please consider citing the fol
   Design of Risk Parity Portfolios. R package version 0.1.1. https://CRAN.R-project.org/package=riskParityPortfolio
 - Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design.
   IEEE Trans. on Signal Processing, vol. 63, no. 19, pp. 5285-5300. https://doi.org/10.1109/TSP.2015.2452219
-- F. Spinu (2013). An Algorithm for Computing Risk Parity Weights. https://dx.doi.org/10.2139/ssrn.2297383
-- T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing
-  high-dimensional risk parity portfolios. https://arxiv.org/pdf/1311.4057.pdf
+- F. Spinu (2013). An Algorithm for Computing Risk Parity Weights.
+  https://dx.doi.org/10.2139/ssrn.2297383
+- T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing high-dimensional
+  risk parity portfolios. https://arxiv.org/pdf/1311.4057.pdf
 
 Bug Reports
------------
+===========
 
 If you found a bug, please consider opening an issue ticket at our GitHub
 `repo <https://github.com/dppalomar/riskParityPortfolio/issues>`_.
