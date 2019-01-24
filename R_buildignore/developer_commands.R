@@ -16,15 +16,27 @@ citation("riskParityPortfolio")
 vignette(package = "riskParityPortfolio")
 
 
-# Downloads (https://ipub.com/dev-corner/apps/r-package-downloads/)
+##
+## Downloads (https://ipub.com/dev-corner/apps/r-package-downloads/)
+##
 library(cranlogs)
 library(ggplot2)
 library(dplyr)
+library(reshape2)
 downloads <- cran_downloads(from = "2017-12-20", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
-downloads <- downloads %>% group_by(package) %>% mutate(cum_count = cumsum(count))
-downloads %>% subset(package == "riskParityPortfolio" & date >= "2018-12-25" , select = c("date", "count", "cum_count"))
-ggplot(downloads, aes(x=date, y=count, color=package)) + geom_line() + ggtitle("Downloads")
-ggplot(downloads, aes(x=date, y=cum_count, color=package)) + geom_line() + ggtitle("Cumulative downloads")
+downloads <- downloads %>% group_by(package) %>% mutate("cum_count" = cumsum(count)) %>% ungroup()
+downloads %>% 
+  filter(package == "riskParityPortfolio" & date >= "2018-12-25") %>%
+  select("date", "count", "cum_count") %>%
+  tail(20)
+ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
+ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
+melt(downloads, id.vars = c("date", "package")) %>%
+  ggplot(aes(x = date, y = value, color = package)) + 
+  geom_line() +
+  facet_wrap(~ variable, ncol = 1, scales = "free") +
+  ggtitle("Downloads")
+
 
 
 ##
