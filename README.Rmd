@@ -163,6 +163,12 @@ If you find this package useful in your research, please consider citing the fol
   <https://dx.doi.org/10.2139/ssrn.2297383>
 - T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing High-dimensional risk parity portfolios. <https://arxiv.org/pdf/1311.4057.pdf>
 
+
+## Contributing
+
+We welcome all sorts of contributions. Please feel free to open an issue
+to report a bug or discuss a feature request.
+
 ## Links
 Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [GitHub](https://github.com/dppalomar/riskParityPortfolio).
 
