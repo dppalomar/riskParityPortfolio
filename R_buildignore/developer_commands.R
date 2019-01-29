@@ -22,7 +22,7 @@ vignette(package = "riskParityPortfolio")
 library(cranlogs)
 library(ggplot2)
 library(dplyr)
-library(reshape2)
+library(tidyr)
 downloads <- cran_downloads(from = "2017-12-20", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
 downloads <- downloads %>% group_by(package) %>% mutate("cum_count" = cumsum(count)) %>% ungroup()
 downloads %>% 
@@ -31,11 +31,14 @@ downloads %>%
   tail(20)
 ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
 ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
-melt(downloads, id.vars = c("date", "package")) %>%
+
+downloads %>%
+  gather("count", "cum_count", key = "count_type", value = "value") %>%
   ggplot(aes(x = date, y = value, color = package)) + 
   geom_line() +
-  facet_wrap(~ variable, ncol = 1, scales = "free") +
-  ggtitle("Downloads")
+  facet_wrap(~ count_type, ncol = 1, scales = "free") +
+  ggtitle("Downloads") + ylab(NULL)
+
 
 
 
