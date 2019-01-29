@@ -5,6 +5,7 @@ author: |
   | Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
+  pagedown::html_paged:
   bookdown::html_document2:
     base_format: prettydoc::html_pretty
     theme: cayman
