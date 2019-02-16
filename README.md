@@ -17,9 +17,9 @@ status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/mast
 [![Docker Build
 Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
-riskParityPortfolio
-===================
-
+<center>
+![](docs/_static/logo.png)
+</center>
 The package `riskParityPortfolio` provides tools to design risk parity
 portfolios. In its simplest form, we consider the convex formulation
 with a unique solution proposed by [Spinu
