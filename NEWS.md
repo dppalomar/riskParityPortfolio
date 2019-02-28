@@ -1,3 +1,7 @@
+## Changes in riskParityPortfolio version 0.1.1.9000 (2019-01-07 - present)
+
+* Refactored stopping criteria. [commit 350f622]
+
 ## Changes in riskParityPortfolio version 0.1.1 (2019-01-07)
 
 * Revised vignette (fix name issue and include new section on algorithm description).
