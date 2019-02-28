@@ -29,16 +29,14 @@ downloads %>%
   filter(package == "riskParityPortfolio" & date >= "2018-12-25") %>%
   select("date", "count", "cum_count") %>%
   tail(20)
-ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
-ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
-
+#ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
+#ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
 downloads %>%
   gather("count", "cum_count", key = "count_type", value = "value") %>%
   ggplot(aes(x = date, y = value, color = package)) + 
   geom_line() +
   facet_wrap(~ count_type, ncol = 1, scales = "free") +
-  ggtitle("Downloads") + ylab(NULL)
-
+  ggtitle("Downloads") + ylab(NULL) #+ ggsave("downloads.pdf", device = "pdf")
 
 
 
