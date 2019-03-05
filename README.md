@@ -12,7 +12,7 @@
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 
 <p align="center">
-  <img src="https://github.com/mirca/riskParityPortfolio/blob/master/docs/_static/logo.png?raw=true"/>
+  <img src="https://github.com/mirca/riskParityPortfolio/blob/master/docs/_static/logo.png?raw=true" width="250">
   <br>
 </p>
 
