@@ -35,6 +35,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 [![Build status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/master?svg=true)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
 [![CircleCI](https://circleci.com/gh/mirca/riskParityPortfolio.svg?style=svg)](https://circleci.com/gh/mirca/riskParityPortfolio)
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
+[![Build Status](https://dev.azure.com/jvmirca/riskParityPortfolio/_apis/build/status/mirca.riskParityPortfolio?branchName=master)](https://dev.azure.com/jvmirca/riskParityPortfolio/_build/latest?definitionId=1&branchName=master)
 
 <p align="center">
   <img src="https://github.com/mirca/riskParityPortfolio/blob/master/docs/_static/logo.png?raw=true"/>
