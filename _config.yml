@@ -22,7 +22,7 @@ permalink: pretty
 exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "package.json", "package-lock.json",  "script/", "LICENSE.txt", "lib/", "bin/", "README.md", "Rakefile"]
 
 # Enable or disable the site search
-search_enabled: true
+search_enabled: false
 
 # Aux links for the upper right navigation
 aux_links:
