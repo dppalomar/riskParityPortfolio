@@ -13,8 +13,8 @@
 # you will see them accessed via {{ site.title }}, {{ site.github_repo }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: Just the Docs
-description: A Jekyll theme for documentation
+title: riskParityPortfolio
+description: Fast, scalable design of risk parity portfolios
 baseurl: "/riskParityPortfolio/" # the subpath of your site, e.g. /blog
 url: "https://mirca.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 
@@ -26,8 +26,8 @@ search_enabled: true
 
 # Aux links for the upper right navigation
 aux_links:
-  "Just the Docs on GitHub":
-    - "//github.com/pmarsceill/just-the-docs"
+  "riskParityPortfolio on GitHub":
+    - "//github.com/dppalomar/riskParityPortfolio"
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil

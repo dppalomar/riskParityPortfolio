@@ -54,7 +54,7 @@ $ pip install -e .
 
 ### Tutorials
 
-- [See the basic tutorial](http://mirca.github.io/riskParityPortfolio/_static/getting_started.html)
+- [See the package vignette.](http://mirca.github.io/riskParityPortfolio/_static/getting_started.html)
 
 ---
 
