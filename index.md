@@ -2,17 +2,19 @@
 layout: default
 title: Home
 nav_order: 1
-description: "Just the Docs is a responsive Jekyll theme with built-in search that is easily customizable and hosted on GitHub Pages."
+description: "*riskParityPortfolio* is a software tool focused on the design of risk parity portfolios using fast, accurate, state-of-the-art optimization methods."
 permalink: /
 ---
 
-# Focus on writing good documentation
+# Fast and scalable design of risk parity portfolios
 {: .fs-9 }
 
-Just the Docs gives your documentation a jumpstart with a responsive Jekyll theme that is easily customizable and hosted on GitHub Pages.
+**riskParityPortfolio** is a software tool focused on the design of risk parity
+portfolios using fast, accurate, state-of-the-art optimization methods.
+
 {: .fs-6 .fw-300 }
 
-[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/pmarsceill/just-the-docs){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/dppalomar/riskParityPortfolio){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
@@ -20,65 +22,66 @@ Just the Docs gives your documentation a jumpstart with a responsive Jekyll them
 
 ### Dependencies
 
-Just the Docs is built for [Jekyll](https://jekyllrb.com), a static site generator. View the [quick start guide](https://jekyllrb.com/docs/) for more information. Just the Docs requires no special Jekyll plugins and can run on GitHub Pages' standard Jekyll compiler.
+The R version of **riskParityPortfolio** is build on top of awesome R packages including **Rcpp**,
+**RcppEigen**, **quadprog**, **alabama**, and **nloptr**. All these packages can be installed via CRAN.
 
-### Quick start: Use as a GitHub Pages remote theme
+The Python version depends on **numpy**.
 
-1. Add Just the Docs to your Jekyll site's `_config.yml` as a [remote theme](https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/)
-```yaml
-remote_theme: pmarsceill/just-the-docs
-```
-<small>You must have GitHub Pages enabled on your repo, one or more Markdown files, and a `_config.yml` file. [See an example repository](https://github.com/pmarsceill/jtd-remote)</small>
+### Installation
 
-### Local installation: Use the gem-based theme
-
-1. Install the Ruby Gem
+1. The **stable** R version can be installed via CRAN as
 ```bash
-$ gem install just-the-docs
+install.packages("riskParityPortfolio")
 ```
-```yaml
-# .. or add it to your your Jekyll site’s Gemfile
-gem "just-the-docs"
-```
-2. Add Just the Docs to your Jekyll site’s `_config.yml`
-```yaml
-theme: "just-the-docs"
-```
-3. _Optional:_ Initialize search data (creates `search-data.json`)
-```bash
-$ bundle exec just-the-docs rake search:init
-```
-3. Run you local Jekyll server
-```bash
-$ jekyll serve
-```
-```bash
-# .. or if you're using a Gemfile (bundler)
-$ bundle exec jekyll serve
-```
-4. Point your web browser to [http://localhost:4000](http://localhost:4000)
 
-### Configure Just the Docs
+2. The **development** R version can be installed via GitHub as
+```bash
+devtools::install_github("dppalomar/riskParityPortfolio")
+```
+<small>You must have previously installed the **devtools** package.</small>
 
-- [See configuration options]({{ site.baseurl }}{% link docs/configuration.md %})
+3. The **stable** Python version can be installed via **pip** as
+```bash
+$ pip install riskparityportfolio
+```
+
+4. The **development** Python version can be installed via GitHub as
+```bash
+$ git clone https://github.com/dppalomar/riskParityPortfolio
+$ cd python
+$ pip install -e .
+```
+
+### Tutorials
+
+- [See the package vignette.](http://mirca.github.io/riskParityPortfolio/_static/getting_started.html)
 
 ---
 
 ## About the project
 
-Just the Docs is &copy; 2017-2019 by [Patrick Marsceill](http://patrickmarsceill.com).
+**riskParityPortfolio** is developed on [GitHub](http://github.com/dppalomar/riskParityPortfolio)
+by [Ze Vinicius](http://mirca.github.io) and [Daniel Palomar](http://www.danielppalomar.com).
 
 ### License
 
-Just the Docs is distributed by an [MIT license](https://github.com/pmarsceill/just-the-docs/tree/master/LICENSE.txt).
+**riskParityPortfolio** is distributed by an
+[GPL 3.0 License](https://github.com/dppalomar/riskParityPortfolio/blob/master/LICENSE).
 
 ### Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change. Read more about becoming a contributor in [our GitHub repo](https://github.com/pmarsceill/just-the-docs#contributing).
+We welcome all sorts of contributions. Please feel free to open an issue to report a bug or discuss a feature request in [our GitHub repo](https://github.com/dppalomar/riskParityPortfolio).
 
-### Code of Conduct
+### Citation
 
-Just the Docs is committed to fostering a welcoming community.
+If this package has been useful to you in any way, give us a star on [GitHub](http://github.com/dppalomar/riskParityPortfolio) :)
+Additionally, if you've used **riskParityPortfolio** on your research, please consider citing the following resources:
 
-[View our Code of Conduct](https://github.com/pmarsceill/just-the-docs/tree/master/CODE_OF_CONDUCT.md) on our GitHub repository.
+- J. V. de M. Cardoso and D. P. Palomar (2019). riskParityPortfolio:
+  Design of Risk Parity Portfolios. R package version 0.1.1. [https://CRAN.R-project.org/package=riskParityPortfolio](https://CRAN.R-project.org/package=riskParityPortfolio)
+- Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex Optimization Methods for Risk Parity Portfolio Design.
+  IEEE Trans. on Signal Processing, vol. 63, no. 19, pp. 5285-5300. [https://doi.org/10.1109/TSP.2015.2452219](https://doi.org/10.1109/TSP.2015.2452219)
+- F. Spinu (2013). An Algorithm for Computing Risk Parity Weights.
+  [https://dx.doi.org/10.2139/ssrn.2297383](https://dx.doi.org/10.2139/ssrn.2297383)
+- T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing high-dimensional
+  risk parity portfolios. [https://arxiv.org/pdf/1311.4057.pdf](https://arxiv.org/pdf/1311.4057.pdf)
