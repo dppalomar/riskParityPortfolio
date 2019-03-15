@@ -39,6 +39,9 @@ The latest stable version of `riskParityPortfolio` is available at
 The latest development version of `riskParityPortfolio` is available at
 <https://github.com/dppalomar/riskParityPortfolio>.
 
+Check out the [package
+webpage](https://mirca.github.io/riskParityPortfolio).
+
 Installation
 ------------
 
@@ -134,28 +137,27 @@ b = np.ones(len(corr)) / len(corr)
 w = rpp.design(corr, b)
 print(w)
 # compute the risk budgeting
-#> [ 0.21075375  0.21402865  0.20205399  0.16994639  0.20321721]
+#> [0.21075375 0.21402865 0.20205399 0.16994639 0.20321721]
 rc = w @ (corr * w)
 print(rc / np.sum(rc))
 # let's try a different budget
-#> [ 0.2  0.2  0.2  0.2  0.2]
+#> [0.2 0.2 0.2 0.2 0.2]
 b = np.array([0.01, 0.09, .1, .1, .7])
 w = rpp.design(corr, b)
 print(w)
-#> [ 0.06178354  0.19655744  0.16217134  0.12808275  0.45140493]
+#> [0.06178354 0.19655744 0.16217134 0.12808275 0.45140493]
 rc = w @ (corr * w)
 print(rc / np.sum(rc))
-#> [ 0.01  0.09  0.1   0.1   0.7 ]
+#> [0.01 0.09 0.1  0.1  0.7 ]
 ```
 
 Documentation
 -------------
 
 For more detailed information, please check the [CRAN
-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
-[GitHub
-vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html),
-or the [package webpage](https://mirca.github.io/riskParityPortfolio).
+vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html)
+and [GitHub
+vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html).
 
 Citation
 --------

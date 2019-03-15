@@ -53,6 +53,8 @@ The latest stable version of ``riskParityPortfolio`` is available at https://CRA
 
 The latest development version of ``riskParityPortfolio`` is available at https://github.com/dppalomar/riskParityPortfolio.
 
+Check out the [package webpage](https://mirca.github.io/riskParityPortfolio).
+
 ## Installation
 To install the latest stable version of ``riskParityPortfolio``, run the following commands in R:
 ```{r, eval = FALSE}
@@ -151,9 +153,8 @@ print(rc / np.sum(rc))
 
 ## Documentation
 For more detailed information, please check the
-[CRAN vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
-[GitHub vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html),
-or the [package webpage](https://mirca.github.io/riskParityPortfolio).
+[CRAN vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html) and
+[GitHub vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html).
 
 ## Citation
 If you find this package useful in your research, please consider citing the following works:
