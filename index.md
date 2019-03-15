@@ -54,7 +54,8 @@ $ pip install -e .
 
 ### Tutorials
 
-- [See the package vignette.](http://mirca.github.io/riskParityPortfolio/_static/getting_started.html)
+- [See the package vignette](http://mirca.github.io/riskParityPortfolio/_static/getting_started.html) for a
+detailed description of the mathematical methods that are available in **riskParityPortfolio**.
 
 ---
 
