@@ -25,13 +25,10 @@ Status](https://dev.azure.com/jvmirca/riskParityPortfolio/_apis/build/status/mir
 </p>
 The package `riskParityPortfolio` provides tools to design risk parity
 portfolios. In its simplest form, we consider the convex formulation
-with a unique solution proposed by [Spinu
-(2013)](https://dx.doi.org/10.2139/ssrn.2297383) and use a cyclical
-method inspired by [Griveau-Billion
-(2013)](https://arxiv.org/pdf/1311.4057.pdf). For more general
+with a unique solution proposed by [Spinu (2013)](https://dx.doi.org/10.2139/ssrn.2297383) and use a cyclical
+method inspired by [Griveau-Billion (2013)](https://arxiv.org/pdf/1311.4057.pdf). For more general
 formulations, which are usually nonconvex, we implement the successive
-convex approximation method proposed by [Feng & Palomar
-(2015)](https://doi.org/10.1109/TSP.2015.2452219).
+convex approximation method proposed by [Feng & Palomar (2015)](https://doi.org/10.1109/TSP.2015.2452219).
 
 The latest stable version of `riskParityPortfolio` is available at
 <https://CRAN.R-project.org/package=riskParityPortfolio>.
@@ -39,8 +36,7 @@ The latest stable version of `riskParityPortfolio` is available at
 The latest development version of `riskParityPortfolio` is available at
 <https://github.com/dppalomar/riskParityPortfolio>.
 
-Check out the [package
-webpage](https://mirca.github.io/riskParityPortfolio).
+Check out the [package webpage](https://mirca.github.io/riskParityPortfolio).
 
 Installation
 ------------
