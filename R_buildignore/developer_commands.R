@@ -28,7 +28,7 @@ downloads <- downloads %>% group_by(package) %>% mutate("cum_count" = cumsum(cou
 downloads %>% 
   filter(package == "riskParityPortfolio" & date >= "2018-12-25") %>%
   select("date", "count", "cum_count") %>%
-  tail(20)
+  tail(8)
 #ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
 #ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
 downloads %>%
