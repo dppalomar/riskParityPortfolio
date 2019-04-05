@@ -116,7 +116,7 @@ for the expected return and the variance terms, respectively, and \code{w_lb} an
 By default, the problem considered is the vanilla risk parity portfolio:
 \code{w >= 0, sum(w) = 1}, with no expected return term, and no variance term. In this case,
 the problem formulation is convex and the optimal solution is guaranteed to be achieved with
-a perfect risk concentration, i.e., \code{R(w) = 0}. By default, we use the formulation by 
+a perfect risk concentration, i.e., \code{R(w) = 0}. By default, we use the formulation by
 Spinu (2013) (\code{method_init = "cyclical-spinu"}), but the user can also select the formulation
 by Roncalli et al. (2013) (\code{method_init = "cyclical-roncalli"}).
 
@@ -135,7 +135,7 @@ terms (through the argument \code{formulation}), namely:
 \item{\code{formulation = "rc-over-sd vs b-times-sd":} }{\code{sum_{i} (r_i/sqrt(r) - b_i*sqrt(r))^2}}
 \item{\code{formulation = "rc-over-b vs theta":} }{\code{sum_{i} (r_i/b_i - theta)^2}}
 \item{\code{formulation = "rc-over-var":} }{\code{sum_{i} (r_i/r)^2}}}
-where \code{r_i = w_i*(Sigma\%*\%w)_i} is the risk contribution and 
+where \code{r_i = w_i*(Sigma\%*\%w)_i} is the risk contribution and
 \code{r = t(w)\%*\%Sigma\%*\%w} is the overall risk (i.e., variance).
 
 For more details, please check the vignette.

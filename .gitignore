@@ -15,6 +15,6 @@ python/build
 python/dist
 python/var
 python/riskparityportfolio.egg-info
-python/riskparityportfolio.cpython-36m-darwin.so
+python/*.so
 python/.cache
 python/.coverage
