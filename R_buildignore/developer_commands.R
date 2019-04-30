@@ -31,12 +31,14 @@ downloads %>%
   tail(8)
 #ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
 #ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
+labels <- c(count = "Number of downloads", cum_count = "Cumulative number of downloads")
 downloads %>%
   gather("count", "cum_count", key = "count_type", value = "value") %>%
   ggplot(aes(x = date, y = value, color = package)) + 
   geom_line() +
-  facet_wrap(~ count_type, ncol = 1, scales = "free") +
-  ggtitle("Downloads") + ylab(NULL) #+ ggsave("downloads.pdf", device = "pdf")
+  facet_wrap(~ count_type, ncol = 1, scales = "free", labeller = labeller(count_type = labels)) +
+  ggtitle("Downloads") + xlab(NULL) + ylab(NULL) #+ ggsave("downloads.pdf", device = "pdf", scale = 0.5)
+
 
 
 
