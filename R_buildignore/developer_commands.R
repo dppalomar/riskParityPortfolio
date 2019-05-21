@@ -23,7 +23,8 @@ library(cranlogs)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-downloads <- cran_downloads(from = "2017-12-20", package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen"))
+downloads <- cran_downloads(from = "2017-12-20", 
+                            package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen", "spectralGraphTopology"))
 downloads <- downloads %>% group_by(package) %>% mutate("cum_count" = cumsum(count)) %>% ungroup()
 downloads %>% 
   filter(package == "riskParityPortfolio" & date >= "2018-12-25") %>%
