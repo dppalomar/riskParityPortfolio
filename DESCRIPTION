@@ -48,11 +48,9 @@ Suggests:
     numDeriv,
     prettydoc,
     rmarkdown,
-    R.rsp,    
+    R.rsp,
     testthat
 VignetteBuilder:
-    bookdown,
     knitr,
-    prettydoc,
     rmarkdown,
     R.rsp
