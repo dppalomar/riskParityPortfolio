@@ -536,6 +536,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
                                 maxiter = 50, ftol = 1e-8, wtol = 1e-6,
                                 use_gradient = TRUE) {
+  # stocks names
+  stocks_names <- colnames(Sigma)
   # default values
   N <- nrow(Sigma)
   if (is.null(b)) b <- rep(1/N, N)
@@ -624,5 +626,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            stop("method ", method, " is not included.")
     )
   }
+  names(portfolio$w) <- stocks_names
+  names(portfolio$risk_contribution) <- stocks_names
   return(portfolio)
 }
