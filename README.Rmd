@@ -37,31 +37,26 @@ knit_hooks$set(pngquant = hook_pngquant)
 [![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
 [![Build Status](https://dev.azure.com/jvmirca/riskParityPortfolio/_apis/build/status/mirca.riskParityPortfolio?branchName=master)](https://dev.azure.com/jvmirca/riskParityPortfolio/_build/latest?definitionId=1&branchName=master)
 
-<p align="center">
-  <img src="https://github.com/mirca/riskParityPortfolio/blob/master/logo.png?raw=true"/>
-  <br>
-</p>
-
-The package `riskParityPortfolio` provides tools to design risk parity portfolios.
+**riskParityPortfolio** provides tools to design risk parity portfolios.
 In its simplest form, we consider the convex formulation with a unique solution proposed by
 [Spinu (2013)](https://dx.doi.org/10.2139/ssrn.2297383) and use a cyclical method inspired by
 [Griveau-Billion (2013)](https://arxiv.org/pdf/1311.4057.pdf). For more general formulations,
 which are usually nonconvex, we implement the successive convex approximation
 method proposed by [Feng & Palomar (2015)](https://doi.org/10.1109/TSP.2015.2452219).
 
-The latest stable version of ``riskParityPortfolio`` is available at https://CRAN.R-project.org/package=riskParityPortfolio.
+The latest stable version of **riskParityPortfolio** is available at https://CRAN.R-project.org/package=riskParityPortfolio.
 
-The latest development version of ``riskParityPortfolio`` is available at https://github.com/dppalomar/riskParityPortfolio.
+The latest development version of **riskParityPortfolio** is available at https://github.com/dppalomar/riskParityPortfolio.
 
-Check out the [package webpage](https://mirca.github.io/riskParityPortfolio).
+**Check out the [documentation](https://mirca.github.io/riskParityPortfolio).**
 
 ## Installation
-To install the latest stable version of ``riskParityPortfolio``, run the following commands in R:
+To install the latest stable version of **riskParityPortfolio**, run the following commands in R:
 ```{r, eval = FALSE}
 install.packages("riskParityPortfolio")
 ```
 
-To install the development version of ``riskParityPortfolio``, run the following commands in R:
+To install the development version of **riskParityPortfolio**, run the following commands in R:
 ```{r, eval = FALSE}
 install.packages("devtools")
 devtools::install_github("dppalomar/riskParityPortfolio")
@@ -75,19 +70,19 @@ package?riskParityPortfolio
 ?riskParityPortfolio
 ```
 
-Please cite ``riskParityPortfolio`` in publications:
+Please cite **riskParityPortfolio** in publications:
 ```{r, eval = FALSE}
 citation("riskParityPortfolio")
 ```
 
-You can also get ``riskParityPortfolio`` from Docker as follows:
+You can also get **riskParityPortfolio** from Docker as follows:
 ```
 docker pull mirca/riskparityportfolio
 ```
 
 #### Microsoft Windows
 On MS Windows environments, make sure to install the most recent version of
-``Rtools``.
+**Rtools**.
 
 ### Python
 
@@ -96,7 +91,7 @@ A Python3 implementation of the vanilla method is available in PYPI and can be i
 pip install riskparityportfolio
 ```
 
-## Usage of `riskParityPortfolio`
+## Usage of **riskParityPortfolio**
 
 ### R
 
@@ -179,7 +174,7 @@ to report a bug or discuss a feature request.
 Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [GitHub](https://github.com/dppalomar/riskParityPortfolio).
 
 README file: [CRAN-readme](https://cran.r-project.org/package=riskParityPortfolio/readme/README.html)
-and [GitHub-readme](https://raw.githack.com/dppalomar/riskParityPortfolio/master/README.html).
+and [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md).
 
 Vignette: [CRAN-html-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
 [CRAN-pdf-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
