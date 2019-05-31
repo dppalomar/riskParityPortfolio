@@ -1,5 +1,6 @@
-## Changes in riskParityPortfolio version 0.1.1.9000 (2019-01-07 - present)
+## Changes in riskParityPortfolio version 0.1.2 (2019-05-31)
 
+* Fixed some VignetteBuilder issues with CRAN.
 * Refactored stopping criteria. [commit 350f622]
 * Fixed bug where stocks names were being toss out by C++ functions. [commit a02ffc4]
 

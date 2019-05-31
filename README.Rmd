@@ -153,7 +153,7 @@ print(rc / np.sum(rc))
 
 ## Documentation
 For more detailed information, please check the
-[CRAN vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html) and
+[CRAN vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html) and
 [GitHub vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html).
 
 ## Citation
@@ -178,10 +178,10 @@ to report a bug or discuss a feature request.
 ## Links
 Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [GitHub](https://github.com/dppalomar/riskParityPortfolio).
 
-README file: [CRAN-readme](https://cran.r-project.org/package=riskParityPortfolio/readme/README.html)
+README file: [CRAN-readme](https://CRAN.R-project.org/package=riskParityPortfolio/readme/README.html)
 and [GitHub-readme](https://raw.githack.com/dppalomar/riskParityPortfolio/master/README.html).
 
-Vignette: [CRAN-html-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
-[CRAN-pdf-vignette](https://cran.r-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
+Vignette: [CRAN-html-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
+[CRAN-pdf-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
 [GitHub-html-vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html), and
 [GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf).
