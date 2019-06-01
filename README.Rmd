@@ -26,8 +26,8 @@ knit_hooks$set(pngquant = hook_pngquant)
 
 # riskParityPortfolio
 
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
-[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
 ![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
 
 [![PyPI version](https://badge.fury.io/py/riskparityportfolio.svg)](https://badge.fury.io/py/riskparityportfolio)
@@ -54,12 +54,12 @@ The latest development version of **riskParityPortfolio** is available at https:
 **Check out the [documentation](https://mirca.github.io/riskParityPortfolio).**
 
 ## Installation
-To install the latest stable version of **riskParityPortfolio**, run the following commands in R:
+To install the latest stable version of **riskParityPortfolio** from CRAN, run the following commands in R:
 ```{r, eval = FALSE}
 install.packages("riskParityPortfolio")
 ```
 
-To install the development version of **riskParityPortfolio**, run the following commands in R:
+To install the development version of **riskParityPortfolio** from GitHub, run the following commands in R:
 ```{r, eval = FALSE}
 install.packages("devtools")
 devtools::install_github("dppalomar/riskParityPortfolio")

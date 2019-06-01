@@ -13,7 +13,6 @@
 ^.travis\.yml$
 ^.circleci$
 ^azure-pipelines.yml$
-^logo.png$
 ^appveyor\.yml$
 ^Dockerfile$
 ^Makefile$

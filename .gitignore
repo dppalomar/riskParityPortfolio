@@ -6,8 +6,6 @@ inst/doc
 README_cache
 *.aux
 *.log
-riskParityPortfolio.Rcheck/
-riskParityPortfolio_0.1.1.9000.tar.gz
 RiskParityPortfolio_cache/
 RiskParityPortfolio_files/
 src/*.so
