@@ -17,7 +17,7 @@
 #' @section Help:
 #' For a quick help see the README file:
 #' \href{https://CRAN.R-project.org/package=riskParityPortfolio/readme/README.html}{CRAN-README} and
-#' \href{https://raw.githack.com/dppalomar/riskParityPortfolio/master/README.html}{GitHub-README}.
+#' \href{https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md}{GitHub-README}.
 #'
 #' For more details see the vignette:
 #' \href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
