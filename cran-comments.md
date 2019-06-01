@@ -1,10 +1,10 @@
-This is version 0.1.2 (2019-05-31) in CRAN (package also available in GitHub).
+This is version 0.1.2 (2019-06-01) in CRAN (package also available in GitHub).
 
 ---
 
 ## Test environments
 * OS X, R 3.5.3
-* Windows at http://win-builder.r-project.org/win-builder
+* Windows at https://win-builder.r-project.org/
 
 ## R CMD check results
 
