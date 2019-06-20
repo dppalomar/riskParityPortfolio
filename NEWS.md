@@ -1,3 +1,8 @@
+## Changes in riskParityPortfolio version 0.1.2.9000 (2019-XX-XX)
+
+* Included the R/Finance 2019 slides as an additional vignette.
+
+
 ## Changes in riskParityPortfolio version 0.1.2 (2019-06-01)
 
 * Fixed some VignetteBuilder issues with CRAN.

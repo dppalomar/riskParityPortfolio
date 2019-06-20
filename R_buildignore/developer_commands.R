@@ -42,7 +42,7 @@ devtools::check()
 rcmdcheck::rcmdcheck()
 devtools::build()
 #devtools::revdep(pkg = "riskParityPortfolio")  # to check reverse dependencies
-#devtools::build_win()  #to check under windows
+#devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
 #R CMD check riskParityPortfolio_0.1.2.tar.gz --as-cran  # this is before submission to CRAN

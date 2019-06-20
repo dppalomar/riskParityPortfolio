@@ -1,4 +1,4 @@
-#' Package riskParityPortfolio
+#' riskParityPortfolio: Design of Risk Parity Portfolios
 #'
 #' Fast design of risk parity portfolios for financial investment.
 #' The goal of the risk parity portfolio formulation is to equalize or distribute
