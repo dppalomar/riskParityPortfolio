@@ -151,8 +151,7 @@ print(rc / np.sum(rc))
 
 ## Documentation
 For more detailed information, please check the
-[CRAN vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html) and
-[GitHub vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html).
+[vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html).
 
 ## Citation
 If you find this package useful in your research, please consider citing the following works:
