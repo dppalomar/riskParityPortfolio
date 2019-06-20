@@ -16,32 +16,6 @@ citation("riskParityPortfolio")
 vignette(package = "riskParityPortfolio")
 
 
-##
-## Downloads (https://ipub.com/dev-corner/apps/r-package-downloads/)
-##
-library(cranlogs)
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-downloads <- cran_downloads(from = "2017-12-20", 
-                            package = c("riskParityPortfolio", "sparseIndexTracking", "sparseEigen", "spectralGraphTopology"))
-downloads <- downloads %>% group_by(package) %>% mutate("cum_count" = cumsum(count)) %>% ungroup()
-downloads %>% 
-  filter(package == "riskParityPortfolio" & date >= "2018-12-25") %>%
-  select("date", "count", "cum_count") %>%
-  tail(8)
-#ggplot(downloads, aes(x = date, y = count, color = package)) + geom_line() + ggtitle("Downloads")
-#ggplot(downloads, aes(x = date, y = cum_count, color = package)) + geom_line() + ggtitle("Cumulative downloads")
-labels <- c(count = "Number of downloads", cum_count = "Cumulative number of downloads")
-downloads %>%
-  gather("count", "cum_count", key = "count_type", value = "value") %>%
-  ggplot(aes(x = date, y = value, color = package)) + 
-  geom_line() +
-  facet_wrap(~ count_type, ncol = 1, scales = "free", labeller = labeller(count_type = labels)) +
-  ggtitle("Downloads") + xlab(NULL) + ylab(NULL) #+ ggsave("downloads.pdf", device = "pdf", scale = 0.5)
-
-
-
 
 ##
 ## Developer commands (http://r-pkgs.had.co.nz/)
@@ -71,8 +45,8 @@ devtools::build()
 #devtools::build_win()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
-#R CMD check riskParityPortfolio_0.1.2.9000.tar.gz --as-cran  # this is before submission to CRAN
-#R CMD install riskParityPortfolio_0.1.2.9000.tar.gz
+#R CMD check riskParityPortfolio_0.1.2.tar.gz --as-cran  # this is before submission to CRAN
+#R CMD install riskParityPortfolio_0.1.2.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
 
 
