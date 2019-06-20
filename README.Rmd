@@ -1,8 +1,5 @@
 ---
 output:
-  html_document:
-    variant: markdown_github
-    keep_md: true
   md_document:
     variant: markdown_github
 ---
@@ -56,31 +53,31 @@ The latest development version of **riskParityPortfolio** is available at https:
 ## Installation
 To install the latest stable version of **riskParityPortfolio** from CRAN, run the following commands in R:
 ```{r, eval = FALSE}
-install.packages("riskParityPortfolio")
+> install.packages("riskParityPortfolio")
 ```
 
 To install the development version of **riskParityPortfolio** from GitHub, run the following commands in R:
 ```{r, eval = FALSE}
-install.packages("devtools")
-devtools::install_github("dppalomar/riskParityPortfolio")
+> install.packages("devtools")
+> devtools::install_github("dppalomar/riskParityPortfolio")
 ```
 
 To get help:
 ```{r, eval = FALSE}
-library(riskParityPortfolio)
-help(package = "riskParityPortfolio")
-package?riskParityPortfolio
-?riskParityPortfolio
+> library(riskParityPortfolio)
+> help(package = "riskParityPortfolio")
+> package?riskParityPortfolio
+> ?riskParityPortfolio
 ```
 
 Please cite **riskParityPortfolio** in publications:
 ```{r, eval = FALSE}
-citation("riskParityPortfolio")
+> citation("riskParityPortfolio")
 ```
 
 You can also get **riskParityPortfolio** from Docker as follows:
 ```
-docker pull mirca/riskparityportfolio
+$ docker pull mirca/riskparityportfolio
 ```
 
 #### Microsoft Windows
@@ -91,7 +88,14 @@ On MS Windows environments, make sure to install the most recent version of
 
 A Python3 implementation of the vanilla method is available in PYPI and can be installed as follows:
 ```
-pip install riskparityportfolio
+$ pip install riskparityportfolio
+```
+
+Alternatively, the development version can be installed as
+```
+$ git clone https://github.com/dppalomar/riskParityPortfolio
+$ cd python
+$ pip install -e .
 ```
 
 ## Usage of **riskParityPortfolio**
