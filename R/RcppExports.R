@@ -25,3 +25,7 @@ obj_function_roncalli <- function(Sigma, x, b) {
     .Call('_riskParityPortfolio_obj_function_roncalli', PACKAGE = 'riskParityPortfolio', Sigma, x, b)
 }
 
+rpp_equality_constraints_iteration <- function(Cmat, cvec, Qk, qk) {
+    .Call('_riskParityPortfolio_rpp_equality_constraints_iteration', PACKAGE = 'riskParityPortfolio', Cmat, cvec, Qk, qk)
+}
+

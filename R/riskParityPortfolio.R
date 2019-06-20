@@ -8,6 +8,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
                                    w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
+                                   Cmat = NULL, cvec = NULL,
                                    formulation = c("rc-over-b-double-index",
                                                    "rc-double-index",
                                                    "rc-over-var vs b",
@@ -87,6 +88,11 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          stop("formulation ", formulation, " is not included.")
   )
   has_mu <- !is.null(mu)
+  # check if equality constraints were specified
+  if (!(is.null(Cmat) || is.null(cvec)))
+    has_equality_constraints <- TRUE
+  else
+    has_equality_constraints <- FALSE
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
@@ -122,8 +128,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
       if (has_theta) qk <- qk - lmd_mu * c(mu, 0)
       else qk <- qk - lmd_mu * mu
     # build and solve problem (39) as in Feng & Palomar TSP2015
-    w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
-                                meq = meq)$solution
+    if (has_equality_constraints) {
+      w_hat <- rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
+    } else {
+      w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
+                                  meq = meq)$solution
+    }
     w_next <- wk + gamma * (w_hat - wk)
     # save objective function value and elapsed time
     time_seq <- c(time_seq, proc.time()[3] - start_time)
@@ -530,6 +540,7 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 1e-4, lmd_var = 0,
                                 w_lb = 0, w_ub = 1,
+                                Cmat = NULL, cvec = NULL,
                                 method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
@@ -555,11 +566,12 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
+  has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
   has_initial_point <- !is.null(w0)
   if (has_initial_point && (length(w0) != N))
     stop("Shape mismatch: w0 has to have nrow(Sigma) number of elements")
 
-  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box)
+  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box || has_equality_constraints)
   if (has_formulation && formulation == "diag") {
     if (!is_vanilla_formulation)
       stop("Additional constraints (box-constraints) or terms (expected return",
@@ -611,6 +623,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
+                                                       Cmat = Cmat, cvec = cvec,
                                                        formulation = formulation, w0 = w0,
                                                        theta0 = theta0, gamma = gamma, zeta = zeta,
                                                        tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol),
