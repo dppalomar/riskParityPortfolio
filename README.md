@@ -204,3 +204,18 @@ Vignettes:
 [CRAN-pdf-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
 and [R/Finance 2019
 slides](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf).
+
+Disclaimer
+----------
+
+The information, software, and any additional resources contained in
+this repository are not intended as, and shall not be understood or
+construed as, financial advice. Past performance is not a reliable
+indicator of future results and investors may not recover the full
+amount invested. The
+[authors](https://github.com/dppalomar/riskParityPortfolio/blob/master/AUTHORS.md)
+of this repository accept no liability whatsoever for any loss or damage
+you may incur. Any opinions expressed in this repository are from the
+personal research and experience of the
+[authors](https://github.com/dppalomar/riskParityPortfolio/blob/master/AUTHORS.md)
+and are intended as educational material.
