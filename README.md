@@ -7,6 +7,7 @@ riskParityPortfolio
 Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
 [![CRAN Downloads
 Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)](https://CRAN.R-project.org/package=riskParityPortfolio)
+[![Rcpp](https://img.shields.io/badge/powered%20by-Rcpp-orange.svg?style=flat)](http://www.rcpp.org/)
 
 [![PyPI
 version](https://badge.fury.io/py/riskparityportfolio.svg)](https://badge.fury.io/py/riskparityportfolio)
@@ -38,8 +39,8 @@ The latest stable version of **riskParityPortfolio** is available at
 The latest development version of **riskParityPortfolio** is available
 at <https://github.com/dppalomar/riskParityPortfolio>.
 
-**Check out the
-[documentation](https://mirca.github.io/riskParityPortfolio).**
+**Check out the documentation here:
+<https://mirca.github.io/riskParityPortfolio>.**
 
 Installation
 ------------
