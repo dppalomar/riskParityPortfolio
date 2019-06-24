@@ -2,11 +2,12 @@
 riskParityPortfolio
 ===================
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
 [![CRAN
-Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
-![CRAN Downloads
-Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
+Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
+[![CRAN Downloads
+Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)](https://CRAN.R-project.org/package=riskParityPortfolio)
+[![Rcpp](https://img.shields.io/badge/powered%20by-Rcpp-orange.svg?style=flat)](http://www.rcpp.org/)
 
 [![PyPI
 version](https://badge.fury.io/py/riskparityportfolio.svg)](https://badge.fury.io/py/riskparityportfolio)
@@ -38,45 +39,45 @@ The latest stable version of **riskParityPortfolio** is available at
 The latest development version of **riskParityPortfolio** is available
 at <https://github.com/dppalomar/riskParityPortfolio>.
 
-**Check out the
-[documentation](https://mirca.github.io/riskParityPortfolio).**
+**Check out the documentation here:
+<https://mirca.github.io/riskParityPortfolio>.**
 
 Installation
 ------------
 
-To install the latest stable version of **riskParityPortfolio**, run the
-following commands in R:
+To install the latest stable version of **riskParityPortfolio** from
+CRAN, run the following commands in R:
 
 ``` r
-install.packages("riskParityPortfolio")
+> install.packages("riskParityPortfolio")
 ```
 
-To install the development version of **riskParityPortfolio**, run the
-following commands in R:
+To install the development version of **riskParityPortfolio** from
+GitHub, run the following commands in R:
 
 ``` r
-install.packages("devtools")
-devtools::install_github("dppalomar/riskParityPortfolio")
+> install.packages("devtools")
+> devtools::install_github("dppalomar/riskParityPortfolio")
 ```
 
 To get help:
 
 ``` r
-library(riskParityPortfolio)
-help(package = "riskParityPortfolio")
-package?riskParityPortfolio
-?riskParityPortfolio
+> library(riskParityPortfolio)
+> help(package = "riskParityPortfolio")
+> package?riskParityPortfolio
+> ?riskParityPortfolio
 ```
 
 Please cite **riskParityPortfolio** in publications:
 
 ``` r
-citation("riskParityPortfolio")
+> citation("riskParityPortfolio")
 ```
 
 You can also get **riskParityPortfolio** from Docker as follows:
 
-    docker pull mirca/riskparityportfolio
+    $ docker pull mirca/riskparityportfolio
 
 #### Microsoft Windows
 
@@ -88,7 +89,13 @@ of **Rtools**.
 A Python3 implementation of the vanilla method is available in PYPI and
 can be installed as follows:
 
-    pip install riskparityportfolio
+    $ pip install riskparityportfolio
+
+Alternatively, the development version can be installed as
+
+    $ git clone https://github.com/dppalomar/riskParityPortfolio
+    $ cd python
+    $ pip install -e .
 
 Usage of **riskParityPortfolio**
 --------------------------------
@@ -153,10 +160,8 @@ print(rc / np.sum(rc))
 Documentation
 -------------
 
-For more detailed information, please check the [CRAN
-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html)
-and [GitHub
-vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html).
+For more detailed information, please check the
+[vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html).
 
 Citation
 --------
@@ -194,9 +199,23 @@ README file:
 and
 [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md).
 
-Vignette:
+Vignettes:
 [CRAN-html-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
 [CRAN-pdf-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf),
-[GitHub-html-vignette](https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html),
-and
-[GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf).
+and [R/Finance 2019
+slides](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf).
+
+Disclaimer
+----------
+
+The information, software, and any additional resources contained in
+this repository are not intended as, and shall not be understood or
+construed as, financial advice. Past performance is not a reliable
+indicator of future results and investors may not recover the full
+amount invested. The
+[authors](https://github.com/dppalomar/riskParityPortfolio/blob/master/AUTHORS.md)
+of this repository accept no liability whatsoever for any loss or damage
+you may incur. Any opinions expressed in this repository are from the
+personal research and experience of the
+[authors](https://github.com/dppalomar/riskParityPortfolio/blob/master/AUTHORS.md)
+and are intended as educational material.

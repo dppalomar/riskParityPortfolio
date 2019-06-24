@@ -48,7 +48,6 @@ Suggests:
     knitr,
     numDeriv,
     prettydoc,
-    reticulate,
     rmarkdown,
     R.rsp,
     testthat
