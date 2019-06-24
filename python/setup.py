@@ -4,7 +4,7 @@ import sys
 import setuptools
 import os
 
-__version__ = '0.0.5'
+__version__ = '0.0.7'
 
 # Prepare and send a new release to PyPI
 if "release" in sys.argv[-1]:
@@ -122,5 +122,4 @@ setup(
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
     include_package_data=True,
-    package_data={"": ['third-party/*.*', 'third_party/*/*.*']}
 )
