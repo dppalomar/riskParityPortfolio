@@ -4,7 +4,7 @@ import sys
 import setuptools
 import os
 
-__version__ = '0.0.4dev'
+__version__ = '0.0.4dev0'
 
 # Prepare and send a new release to PyPI
 if "release" in sys.argv[-1]:
@@ -85,6 +85,7 @@ class BuildExt(build_ext):
         c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
 
     def build_extensions(self):
+        # compiler flags
         ct = self.compiler.compiler_type
         opts = self.c_opts.get(ct, [])
         if ct == 'unix':
@@ -96,8 +97,18 @@ class BuildExt(build_ext):
             opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
+        # third-party libraries flags
+        localincl = "third-party"
+        if not os.path.exists(os.path.join(localincl, "eigen_3.3.7", "Eigen",
+                                           "Core")):
+            raise RuntimeError("couldn't find Eigen headers")
+        include_dirs = [
+            os.path.join(localincl, "eigen_3.3.7"),
+        ]
+        for ext in self.extensions:
+            ext.include_dirs = include_dirs + ext.include_dirs
+        # run standard build procedure
         build_ext.build_extensions(self)
-
 setup(
     name='riskparityportfolio',
     version=__version__,
