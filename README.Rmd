@@ -1,5 +1,8 @@
 ---
 output:
+  html_document:
+    variant: markdown_github
+    keep_md: true  
   md_document:
     variant: markdown_github
 ---
@@ -125,6 +128,11 @@ res$risk_contribution/sum(res$risk_contribution)
 ```
 
 ### Python
+```{r, echo=FALSE}
+library(reticulate)
+use_python("/Library/anaconda/bin/python3")
+```
+
 ```{python}
 import numpy as np
 import riskparityportfolio as rpp
