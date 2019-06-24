@@ -20,10 +20,8 @@
 #' \href{https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md}{GitHub-README}.
 #'
 #' For more details see the vignette:
-#' \href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-html-vignette},
-#' \href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{CRAN-pdf-vignette},
-#' \href{https://raw.githack.com/dppalomar/riskParityPortfolio/master/vignettes/RiskParityPortfolio.html}{GitHub-html-vignette}, and
-#' \href{https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RiskParityPortfolio-pdf.pdf}{GitHub-pdf-vignette}.
+#' \href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{html-vignette} and
+#' \href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{pdf-vignette}.
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
 #'
