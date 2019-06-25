@@ -1,17 +1,3 @@
----
-output:
-  html_document:
-    variant: markdown_github
-    keep_md: true  
-  md_document:
-    variant: markdown_github
----
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
-
-
 # riskParityPortfolio
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
