@@ -37,18 +37,14 @@ test_that("error controls work", {
 })
 
 test_that("equality constraints behave correctly", {
-  Cmat <- matrix(0, 2, N)
-  Cmat[1, ] <- rep(1, N)
-  Cmat[2, ] <- c(1, 0, 0, 1, rep(0, 6))
+  Cmat <- matrix(1, 1, N)
   for(formulation in formulations_list_wo_theta) {
     w_sum <- runif(1)
-    w1_sum_w4 <- .2 * w_sum
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Cmat = Cmat,
-                               cvec = c(w_sum, w1_sum_w4),
+                               cvec = c(w_sum),
                                formulation = formulation)
     expect_that(abs(sum(rpp$w) - w_sum) < 1e-5, is_true())
-    expect_that(abs(rpp$w[1] + rpp$w[4] - w1_sum_w4) < 1e-5, is_true())
   }
 })
 

@@ -8,11 +8,11 @@ Eigen::VectorXd rpp_equality_constraints_iteration(const Eigen::MatrixXd& Cmat,
                                                    const Eigen::VectorXd& cvec,
                                                    const Eigen::MatrixXd& Qk,
                                                    const Eigen::VectorXd& qk) {
-  LLT<MatrixXd> lltOfQk(Qk);
-  Eigen::MatrixXd Vk = Cmat * lltOfQk.solve(Cmat.transpose());
-  ColPivHouseholderQR<MatrixXd> QROfVk(Vk);
-  Eigen::VectorXd lambdak = -QROfVk.solve(Cmat * lltOfQk.solve(qk) + cvec);
-  return -lltOfQk.solve(qk + Cmat.transpose() * lambdak);
+  LDLT<MatrixXd> ldltOfQk(Qk);
+  Eigen::MatrixXd Vk = Cmat * ldltOfQk.solve(Cmat.transpose());
+  ColPivHouseholderQR<MatrixXd> QRofVk(Vk);
+  Eigen::VectorXd lambdak = -QRofVk.solve(Cmat * ldltOfQk.solve(qk) + cvec);
+  return -ldltOfQk.solve(qk + Cmat.transpose() * lambdak);
 }
 
 
@@ -20,8 +20,8 @@ Eigen::VectorXd rpp_equality_constraints_iteration(const Eigen::MatrixXd& Cmat,
 Eigen::VectorXd project_onto_equality_constraint_set(const Eigen::VectorXd& w,
                                                      const Eigen::MatrixXd& Cmat,
                                                      const Eigen::VectorXd& cvec) {
-  LLT<MatrixXd> lltOfCCt(Cmat * Cmat.transpose());
-  return w - Cmat.transpose() * lltOfCCt.solve(Cmat * w - cvec);
+  ColPivHouseholderQR<MatrixXd> QRofCCt(Cmat * Cmat.transpose());
+  return w - Cmat.transpose() * QRofCCt.solve(Cmat * w - cvec);
 }
 
 // [[Rcpp::export]]
