@@ -32,13 +32,14 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
   LLT<MatrixXd> lltOfQk(Qk);
   Eigen::MatrixXd B(Cmat.cols() + Dmat.cols(), Cmat.rows());
   B << Cmat.transpose(), Dmat.transpose();
-  double LC = (B * lltOfQk.solve(B.transpose())).norm();
+  double LC = (B * lltOfQk.solve(B.transpose())).norm(), fac;
   w_prev = wk;
-  for (unsigned int i = 0; i < maxiter; ++i) {
+  for (unsigned int i = 1; i < maxiter; ++i) {
+    fac = (i - 1.)/(i + 2.);
     w_tilde = -lltOfQk.solve(qk + Cmat.transpose() * xi + Dmat.transpose() * chi);
-    w_tilde_bar = w_tilde + (i - 1)/(i + 2) * (w_tilde - w_prev);
-    xi_next = xi + (i - 1)/(i + 2) * (xi - xi_prev) + (Cmat * w_tilde_bar - cvec) / LC;
-    chi_next = (chi + (i - 1)/(i + 2) * (chi - chi_prev) + (Dmat * w_tilde_bar - dvec)/LC).array().max(0);
+    w_tilde_bar = w_tilde +  fac * (w_tilde - w_prev);
+    xi_next = xi + fac * (xi - xi_prev) + (Cmat * w_tilde_bar - cvec) / LC;
+    chi_next = (chi + fac * (chi - chi_prev) + (Dmat * w_tilde_bar - dvec) / LC).array().max(0);
     chi_prev = chi;
     xi_prev = xi;
     chi = chi_next;
