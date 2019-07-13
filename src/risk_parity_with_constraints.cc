@@ -15,6 +15,15 @@ Eigen::VectorXd rpp_equality_constraints_iteration(const Eigen::MatrixXd& Cmat,
   return -lltOfQk.solve(qk + Cmat.transpose() * lambdak);
 }
 
+
+// [[Rcpp::export]]
+Eigen::VectorXd project_onto_equality_constraint_set(const Eigen::VectorXd& w,
+                                                     const Eigen::MatrixXd& Cmat,
+                                                     const Eigen::VectorXd& cvec) {
+  LLT<MatrixXd> lltOfCCt(Cmat * Cmat.transpose());
+  return w - Cmat.transpose() * lltOfCCt.solve(Cmat * w - cvec);
+}
+
 // [[Rcpp::export]]
 std::vector<Eigen::VectorXd>
 rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec,
@@ -22,8 +31,7 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
                                       const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk,
                                       const Eigen::VectorXd& wk, Eigen::VectorXd& chi,
                                       Eigen::VectorXd& chi_prev,
-                                      Eigen::VectorXd& xi, Eigen::VectorXd& xi_prev,
-                                      const unsigned int maxiter) {
+                                      Eigen::VectorXd& xi, Eigen::VectorXd& xi_prev) {
 
   std::vector<Eigen::VectorXd> params;
   unsigned int n = Cmat.cols();
@@ -34,7 +42,8 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
   B << Cmat, Dmat;
   double LC = (B * lltOfQk.solve(B.transpose())).norm(), fac;
   w_prev = wk;
-  for (unsigned int i = 1; i < maxiter; ++i) {
+  unsigned int i = 1;
+  while (true) {
     fac = (i - 1.)/(i + 2.);
     w_tilde = -lltOfQk.solve(qk + Cmat.transpose() * xi + Dmat.transpose() * chi);
     w_tilde_bar = w_tilde +  fac * (w_tilde - w_prev);
@@ -44,9 +53,10 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
     xi_prev = xi;
     chi = chi_next;
     xi = xi_next;
-    if(((w_tilde - w_prev).array().abs() <= .5e-4 * (w_tilde.array().abs() + w_prev.array().abs())).all())
+    if(((w_tilde - w_prev).array().abs() <= .5e-5 * (w_tilde.array().abs() + w_prev.array().abs())).all())
       break;
     w_prev = w_tilde;
+    ++i;
   }
   params.push_back(chi);
   params.push_back(chi_next);

@@ -100,6 +100,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   } # check if only equality constraints were specified
   else if (!(is.null(Cmat) || is.null(cvec))) {
     has_equality_constraints <- TRUE
+    w0 <- project_onto_equality_constraint_set(w0, Cmat, cvec)
   }
   # compute and store objective function at the initial value
   wk <- w0
@@ -137,8 +138,9 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
       else qk <- qk - lmd_mu * mu
     # build and solve problem (39) as in Feng & Palomar TSP2015
     if (has_eq_and_ineq_constraints) {
-      params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk,
-                                                      chi, chi_prev, xi, xi_prev, maxiter)
+      params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk,
+                                                      qk, wk, chi, chi_prev, xi,
+                                                      xi_prev)
       chi_prev <- params[[1]]
       chi <- params[[2]]
       xi_prev <- params[[3]]
@@ -407,7 +409,6 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
   w <- pmax(pmin(w0 - mu, w_ub), w_lb)
   return(w)
 }
-
 
 #' @title Design of Risk Parity Portfolios
 #'

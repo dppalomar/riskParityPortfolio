@@ -105,9 +105,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// project_onto_equality_constraint_set
+Eigen::VectorXd project_onto_equality_constraint_set(const Eigen::VectorXd& w, const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec);
+RcppExport SEXP _riskParityPortfolio_project_onto_equality_constraint_set(SEXP wSEXP, SEXP CmatSEXP, SEXP cvecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cmat(CmatSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type cvec(cvecSEXP);
+    rcpp_result_gen = Rcpp::wrap(project_onto_equality_constraint_set(w, Cmat, cvec));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rpp_eq_and_ineq_constraints_iteration
-std::vector<Eigen::VectorXd> rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec, const Eigen::MatrixXd& Dmat, const Eigen::VectorXd& dvec, const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk, const Eigen::VectorXd& wk, Eigen::VectorXd& chi, Eigen::VectorXd& chi_prev, Eigen::VectorXd& xi, Eigen::VectorXd& xi_prev, const unsigned int maxiter);
-RcppExport SEXP _riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration(SEXP CmatSEXP, SEXP cvecSEXP, SEXP DmatSEXP, SEXP dvecSEXP, SEXP QkSEXP, SEXP qkSEXP, SEXP wkSEXP, SEXP chiSEXP, SEXP chi_prevSEXP, SEXP xiSEXP, SEXP xi_prevSEXP, SEXP maxiterSEXP) {
+std::vector<Eigen::VectorXd> rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec, const Eigen::MatrixXd& Dmat, const Eigen::VectorXd& dvec, const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk, const Eigen::VectorXd& wk, Eigen::VectorXd& chi, Eigen::VectorXd& chi_prev, Eigen::VectorXd& xi, Eigen::VectorXd& xi_prev);
+RcppExport SEXP _riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration(SEXP CmatSEXP, SEXP cvecSEXP, SEXP DmatSEXP, SEXP dvecSEXP, SEXP QkSEXP, SEXP qkSEXP, SEXP wkSEXP, SEXP chiSEXP, SEXP chi_prevSEXP, SEXP xiSEXP, SEXP xi_prevSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -122,8 +135,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type chi_prev(chi_prevSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type xi(xiSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type xi_prev(xi_prevSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type maxiter(maxiterSEXP);
-    rcpp_result_gen = Rcpp::wrap(rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk, chi, chi_prev, xi, xi_prev, maxiter));
+    rcpp_result_gen = Rcpp::wrap(rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk, chi, chi_prev, xi, xi_prev));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -136,7 +148,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_riskParityPortfolio_obj_function_spinu", (DL_FUNC) &_riskParityPortfolio_obj_function_spinu, 3},
     {"_riskParityPortfolio_obj_function_roncalli", (DL_FUNC) &_riskParityPortfolio_obj_function_roncalli, 3},
     {"_riskParityPortfolio_rpp_equality_constraints_iteration", (DL_FUNC) &_riskParityPortfolio_rpp_equality_constraints_iteration, 4},
-    {"_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration", (DL_FUNC) &_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration, 12},
+    {"_riskParityPortfolio_project_onto_equality_constraint_set", (DL_FUNC) &_riskParityPortfolio_project_onto_equality_constraint_set, 3},
+    {"_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration", (DL_FUNC) &_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration, 11},
     {NULL, NULL, 0}
 };
 
