@@ -2,7 +2,7 @@ context("Mean return")
 
 # generate a random Sigma and mu
 N <- 5
-V <- matrix(rnorm(N^2), N, N)
+V <- matrix(rnorm(100 * N), nrow=N)
 Sigma <- V %*% t(V)
 mu <- runif(N)
 

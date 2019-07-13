@@ -20,7 +20,24 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
   N <- nrow(Sigma)
-  if (is.null(w0)) w0 <- projectBudgetLineAndBox(riskParityPortfolioDiagSigma(Sigma, b)$w, w_lb, w_ub)
+  if(is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  # check if equality and inequality constraints were specified
+  has_equality_constraints <- FALSE
+  has_eq_and_ineq_constraints <- FALSE
+  if (!(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec))) {
+    has_eq_and_ineq_constraints <- TRUE
+    w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
+    xi = rep(0, length(cvec))
+    xi_prev = rep(0, length(cvec))
+    chi = rep(0, length(dvec))
+    chi_prev = rep(0, length(dvec))
+  } # check if only equality constraints were specified
+  else if (!(is.null(Cmat) || is.null(cvec))) {
+    has_equality_constraints <- TRUE
+    w0 <- project_onto_equality_constraint_set(w0, Cmat, cvec)
+  } else {
+    w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
+  }
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
@@ -88,20 +105,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          stop("formulation ", formulation, " is not included.")
   )
   has_mu <- !is.null(mu)
-  # check if equality and inequality constraints were specified
-  has_equality_constraints <- FALSE
-  has_eq_and_ineq_constraints <- FALSE
-  if (!(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec))) {
-    has_eq_and_ineq_constraints <- TRUE
-    xi = rep(0, length(cvec))
-    xi_prev = rep(0, length(cvec))
-    chi = rep(0, length(dvec))
-    chi_prev = rep(0, length(dvec))
-  } # check if only equality constraints were specified
-  else if (!(is.null(Cmat) || is.null(cvec))) {
-    has_equality_constraints <- TRUE
-    w0 <- project_onto_equality_constraint_set(w0, Cmat, cvec)
-  }
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
@@ -408,6 +411,18 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
   mu <- stats::uniroot(obj_fun, interval = c(mu_lb, mu_ub), w0, tol = 1e-8)$root
   w <- pmax(pmin(w0 - mu, w_ub), w_lb)
   return(w)
+}
+
+
+# minimize ||w - w0||^2
+# s.t.     Cw = c
+#          Dw <= d
+project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) {
+  meq <- nrow(Cmat)
+  I <- diag(length(w0))
+  Pmat <- -rbind(Cmat, Dmat)
+  pvec <- -c(cvec, dvec)
+  return(quadprog::solve.QP(Dmat=I, dvec=w0, Amat=t(Pmat), bvec=pvec, meq=meq)$solution)
 }
 
 #' @title Design of Risk Parity Portfolios
