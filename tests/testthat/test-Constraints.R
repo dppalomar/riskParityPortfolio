@@ -54,13 +54,16 @@ test_that("equality constraints behave correctly", {
 
 test_that("ineq and eq constraints behave correctly", {
   Cmat = matrix(0, N, N)
+  Cmat[1, ] <- rep(1, N)
   Dmat = matrix(0, N, N)
   diag(Dmat) <- rep(-1, N)
   for(formulation in formulations_list_wo_theta) {
+    w_sum <- runif(1)
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Cmat = Cmat, Dmat = Dmat,
-                               cvec = c(rep(0, 10)),
+                               cvec = c(w_sum, rep(0, 9)),
                                dvec = c(rep(0, 10)), formulation = formulation)
     expect_that(all(rpp$w > 0), is_true())
+    expect_that(abs(sum(rpp$w) - w_sum) < 1e-5, is_true())
   }
 })
