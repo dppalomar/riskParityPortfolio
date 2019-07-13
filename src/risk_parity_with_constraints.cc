@@ -29,8 +29,8 @@ std::vector<Eigen::VectorXd>
 rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec,
                                       const Eigen::MatrixXd& Dmat, const Eigen::VectorXd& dvec,
                                       const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk,
-                                      const Eigen::VectorXd& wk, Eigen::VectorXd& chi,
-                                      Eigen::VectorXd& chi_prev,
+                                      const Eigen::VectorXd& wk,
+                                      Eigen::VectorXd& chi, Eigen::VectorXd& chi_prev,
                                       Eigen::VectorXd& xi, Eigen::VectorXd& xi_prev) {
 
   std::vector<Eigen::VectorXd> params;
@@ -53,7 +53,7 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
     xi_prev = xi;
     chi = chi_next;
     xi = xi_next;
-    if(((w_tilde - w_prev).array().abs() <= .5e-5 * (w_tilde.array().abs() + w_prev.array().abs())).all())
+    if(((w_tilde - w_prev).array().abs() <= .5e-6 * (w_tilde.array().abs() + w_prev.array().abs())).all())
       break;
     w_prev = w_tilde;
     ++i;
