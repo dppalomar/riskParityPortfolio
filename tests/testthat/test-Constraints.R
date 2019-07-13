@@ -37,7 +37,7 @@ test_that("error controls work", {
 })
 
 test_that("equality constraints behave correctly", {
-  Cmat = matrix(0, N, N)
+  Cmat <- matrix(0, 2, N)
   Cmat[1, ] <- rep(1, N)
   Cmat[2, ] <- c(1, 0, 0, 1, rep(0, 6))
   for(formulation in formulations_list_wo_theta) {
@@ -45,7 +45,7 @@ test_that("equality constraints behave correctly", {
     w1_sum_w4 <- .2 * w_sum
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Cmat = Cmat,
-                               cvec = c(w_sum, w1_sum_w4, rep(0, 8)),
+                               cvec = c(w_sum, w1_sum_w4),
                                formulation = formulation)
     expect_that(abs(sum(rpp$w) - w_sum) < 1e-5, is_true())
     expect_that(abs(rpp$w[1] + rpp$w[4] - w1_sum_w4) < 1e-5, is_true())
@@ -53,15 +53,14 @@ test_that("equality constraints behave correctly", {
 })
 
 test_that("ineq and eq constraints behave correctly", {
-  Cmat = matrix(0, N, N)
-  Cmat[1, ] <- rep(1, N)
-  Dmat = matrix(0, N, N)
+  Cmat <- matrix(1, 1, N)
+  Dmat <- matrix(0, N, N)
   diag(Dmat) <- rep(-1, N)
   for(formulation in formulations_list_wo_theta) {
     w_sum <- runif(1)
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Cmat = Cmat, Dmat = Dmat,
-                               cvec = c(w_sum, rep(0, 9)),
+                               cvec = c(w_sum),
                                dvec = c(rep(0, 10)), formulation = formulation)
     expect_that(all(rpp$w > 0), is_true())
     expect_that(abs(sum(rpp$w) - w_sum) < 1e-5, is_true())
