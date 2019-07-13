@@ -91,7 +91,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   # check if equality and inequality constraints were specified
   has_equality_constraints <- FALSE
   has_eq_and_ineq_constraints <- FALSE
-  if (!(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(dvec))) {
+  if (!(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec))) {
     has_eq_and_ineq_constraints <- TRUE
     xi = rep(0, length(cvec))
     xi_prev = rep(0, length(cvec))
