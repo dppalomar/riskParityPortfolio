@@ -13,6 +13,5 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd&, const Eigen::Vecto
                                       const Eigen::MatrixXd&, const Eigen::VectorXd&,
                                       const Eigen::VectorXd&, Eigen::VectorXd&,
                                       Eigen::VectorXd&, Eigen::VectorXd&,
-                                      Eigen::VectorXd&, Eigen::VectorXd&,
                                       Eigen::VectorXd&, const unsigned int);
 #endif

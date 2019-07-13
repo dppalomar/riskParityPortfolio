@@ -29,7 +29,7 @@ rpp_equality_constraints_iteration <- function(Cmat, cvec, Qk, qk) {
     .Call('_riskParityPortfolio_rpp_equality_constraints_iteration', PACKAGE = 'riskParityPortfolio', Cmat, cvec, Qk, qk)
 }
 
-rpp_eq_and_ineq_constraints_iteration <- function(Cmat, cvec, Dmat, dvec, Qk, qk, wk, mu, mu_prev, mu_next, lmd, lmd_prev, lmd_next, maxiter) {
-    .Call('_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration', PACKAGE = 'riskParityPortfolio', Cmat, cvec, Dmat, dvec, Qk, qk, wk, mu, mu_prev, mu_next, lmd, lmd_prev, lmd_next, maxiter)
+rpp_eq_and_ineq_constraints_iteration <- function(Cmat, cvec, Dmat, dvec, Qk, qk, wk, chi, chi_prev, xi, xi_prev, maxiter) {
+    .Call('_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration', PACKAGE = 'riskParityPortfolio', Cmat, cvec, Dmat, dvec, Qk, qk, wk, chi, chi_prev, xi, xi_prev, maxiter)
 }
 
