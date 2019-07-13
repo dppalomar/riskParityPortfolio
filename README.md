@@ -5,9 +5,6 @@
 [![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)](https://CRAN.R-project.org/package=riskParityPortfolio)
 [![Rcpp](https://img.shields.io/badge/powered%20by-Rcpp-orange.svg?style=flat)](http://www.rcpp.org/)
 
-[![PyPI version](https://badge.fury.io/py/riskparityportfolio.svg)](https://badge.fury.io/py/riskparityportfolio)
-[![Downloads](https://pepy.tech/badge/riskparityportfolio)](https://pepy.tech/project/riskparityportfolio)
-
 [![codecov](https://codecov.io/gh/mirca/riskParityPortfolio/branch/master/graph/badge.svg)](https://codecov.io/gh/mirca/riskParityPortfolio)
 [![Travis-CI-Badge](https://travis-ci.org/mirca/riskParityPortfolio.svg?branch=master)](https://travis-ci.org/mirca/riskParityPortfolio)
 [![Build status](https://ci.appveyor.com/api/projects/status/dqjti1y461u7sjn8/branch/master?svg=true)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
@@ -68,21 +65,20 @@ On MS Windows environments, make sure to install the most recent version of
 
 ### Python
 
-A Python3 implementation of the vanilla method is available in PYPI and can be installed as follows:
+A Python3 implementation of this package is currently under development at [https://github.com/mirca/riskparity.py](https://github.com/mirca/riskparity.py).
+Its stable version is available in PYPI and can be installed as follows:
 ```
 $ pip install riskparityportfolio
 ```
 
 Alternatively, the development version can be installed as
 ```
-$ git clone https://github.com/dppalomar/riskParityPortfolio
+$ git clone https://github.com/mirca/riskparity.py
 $ cd python
 $ pip install -e .
 ```
 
-## Usage of **riskParityPortfolio**
-
-### R
+## Basic usage
 
 
 ```r
@@ -110,43 +106,6 @@ res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$risk_contribution/sum(res$risk_contribution)
 #> [1] 0.40 0.40 0.10 0.05 0.05
 ```
-
-### Python
-
-
-
-```python
-import numpy as np
-import riskparityportfolio as rpp
-np.random.seed(42)
-
-# creates a correlation matrix from time-series of five assets
-x = np.random.normal(size=1000).reshape((5, -1))
-corr = x @ x.T
-
-# create the desired risk budgeting vector
-b = np.ones(len(corr)) / len(corr)
-
-# design the portfolio
-w = rpp.design(corr, b)
-print(w)
-
-# compute the risk budgeting
-#> [ 0.21075375  0.21402865  0.20205399  0.16994639  0.20321721]
-rc = w @ (corr * w)
-print(rc / np.sum(rc))
-
-# let's try a different budget
-#> [ 0.2  0.2  0.2  0.2  0.2]
-b = np.array([0.01, 0.09, .1, .1, .7])
-w = rpp.design(corr, b)
-print(w)
-#> [ 0.06178354  0.19655744  0.16217134  0.12808275  0.45140493]
-rc = w @ (corr * w)
-print(rc / np.sum(rc))
-#> [ 0.01  0.09  0.1   0.1   0.7 ]
-```
-
 
 ## Documentation
 For more detailed information, please check the
