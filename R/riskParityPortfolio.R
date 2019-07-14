@@ -577,7 +577,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
-                                maxiter = 5000, ftol = 1e-8, wtol = 1e-6,
+                                maxiter = 500, ftol = 1e-8, wtol = 1e-6,
                                 use_gradient = TRUE) {
   # stocks names
   stocks_names <- colnames(Sigma)
