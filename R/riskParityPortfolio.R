@@ -18,7 +18,8 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
                                    w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
-                                   tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6) {
+                                   tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6,
+                                   use_qp_solver = FALSE) {
   N <- nrow(Sigma)
   if(is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
   # check if equality and inequality constraints were specified
@@ -59,7 +60,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     Amat <- cbind(rep(1, N), diag(N), -diag(N))
     bvec <- c(1, w_lb, -w_ub)
   }
-  meq <- 1
 
   switch(formulation,
          "rc-double-index" = {
@@ -140,20 +140,36 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
       if (has_theta) qk <- qk - lmd_mu * c(mu, 0)
       else qk <- qk - lmd_mu * mu
     # build and solve problem (39) as in Feng & Palomar TSP2015
-    if (has_eq_and_ineq_constraints) {
-      params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk,
-                                                      qk, wk, chi, chi_prev, xi,
-                                                      xi_prev)
-      chi_prev <- params[[1]]
-      chi <- params[[2]]
-      xi_prev <- params[[3]]
-      xi <- params[[4]]
-      w_hat <- params[[5]]
-    } else if (has_equality_constraints) {
-      w_hat <- rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
+    if (has_eq_and_ineq_constraints || has_equality_constraints) {
+      if (!use_qp_solver){
+        if (has_eq_and_ineq_constraints) {
+          params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk,
+                                                          qk, wk, chi, chi_prev, xi,
+                                                          xi_prev)
+          chi_prev <- params[[1]]
+          chi <- params[[2]]
+          xi_prev <- params[[3]]
+          xi <- params[[4]]
+          w_hat <- params[[5]]
+        } else if (has_equality_constraints) {
+          w_hat <- rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
+        }
+      } else {
+        if (has_equality_constraints) {
+          meq <- nrow(Cmat)
+          w_hat <- quadprog::solve.QP(Qk, -qk, Amat = t(Cmat), bvec = cvec,
+                                      meq = meq)$solution
+        } else if (has_eq_and_ineq_constraints) {
+          meq <- nrow(Cmat)
+          Amat <- rbind(Cmat, -Dmat)
+          bvec <- c(cvec, -dvec)
+          w_hat <- quadprog::solve.QP(Qk, -qk, Amat = t(Amat), bvec = bvec,
+                                      meq = meq)$solution
+        }
+      }
     } else {
       w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
-                                  meq = meq)$solution
+                                  meq = 1)$solution
     }
     w_next <- wk + gamma * (w_hat - wk)
     # save objective function value and elapsed time
@@ -578,7 +594,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
                                 maxiter = 500, ftol = 1e-8, wtol = 1e-6,
-                                use_gradient = TRUE) {
+                                use_gradient = TRUE, use_qp_solver = FALSE) {
   # stocks names
   stocks_names <- colnames(Sigma)
   # default values
@@ -658,7 +674,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                        Cmat = Cmat, cvec = cvec, Dmat = Dmat, dvec = dvec,
                                                        formulation = formulation, w0 = w0,
                                                        theta0 = theta0, gamma = gamma, zeta = zeta,
-                                                       tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol),
+                                                       tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol,
+                                                       use_qp_solver = use_qp_solver),
            "slsqp" = ,
            "alabama" = {
              warning("Methods 'slsqp' and 'alabama' are deprecated and will be removed in the next release.
