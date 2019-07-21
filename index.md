@@ -25,8 +25,6 @@ portfolios using fast, accurate, state-of-the-art optimization methods.
 The R version of **riskParityPortfolio** is build on top of awesome R packages including **Rcpp**,
 **RcppEigen**, **quadprog**, **alabama**, and **nloptr**. All these packages can be installed via CRAN.
 
-The Python version depends on **numpy**.
-
 ### Installation
 
 1. The **stable** R version can be installed via CRAN as
@@ -39,18 +37,6 @@ install.packages("riskParityPortfolio")
 devtools::install_github("dppalomar/riskParityPortfolio")
 ```
 <small>You must have previously installed the **devtools** package.</small>
-
-3. The **stable** Python version can be installed via **pip** as
-```bash
-$ pip install riskparityportfolio
-```
-
-4. The **development** Python version can be installed via GitHub as
-```bash
-$ git clone https://github.com/dppalomar/riskParityPortfolio
-$ cd python
-$ pip install -e .
-```
 
 ### Tutorials
 
