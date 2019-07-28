@@ -35,10 +35,12 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
 
   std::vector<Eigen::VectorXd> params;
   unsigned int n = Cmat.cols();
+  unsigned int xi_len = Cmat.rows();
+  unsigned int chi_len = Dmat.rows();
   Eigen::VectorXd w_tilde(n), w_prev(n), w_tilde_bar(n),
-                  chi_next(n), xi_next(n);
+                  chi_next(chi_len), xi_next(xi_len);
   LLT<MatrixXd> lltOfQk(Qk);
-  Eigen::MatrixXd B(Cmat.rows() + Dmat.rows(), Cmat.cols());
+  Eigen::MatrixXd B(xi_len + chi_len, n);
   B << Cmat, Dmat;
   double LC = (B * lltOfQk.solve(B.transpose())).norm(), fac;
   w_prev = wk;
