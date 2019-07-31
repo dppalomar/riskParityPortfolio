@@ -87,7 +87,7 @@ On MS Windows environments, make sure to install the most recent version of
 
 ### Python
 
-A Python3 implementation of this package is currently under development at [https://github.com/mirca/riskparity.py](https://github.com/mirca/riskparity.py).
+A Python3 implementation of this package is currently under development at [https://github.com/dppalomar/riskparity.py](https://github.com/dppalomar/riskparity.py).
 Its stable version is available in PYPI and can be installed as follows:
 ```
 $ pip install riskparityportfolio
@@ -95,7 +95,7 @@ $ pip install riskparityportfolio
 
 Alternatively, the development version can be installed as
 ```
-$ git clone https://github.com/mirca/riskparity.py
+$ git clone https://github.com/dppalomar/riskparity.py
 $ cd python
 $ pip install -e .
 ```

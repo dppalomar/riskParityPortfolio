@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$
+^AUTHORS\.md$
 ^README\.Rmd$
 ^README\.html$
 ^README_cache$
