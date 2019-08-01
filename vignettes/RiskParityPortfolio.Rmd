@@ -5,23 +5,17 @@ author: |
   | Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
-  pagedown::html_paged:
-  bookdown::html_document2:
-    base_format: prettydoc::html_pretty
-    theme: cayman
+  prettydoc::html_pretty:
+    theme: tactile
     highlight: vignette
-    fig_caption: yes
-    number_sections: no
     toc: yes
     toc_depth: 1
-  bookdown::pdf_document2:
-    fig_caption: yes
-    number_sections: yes
+  pagedown::html_paged:
+  html_document:
+    theme: flatly
+    highlight: pygments  
     toc: yes
     toc_depth: 1
-header-includes:
-  \allowdisplaybreaks
-indent: yes
 csl: ieee.csl
 bibliography: refs.bib
 vignette: >
@@ -46,11 +40,7 @@ opts_chunk$set(
   pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
-#Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "all")
-#rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "bookdown::html_document2")
-#rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "bookdown::pdf_document2")
-#tools::compactPDF("vignettes/RiskParityPortfolio.pdf", gs_quality = "ebook")
+# rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "prettydoc::html_pretty")
 ```
 
 -----------
@@ -145,8 +135,8 @@ R(\mathbf{w}) - \lambda_{\mu} \mathbf{w}^{T}\boldsymbol{\mu}\\
 \end{array}$$
 where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function or risk parity function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda_{\mu}$ is a trade-off parameter.
 
-```{r, message=FALSE}
-N <- 100
+```{r, message=FALSE, cache=TRUE}
+N <- 10
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
 mu <- runif(N)
@@ -181,7 +171,7 @@ In the code, that can be done by passing a positive value to the parameter `lmd_
 Let's check the following illustrative example that depicts the trade-off between
 volatility and risk parity:
 
-```{r, message=FALSE}
+```{r, message=FALSE, cache=TRUE}
 N <- 10
 Sigma <- diag(c(1:N))
 lmd_sweep <- c(10 ^ (seq(-5, 5, .25)))
@@ -256,7 +246,7 @@ implementation against the `rp()` function from the `cccp` package and the `opti
 from the `RiskPortfolios` package. (For a fair comparison, instead of calling our function `riskParityPortfolio()`,
 we call directly the core internal function `risk_parity_portfolio_ccd_spinu()`, which only
 computes the risk parity weights, just like `rp()` and `optimalPortfolio()`.)
-```{r}
+```{r, cache=TRUE}
 library(microbenchmark)
 library(cccp)
 library(RiskPortfolios)
@@ -445,14 +435,17 @@ The above problem is a quadratic program (QP) which can be efficiently solved by
 standard R libraries. Furthermore, it is straightforward that adding the mean return
 or variance terms still keeps the structure of the problem intact.
 
+
+
 # Appendix III: Computational time {-}
 In the subsections that follows we explore the computational time required by
 `method = "sca"`, `method = "alabama"`, and `method = "slsqp"` for some of the formulations presented above.
 Additionally, we compare `method = "alabama"` and `method = "slsqp"` without using the
 gradient of the objective function.
 
+
 ## Experiment: formulation "rc-over-var vs b"
-```{r, message = FALSE}
+```{r, message = FALSE, cache=TRUE}
 set.seed(42)
 N <- 100
 V <- matrix(rnorm(N^2), ncol = N)
@@ -491,8 +484,9 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
+
 ## Experiment: formulation "rc vs b-times-var"
-```{r, message = FALSE}
+```{r, message = FALSE, cache=TRUE}
 res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
                                  method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
@@ -525,8 +519,9 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
 ```
 
+
 ## Experiment: formulation "rc-over-sd vs b-times-sd"
-```{r, message = FALSE}
+```{r, message = FALSE, cache=TRUE}
 res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
                                  method = "slsqp")
 res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
@@ -559,11 +554,12 @@ legend("topright", legend=c("alabama-nograd",
        col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
 ```
 
+
 ## Experiment with real market data
 Now, let us query some real market data (from the package `sparseIndexTracking`)
 and check the time comparison of the different methods.
 
-```{r, message = FALSE}
+```{r, message = FALSE, cache=TRUE}
 library(sparseIndexTracking)
 library(xts)
 data(INDEX_2010)
@@ -616,7 +612,7 @@ algorithm optimizes for one portfolio weight at a time while leaving the rest fi
 The plot below illustrates the computational scaling of both Newton and cyclical algorithms.
 Note that the cyclical algorithm is implemented for two different formulations used by [@Spinu2013]
 and [@Billion2013], respectively. Nonetheless, they output the same solution, as they should.
-```{r}
+```{r, cache=TRUE}
 library(microbenchmark)
 library(riskParityPortfolio)
 
@@ -646,6 +642,7 @@ axis(side = 1, at = size_seq, labels = sizes)
 legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 ```
+
 
 # References {-}
 \setlength{\parindent}{-0.2in}
