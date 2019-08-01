@@ -44,9 +44,9 @@ Imports:
     quadprog,
     Rcpp
 Suggests:
-    bookdown,
     knitr,
     numDeriv,
+    pagedown,
     prettydoc,
     rmarkdown,
     R.rsp,

@@ -1,10 +1,10 @@
 ---
 output:
+  md_document:
+    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true  
-  md_document:
-    variant: markdown_github
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -142,23 +142,20 @@ If you find this package useful in your research, please consider citing the fol
 
 
 ## Contributing
-
 We welcome all sorts of contributions. Please feel free to open an issue
 to report a bug or discuss a feature request.
+
 
 ## Links
 Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [GitHub](https://github.com/dppalomar/riskParityPortfolio).
 
-README file: [CRAN-readme](https://CRAN.R-project.org/package=riskParityPortfolio/readme/README.html)
-and [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md).
+README file: [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md).
 
-Vignettes: [CRAN-html-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
-[CRAN-pdf-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf), and
+Vignettes: [CRAN-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html) and
 [R/Finance 2019 slides](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf).
 
 
 ## Disclaimer
-
 The information, software, and any additional resources contained in this repository are not intended as,
 and shall not be understood or construed as, financial advice.
 Past performance is not a reliable indicator of future results and investors may not recover the full
