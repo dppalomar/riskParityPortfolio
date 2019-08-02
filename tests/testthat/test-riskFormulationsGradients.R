@@ -18,11 +18,11 @@ test_that("rc-double-index gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_double_index(w, Sigma)
   risk_grad <- riskParityPortfolio:::R_grad_rc_double_index(w, Sigma)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_double_index, x = w, Sigma = Sigma)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_double_index(w, Sigma)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_double_index, x = w, Sigma = Sigma)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation “rc-over-b-double-index”
@@ -30,11 +30,11 @@ test_that("rc-over-b-double-index gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_over_b_double_index(w, Sigma, b)
   risk_grad <- riskParityPortfolio:::R_grad_rc_over_b_double_index(w, Sigma, b)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_b_double_index, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_over_b_double_index(w, Sigma, b)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_b_double_index, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation “rc-over-var-vs-b”
@@ -42,11 +42,11 @@ test_that("rc-over-var-vs-b gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_over_var_vs_b(w, Sigma, b)
   risk_grad <- riskParityPortfolio:::R_grad_rc_over_var_vs_b(w, Sigma, b)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_var_vs_b, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_over_var_vs_b(w, Sigma, b)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_var_vs_b, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation “rc-over-var”
@@ -54,11 +54,11 @@ test_that("rc-over-var-vs-b gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_over_var(w, Sigma)
   risk_grad <- riskParityPortfolio:::R_grad_rc_over_var(w, Sigma)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_var, x = w, Sigma = Sigma)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_over_var(w, Sigma)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_var, x = w, Sigma = Sigma)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation "rc-over-sd vs b-times-sd"
@@ -66,11 +66,11 @@ test_that("rc-over-sd vs b-times-sd gradients match with numerical derivatives",
   R <- riskParityPortfolio:::R_rc_over_sd_vs_b_times_sd(w, Sigma, b)
   risk_grad <- riskParityPortfolio:::R_grad_rc_over_sd_vs_b_times_sd(w, Sigma, b)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_sd_vs_b_times_sd, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_over_sd_vs_b_times_sd(w, Sigma, b)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_sd_vs_b_times_sd, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation "rc vs b-times-var"
@@ -78,11 +78,11 @@ test_that("rc vs b-times-var gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_vs_b_times_var(w, Sigma, b)
   risk_grad <- riskParityPortfolio:::R_grad_rc_vs_b_times_var(w, Sigma, b)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_vs_b_times_var, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_vs_b_times_var(w, Sigma, b)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_vs_b_times_var, x = w, Sigma = Sigma, b = b)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation "rc vs theta"
@@ -91,11 +91,11 @@ test_that("rc vs theta gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_vs_theta(c(w, theta), Sigma)
   risk_grad <- riskParityPortfolio:::R_grad_rc_vs_theta(c(w, theta), Sigma)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_vs_theta(c(w, theta), Sigma)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_vs_theta, x = c(w, theta), Sigma = Sigma)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })
 
 #  Formulation "rc-over-b vs theta"
@@ -104,9 +104,9 @@ test_that("rc-over-b vs theta gradients match with numerical derivatives", {
   R <- riskParityPortfolio:::R_rc_over_b_vs_theta(c(w, theta), Sigma, b)
   risk_grad <- riskParityPortfolio:::R_grad_rc_over_b_vs_theta(c(w, theta), Sigma, b)
   risk_grad_num <- grad(riskParityPortfolio:::R_rc_over_b_vs_theta, x = c(w, theta), Sigma = Sigma, b = b)
-  expect_that(norm(risk_grad - risk_grad_num, "2") < 1e-4, is_true())
+  expect_true(norm(risk_grad - risk_grad_num, "2") < 1e-4)
   
   g_jac <- riskParityPortfolio:::A_rc_over_b_vs_theta(c(w, theta), Sigma, b)
   g_jac_num <- jacobian(riskParityPortfolio:::g_rc_over_b_vs_theta, x = c(w, theta), Sigma = Sigma, b = b)
-  expect_that(norm(g_jac - g_jac_num, "F") < 1e-4, is_true())
+  expect_true(norm(g_jac - g_jac_num, "F") < 1e-4)
 })

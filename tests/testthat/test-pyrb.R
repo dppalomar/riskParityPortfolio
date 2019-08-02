@@ -16,8 +16,8 @@ test_that("unconstrained example", {
     answer <- c(26.8306, 28.6769, 11.4095, 9.7985, 5.6135, 5.9029, 6.656, 5.1121) / 100
     rpp <- riskParityPortfolio(Sigma)
     rc <- rpp$risk_contribution / sum(rpp$risk_contribution)
-    expect_that(max(abs(answer - rpp$w)) < 1e-4, is_true())
-    expect_that(max(abs(rc - 0.125)) < 1e-4, is_true())
+    expect_true(max(abs(answer - rpp$w)) < 1e-4)
+    expect_true(max(abs(rc - 0.125)) < 1e-4)
 })
 
 
@@ -29,8 +29,8 @@ test_that("constrained example", {
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Cmat = Cmat, cvec = cvec,
                                Dmat = Dmat, dvec = dvec)
-    expect_that(abs(sum(rpp$w) - 1) < 1e-4, is_true())
-    expect_that(-Dmat %*% rpp$w > 0.3, is_true())
+    expect_true(abs(sum(rpp$w) - 1) < 1e-4)
+    expect_true(-Dmat %*% rpp$w > 0.3)
 })
 
 
@@ -44,6 +44,6 @@ test_that("another constrained example", {
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Cmat = Cmat, cvec = cvec,
                                Dmat = Dmat, dvec = dvec)
-    expect_that(abs(sum(rpp$w) - 1) < 1e-4, is_true())
-    expect_that(all(-Dmat %*% rpp$w > -dvec), is_true())
+    expect_true(abs(sum(rpp$w) - 1) < 1e-4)
+    expect_true(all(-Dmat %*% rpp$w > -dvec))
 })
