@@ -13,8 +13,8 @@ test_that("sca and gensolver portfolios are consistent when lmd_mu equals zero
   expect_equal(rpp_lmb_zero$w, rpp_no_mu$w)
   expect_equal(rpp_lmb_zero$risk_contributions, rpp_no_mu$risk_contributions)
 
-  rpp_lmb_zero <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = 0, method = "alabama")
   rpp_no_mu <- riskParityPortfolio(Sigma, method = "alabama")
+  expect_warning(rpp_lmb_zero <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = 0, method = "alabama"))
   expect_equal(rpp_lmb_zero$w, rpp_no_mu$w)
   expect_equal(rpp_lmb_zero$risk_contributions, rpp_no_mu$risk_contributions)
 })
