@@ -1,6 +1,10 @@
 ## Changes in riskParityPortfolio version 0.1.2.9000 (2019-XX-XX)
 
 * Included the R/Finance 2019 slides as an additional vignette.
+* Included the slides on risk parity portfolio from the Convex Optimization course at 
+  the Hong Kong Univ. of Science and Technology (HKUST) as an additional vignette.
+* New plotting function implemented: barplotPortfolioRisk().
+* General linear constraints now supported in the main function riskParityPortfolio()
 
 
 ## Changes in riskParityPortfolio version 0.1.2 (2019-06-01)
