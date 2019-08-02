@@ -598,7 +598,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' 
 #' @export
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
-                                lmd_mu = 1e-4, lmd_var = 0,
+                                lmd_mu = 0, lmd_var = 0,
                                 w_lb = 0, w_ub = 1,
                                 Cmat = NULL, cvec = NULL, Dmat = NULL, dvec = NULL,
                                 method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
@@ -670,7 +670,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       # create fancy initial point for the case of additional objectives
       w_gmvp <- 1 / diag(Sigma)
       w_gmvp <- w_gmvp / sum(w_gmvp)
-      if(has_mu) {
+      if (has_mu) {
         w_mu <- as.numeric(max(mu) == mu)
         w_mu <- w_mu / sum(w_mu)
       } else w_mu <- 0
@@ -679,19 +679,19 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
       w0 <- theta_rc*w0 + theta_mu*w_mu + theta_var*w_gmvp
     }
-    # make w0 feasible
+    # make w0 feasible (excluding the general linear constraints)
     if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
       if (has_initial_point) warning("Initial point is infeasible. Projecting it onto the feasible set.")
       w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
     }
-    # solve nonvanilla formulation
+    # solve nonconvex formulation
     switch(match.arg(method),
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
                                                        Cmat = Cmat, cvec = cvec, Dmat = Dmat, dvec = dvec,
-                                                       formulation = formulation, w0 = w0,
-                                                       theta0 = theta0, gamma = gamma, zeta = zeta,
-                                                       tau = tau, maxiter = maxiter, ftol = ftol, wtol = wtol,
+                                                       formulation = formulation, w0 = w0, theta0 = theta0, 
+                                                       gamma = gamma, zeta = zeta, tau = tau, 
+                                                       maxiter = maxiter, ftol = ftol, wtol = wtol,
                                                        use_qp_solver = use_qp_solver),
            "slsqp" = ,
            "alabama" = {
@@ -707,7 +707,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            stop("method ", method, " is not included.")
     )
   }
-  names(portfolio$w) <- stocks_names
-  names(portfolio$risk_contribution) <- stocks_names
+  names(portfolio$w) <- names(portfolio$risk_contribution) <- stocks_names
   return(portfolio)
 }
