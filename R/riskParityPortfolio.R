@@ -436,9 +436,9 @@ projectBudgetLineAndBox <- function(w0, w_lb, w_ub) {
 project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) {
   meq <- nrow(Cmat)
   I <- diag(length(w0))
-  Pmat <- -rbind(Cmat, Dmat)
-  pvec <- -c(cvec, dvec)
-  return(quadprog::solve.QP(Dmat=I, dvec=w0, Amat=t(Pmat), bvec=pvec, meq=meq)$solution)
+  Amat <- -t(rbind(Cmat, Dmat))
+  b0 <- -c(cvec, dvec)
+  return(quadprog::solve.QP(Dmat = I, dvec = w0, Amat = Amat, bvec = b0, meq = meq)$solution)
 }
 
 
