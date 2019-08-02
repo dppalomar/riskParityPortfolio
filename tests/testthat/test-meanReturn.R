@@ -29,6 +29,6 @@ test_that("roncalli's formulation with mu converges to roncalli's formulation
                                                                    risk_free_return, 1e-6, 50)
   rpp <- riskParityPortfolio:::risk_parity_portfolio_ccd_roncalli(Sigma, b, 1e-6, 50)
   rc <- rpp_mu * (Sigma %*% rpp_mu)
-  expect_that(all.equal(rpp_mu, rpp, tolerance = 1e-4), is_true())
-  expect_that(all.equal(c(round(rc / sum(rc), digits=2)), b, tolerance = 1e-1), is_true())
+  expect_true(all.equal(rpp_mu, rpp, tolerance = 1e-4))
+  expect_true(all.equal(c(round(rc / sum(rc), digits=2)), b, tolerance = 1e-1))
 })

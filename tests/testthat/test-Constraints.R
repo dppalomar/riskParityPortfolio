@@ -16,8 +16,8 @@ formulations_list_wo_theta <- c("rc-double-index", "rc-over-b-double-index",
 test_that("box constraints behave correctly", {
   for(formulation in formulations_list) {
     rpp <- riskParityPortfolio(Sigma, method = "sca", w_lb = -1, w_ub = 2, formulation = formulation)
-    expect_that(all(rpp$w >= -1), is_true())
-    expect_that(all(rpp$w <= 2), is_true())
+    expect_true(all(rpp$w >= -1))
+    expect_true(all(rpp$w <= 2))
   }
 })
 
@@ -44,7 +44,7 @@ test_that("equality constraints behave correctly", {
                                Cmat = Cmat,
                                cvec = c(w_sum),
                                formulation = formulation)
-    expect_that(abs(sum(rpp$w) - w_sum) < 1e-5, is_true())
+    expect_true(abs(sum(rpp$w) - w_sum) < 1e-5)
   }
 })
 
@@ -60,7 +60,7 @@ test_that("ineq and eq constraints behave correctly", {
                                Cmat = Cmat, Dmat = Dmat,
                                cvec = c(1),
                                dvec = c(rep(0, N)), formulation = formulation)
-    expect_that(all(rpp$w > 0), is_true())
-    expect_that(abs(sum(rpp$w) - 1) < 1e-5, is_true())
+    expect_true(all(rpp$w > 0))
+    expect_true(abs(sum(rpp$w) - 1) < 1e-5)
   }
 })
