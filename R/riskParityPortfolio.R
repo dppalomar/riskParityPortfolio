@@ -503,9 +503,9 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' @param lmd_var scalar weight to control the importance of the variance term
 #'        (only currently available for the SCA method)
 #' @param w_lb lower bound (either a vector or a scalar) on the value of each
-#'        portfolio weight (only currently available for the SCA method)
+#'        portfolio weight
 #' @param w_ub upper bound (either a vector or a scalar) on the value of each
-#'        portfolio weight (only currently available for the SCA method)
+#'        portfolio weight
 #' @param Cmat TBD
 #' @param cvec TBD
 #' @param Dmat TBD
@@ -607,9 +607,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
                                 maxiter = 500, ftol = 1e-8, wtol = 1e-6,
                                 use_gradient = TRUE, use_qp_solver = FALSE) {
-  # stocks names
-  stocks_names <- colnames(Sigma)
   # default values
+  stocks_names <- colnames(Sigma)
   N <- nrow(Sigma)
   if (is.null(b)) b <- rep(1/N, N)
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
@@ -620,8 +619,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
-  has_equality_constraints <- !is.null(Cmat) || !is.null(cvec)
-  has_inequality_constraints <- !is.null(Dmat) || !is.null(dvec)
+  has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
+  has_inequality_constraints <- !(is.null(Dmat) || is.null(dvec))
   has_initial_point <- !is.null(w0)
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box || has_equality_constraints || has_inequality_constraints)
   
@@ -633,6 +632,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     stop("Shape mismatch: mu has to have nrow(Sigma) number of elements")
   if (has_initial_point && (length(w0) != N))
     stop("Shape mismatch: w0 has to have nrow(Sigma) number of elements")
+  
+  # if diag, then call diagonal solver
   if (has_formulation && formulation == "diag") {
     if (!is_vanilla_formulation)
       stop("Additional constraints (box-constraints or other linear constrains) or",
@@ -640,29 +641,32 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     if (has_initial_point)
       warning("The problem is a naive (diagonal) risk parity portfolio, but an initial",
               " point has been provided: The initial point is being ignored.")
-    return(riskParityPortfolioDiagSigma(Sigma, b))  # call diagonal solver
+    return(riskParityPortfolioDiagSigma(Sigma, b))
   }
-  if (has_formulation && is_vanilla_formulation)
-      warning("The problem is a vanilla risk parity portofolio, but a nonconvex",
-              " formulation has been chosen. Consider not specifying the formulation",
-              " argument in order to get the guaranteed global solution.")
-  is_vanilla_formulation <- is_vanilla_formulation && !has_formulation
+  # if vanilla, then call the vanilla solver
+  if (is_vanilla_formulation && has_formulation) {
+    warning("The problem is a vanilla risk parity portofolio, but a nonconvex",
+            " formulation has been chosen. Consider not specifying the formulation",
+            " argument in order to use the convex formulation and get a guaranteed",
+            " global solution.")
+    is_vanilla_formulation <- FALSE  # so the nonconvex formulation will be used
+  }
   if (is_vanilla_formulation) {
     if (has_initial_point)
       warning("The problem is a vanilla risk parity portfolio, but an initial",
               " point has been provided: The initial point is being ignored.")
-    switch(match.arg(method_init),
-           "newton" = portfolio <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
-           "cyclical-spinu" = portfolio <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
-           "cyclical-roncalli" = portfolio <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
-           stop("method_init ", method_init, " is not supported."))
-  } else {
+    portfolio <- switch(match.arg(method_init),
+                        "newton" = riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
+                        "cyclical-spinu" = riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
+                        "cyclical-roncalli" = riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
+                        stop("method_init ", method_init, " is not supported."))
+  } else {  # nonconvex solver
     if (!has_initial_point) {
-      switch(match.arg(method_init),
-             "newton" = w0 <- riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
-             "cyclical-spinu" = w0 <- riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
-             "cyclical-roncalli" = w0 <- riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)$w,
-             stop("method_init ", method_init, " is not supported."))
+      w0 <- switch(match.arg(method_init),
+                   "newton" = riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
+                   "cyclical-spinu" = riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
+                   "cyclical-roncalli" = riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)$w,
+                   stop("method_init ", method_init, " is not supported."))
       # create fancy initial point for the case of additional objectives
       w_gmvp <- 1 / diag(Sigma)
       w_gmvp <- w_gmvp / sum(w_gmvp)
