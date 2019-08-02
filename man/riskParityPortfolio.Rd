@@ -32,6 +32,14 @@ portfolio weight (only currently available for the SCA method)}
 \item{w_ub}{upper bound (either a vector or a scalar) on the value of each
 portfolio weight (only currently available for the SCA method)}
 
+\item{Cmat}{TBD}
+
+\item{cvec}{TBD}
+
+\item{Dmat}{TBD}
+
+\item{dvec}{TBD}
+
 \item{method_init}{method to compute the vanilla solution. In case of
 additional constraints or objective terms, this solution is used as
 the initial point for the subsequent method. The default is
@@ -102,15 +110,18 @@ constraints, as well as the inclusion of additional objectives like the
 expected return and overall variance. In short, this function solves the
 following problem:
 
-      \code{minimize R(w) - lmd_mu * t(w)\%*\%mu + lmd_var * t(w)\%*\%Sigma\%*\%w}
+      \code{minimize    R(w) - lmd_mu * t(w) \%*\% mu + lmd_var * t(w) \%*\% Sigma \%*\% w}
 
-      \code{subject to sum(w) = 1, w_lb <= w <= w_ub},
+      \code{subject to  sum(w) = 1, w_lb <= w <= w_ub},
+      \code{            Cmat \%*\% w = cvec, Dmat \%*\% w <= dvec},
 
 where \code{R(w)} denotes the risk concentration,
-\code{t(w)\%*\%mu} is the expected return, \code{t(w)\%*\%Sigma\%*\%w} is the
+\code{t(w) \%*\% mu} is the expected return, \code{t(w) \%*\% Sigma \%*\% w} is the
 overall variance, \code{lmd_mu} and \code{lmd_var} are the trade-off weights
-for the expected return and the variance terms, respectively, and \code{w_lb} and
-\code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w}.
+for the expected return and the variance terms, respectively, \code{w_lb} and
+\code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w},
+\code{Cmat \%*\% w = cvec} denotes arbitrary linear equality constrains, and  
+\code{Dmat \%*\% w = dvec} denotes arbitrary linear inequality constrains.
 }
 \details{
 By default, the problem considered is the vanilla risk parity portfolio:
@@ -152,10 +163,13 @@ Sigma <- cov(V)
 res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                 "risk_contribution"
+
 res$w
 #> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
+
 res$risk_contribution
 #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+
 c(res$w * (Sigma \%*\% res$w))
 #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
 

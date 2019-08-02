@@ -454,15 +454,18 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' expected return and overall variance. In short, this function solves the
 #' following problem:
 #'
-#'       \code{minimize R(w) - lmd_mu * t(w)\%*\%mu + lmd_var * t(w)\%*\%Sigma\%*\%w}
+#'       \code{minimize    R(w) - lmd_mu * t(w) \%*\% mu + lmd_var * t(w) \%*\% Sigma \%*\% w}
 #'
-#'       \code{subject to sum(w) = 1, w_lb <= w <= w_ub},
+#'       \code{subject to  sum(w) = 1, w_lb <= w <= w_ub},
+#'       \code{            Cmat \%*\% w = cvec, Dmat \%*\% w <= dvec},
 #'
 #' where \code{R(w)} denotes the risk concentration,
-#' \code{t(w)\%*\%mu} is the expected return, \code{t(w)\%*\%Sigma\%*\%w} is the
+#' \code{t(w) \%*\% mu} is the expected return, \code{t(w) \%*\% Sigma \%*\% w} is the
 #' overall variance, \code{lmd_mu} and \code{lmd_var} are the trade-off weights
-#' for the expected return and the variance terms, respectively, and \code{w_lb} and
-#' \code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w}.
+#' for the expected return and the variance terms, respectively, \code{w_lb} and
+#' \code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w},
+#' \code{Cmat \%*\% w = cvec} denotes arbitrary linear equality constrains, and  
+#' \code{Dmat \%*\% w = dvec} denotes arbitrary linear inequality constrains.
 #'
 #' @details By default, the problem considered is the vanilla risk parity portfolio:
 #' \code{w >= 0, sum(w) = 1}, with no expected return term, and no variance term. In this case,
@@ -503,6 +506,10 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'        portfolio weight (only currently available for the SCA method)
 #' @param w_ub upper bound (either a vector or a scalar) on the value of each
 #'        portfolio weight (only currently available for the SCA method)
+#' @param Cmat TBD
+#' @param cvec TBD
+#' @param Dmat TBD
+#' @param dvec TBD
 #' @param method_init method to compute the vanilla solution. In case of
 #'        additional constraints or objective terms, this solution is used as
 #'        the initial point for the subsequent method. The default is
@@ -561,10 +568,13 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' res <- riskParityPortfolio(Sigma)
 #' names(res)
 #' #> [1] "w"                 "risk_contribution"
+#' 
 #' res$w
 #' #> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
+#' 
 #' res$risk_contribution
 #' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+#' 
 #' c(res$w * (Sigma %*% res$w))
 #' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
 #'
@@ -604,32 +614,33 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if (is.null(b)) b <- rep(1/N, N)
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
   if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
-  # check problem feasibility
-  if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
-  if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds.")
-  if (length(b) != N) stop("Shape mismatch: b has to have nrow(Sigma) number of elements.")
-
+  # define boolean cases for easier reading of code
   has_mu <- !is.null(mu)
-  if (has_mu && (length(mu) != N))
-    stop("Shape mismatch: mu has to have nrow(Sigma) number of elements")
   has_theta <- !is.null(theta0)
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
-  has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
+  has_equality_constraints <- !is.null(Cmat) || !is.null(cvec)
+  has_inequality_constraints <- !is.null(Dmat) || !is.null(dvec)
   has_initial_point <- !is.null(w0)
+  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box || has_equality_constraints || has_inequality_constraints)
+  
+  # check wrong parameters
+  if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
+  if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds.")
+  if (length(b) != N) stop("Shape mismatch: b has to have nrow(Sigma) number of elements.")
+  if (has_mu && (length(mu) != N))
+    stop("Shape mismatch: mu has to have nrow(Sigma) number of elements")
   if (has_initial_point && (length(w0) != N))
     stop("Shape mismatch: w0 has to have nrow(Sigma) number of elements")
-
-  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box || has_equality_constraints)
   if (has_formulation && formulation == "diag") {
     if (!is_vanilla_formulation)
-      stop("Additional constraints (box-constraints) or terms (expected return",
-           " or variance) are not supported by the 'diag' formulation.")
+      stop("Additional constraints (box-constraints or other linear constrains) or",
+           " terms (expected return or variance) are not supported by the 'diag' formulation.")
     if (has_initial_point)
       warning("The problem is a naive (diagonal) risk parity portfolio, but an initial",
               " point has been provided: The initial point is being ignored.")
-    return(riskParityPortfolioDiagSigma(Sigma, b))
+    return(riskParityPortfolioDiagSigma(Sigma, b))  # call diagonal solver
   }
   if (has_formulation && is_vanilla_formulation)
       warning("The problem is a vanilla risk parity portofolio, but a nonconvex",
