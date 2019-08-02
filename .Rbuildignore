@@ -27,3 +27,4 @@
 ^vignettes/example\.Rmd$
 ^vignettes/example\.html$
 ^vignettes/example\.pdf$
+^vignettes/Sigma_mu\.RData$

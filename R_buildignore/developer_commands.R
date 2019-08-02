@@ -26,7 +26,7 @@ devtools::install()
 library(riskParityPortfolio)
 
 # Documentation
-devtools::document()  # to generate all documentation via roxygen
+devtools::document()  #or Ctrl-Shift-L (to generate all documentation via roxygen)
 ?riskParityPortfolio
 
 
