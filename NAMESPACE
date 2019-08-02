@@ -2,7 +2,5 @@
 
 export(barplotPortfolioRisk)
 export(riskParityPortfolio)
-import(ggplot2)
-import(gridExtra)
 importFrom(Rcpp,sourceCpp)
 useDynLib(riskParityPortfolio)

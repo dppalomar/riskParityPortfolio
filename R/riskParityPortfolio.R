@@ -441,6 +441,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
   return(quadprog::solve.QP(Dmat=I, dvec=w0, Amat=t(Pmat), bvec=pvec, meq=meq)$solution)
 }
 
+
 #' @title Design of risk parity portfolios
 #'
 #' @description This function designs risk parity portfolios to equalize/distribute
@@ -584,6 +585,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' risk parity portfolios. <https://arxiv.org/pdf/1311.4057.pdf>
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
+#' 
 #' @export
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 1e-4, lmd_var = 0,

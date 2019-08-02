@@ -4,8 +4,8 @@
 \alias{barplotPortfolioRisk}
 \title{Create portfolio barplots with the capital allocation and the risk allocation}
 \usage{
-barplotPortfolioRisk(w, Sigma, type = c("ggplot2", "simple"),
-  colors = topo.colors(ncol(w)))
+barplotPortfolioRisk(w, Sigma, type = c("ggplot2", "simple",
+  "ggplot2-old"), colors = topo.colors(ncol(w)))
 }
 \arguments{
 \item{w}{Vector or matrix containing the portfolio(s) weights. 
@@ -46,6 +46,9 @@ rownames(w_multiple) <- LETTERS[1:N]
 # plot
 barplotPortfolioRisk(w_single, Sigma)
 barplotPortfolioRisk(w_multiple, Sigma)
-barplotPortfolioRisk(w_multiple, Sigma, colors = viridisLite::viridis(ncol(w)))
+barplotPortfolioRisk(w_multiple, Sigma, colors = viridisLite::viridis(4))
 
+}
+\author{
+Daniel P. Palomar and Ze Vinicius
 }

@@ -33,12 +33,12 @@
 #' # plot
 #' barplotPortfolioRisk(w_single, Sigma)
 #' barplotPortfolioRisk(w_multiple, Sigma)
-#' barplotPortfolioRisk(w_multiple, Sigma, colors = viridisLite::viridis(ncol(w)))
+#' barplotPortfolioRisk(w_multiple, Sigma, colors = viridisLite::viridis(4))
 #' 
-#' @import ggplot2
-#' @import gridExtra
+#' @author Daniel P. Palomar and Ze Vinicius
+#' 
 #' @export
-barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), colors = topo.colors(ncol(w))) {
+barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple", "ggplot2-old"), colors = topo.colors(ncol(w))) {
   w <- as.matrix(w)
   if (is.null(colnames(w)))
     colnames(w) <- paste0("portf-", 1:ncol(w))
@@ -60,17 +60,34 @@ barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), colors
            par(old_par)
          },
          "ggplot2" = {
+           if (!requireNamespace("ggplot2", quietly = TRUE)) 
+             stop("Please install package \"ggplot2\" or choose another plot type", call. = FALSE)
+           molten_portf_matrix <- rbind(cbind(melt_portf_matrix(w), type = "w"),
+                                        cbind(melt_portf_matrix(RRC), type = "RRC"))
+           labels <- c(w = "Weight allocation", RRC = "Relative risk contribution")
+           p <- ggplot2::ggplot(molten_portf_matrix, ggplot2::aes(x = stock, y = value)) + 
+             ggplot2::geom_bar(ggplot2::aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) +
+             ggplot2::facet_wrap(~ type, ncol = 1, scales = "free", labeller = ggplot2::labeller(type = labels)) +
+             ggplot2::scale_fill_manual(values = colors) +
+             ggplot2::labs(title = "Portfolio capital and risk distribution", x = "stocks", y = NULL) + 
+             ggplot2::theme(legend.title = ggplot2::element_blank()) +
+             ggplot2::theme(strip.text = ggplot2::element_text(size = 11))
+           if (ncol(w) == 1)  # remove legend if only one portfolio
+             p <- p + ggplot2::theme(legend.position = "none")
+           p
+         },
+         "ggplot2-old" = {
            # stock <- portfolio <- value <- NULL  # ugly hack to deal with CRAN note
-           p1 <- ggplot(data = melt_portf_matrix(w), aes(x = stock, y = value)) + 
-             geom_bar(aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
-             scale_fill_manual(values = colors) +
-             labs(title = "Portfolio weight allocation", x = "stocks", y = "capital") + 
-             theme(legend.title = element_blank())
-           p2 <- ggplot(data = melt_portf_matrix(RRC), aes(x = stock, y = value)) + 
-             geom_bar(aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
-             scale_fill_manual(values = colors) +
-             labs(title = "Relative risk contribution", x = "stocks", y = "risk") + 
-             theme(legend.title = element_blank())
+           p1 <- ggplot2::ggplot(data = melt_portf_matrix(w), ggplot2::aes(x = stock, y = value)) + 
+             ggplot2::geom_bar(ggplot2::aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
+             ggplot2::scale_fill_manual(values = colors) +
+             ggplot2::labs(title = "Portfolio weight allocation", x = "stocks", y = "capital") + 
+             ggplot2::theme(legend.title = ggplot2::element_blank())
+           p2 <- ggplot2::ggplot(data = melt_portf_matrix(RRC), ggplot2::aes(x = stock, y = value)) + 
+             ggplot2::geom_bar(ggplot2::aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
+             ggplot2::scale_fill_manual(values = colors) +
+             ggplot2::labs(title = "Relative risk contribution", x = "stocks", y = "risk") + 
+             ggplot2::theme(legend.title = ggplot2::element_blank())
            # theme(plot.title = element_text(size = 16),
            #       axis.title = element_text(size = 14, color = '#555555'),
            #       axis.text = element_text(size = 11),
@@ -79,11 +96,11 @@ barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), colors
            #       legend.spacing.x = unit(4, 'pt'),
            #       legend.text = element_text(size = 13))
            if (ncol(w) == 1) {  # remove legend if only one portfolio
-             p1 <- p1 + theme(legend.position = "none")
-             p2 <- p2 + theme(legend.position = "none")
+             p1 <- p1 + ggplot2::theme(legend.position = "none")
+             p2 <- p2 + ggplot2::theme(legend.position = "none")
            }           
-           grid.arrange(p1, p2, nrow = 2)
-         },
+           gridExtra::grid.arrange(p1, p2, nrow = 2)
+         },         
          stop("Barplot type unknown."))
 }
 

@@ -40,13 +40,12 @@ LinkingTo:
 RoxygenNote: 6.1.1
 Imports:
     alabama,
-    ggplot2,
-    gridExtra,
     nloptr,
     quadprog,
     Rcpp
 Suggests:
     knitr,
+    ggplot2,
     numDeriv,
     pagedown,
     prettydoc,
