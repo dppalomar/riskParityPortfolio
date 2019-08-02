@@ -97,44 +97,19 @@ $$\begin{array}{ll}
 \textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1, \quad\color{blue}{\mathbf{l}\le\mathbf{w}\le\mathbf{u}}.
 \end{array}$$
 ```{r, echo=TRUE, size="small"}
-rpp_mu <- riskParityPortfolio(Sigma, 
-                              mu = mu, lmd_mu = 1e-3,  # for expected return term
-                              w_ub = 0.16)             # for box upper bound constraints
+#rpp_mu <- riskParityPortfolio(Sigma, formulation = "rc-double-index",
+rpp_mu <- riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)), formulation = "rc-over-b-double-index",
+                              mu = mu, lmd_mu = 1e-3, # for expected return term
+                              w_ub = 0.16)            # for box upper bound constraints
 ```
 
 To plot and compare the results:
-```{r, echo=FALSE, fig.width=9, fig.height=5.6, out.width="85%"}
-#TODO{Daniel}: implement this new barplot function and also consider the dotplot (http://www.b-eye-network.com/view/2468)
-library(PerformanceAnalytics)
-library(ggplot2)
-library(reshape2)
-library(viridis)
-# compute risk contributions
-N <- length(mu)
-w_EWP <- rep(1/N, N)
-risk_all <- cbind("EWP"           = as.vector(w_EWP * (Sigma %*% w_EWP)),
-                  "RPP (naive)"   = as.vector(rpp_naive$w * (Sigma %*% rpp_naive$w)),
-                  "RPP (vanilla)" = as.vector(rpp_vanilla$w * (Sigma %*% rpp_vanilla$w)),
-                  "RPP + mu"      = as.vector(rpp_mu$w * (Sigma %*% rpp_mu$w)))
-rownames(risk_all) <- colnames(Sigma)
-RRC_all <- sweep(risk_all, MARGIN = 2, STATS = colSums(risk_all), FUN = "/")  # normalize each column
-
-# plot (https://www.datanovia.com/en/blog/ggplot-colors-best-tricks-you-will-love/)
-ggplot(data = melt(RRC_all), aes(x = Var1, y = value)) + 
-  geom_bar(aes(fill = Var2), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
-  #scale_fill_manual(values = rainbow6equal[1:4]) +
-  scale_fill_viridis(discrete = TRUE) +
-  labs(x = "stocks", y = "risk", title = "Risk contribution") +
-  theme(plot.title = element_text(size = 16),
-        axis.title = element_text(size = 14, color = '#555555'),
-        axis.text = element_text(size = 11),
-        legend.position = c(0.9, 0.86), #c(0.905, 0.88), 
-        legend.title = element_blank(), 
-        legend.spacing.x = unit(4, 'pt'),
-        legend.text = element_text(size = 13))
-# barplot(t(RRC_all), col = rainbow8equal[1:3],
-#         main = "Relative risk contribution", xlab = "stocks", ylab = "risk", beside = TRUE, 
-#         legend = colnames(RRC_all), args.legend = list(bg = "white"))
+```{r, echo=TRUE}
+w_all <- cbind("EWP"           = rep(1/nrow(Sigma), nrow(Sigma)),
+               "RPP (naive)"   = rpp_naive$w,
+               "RPP (vanilla)" = rpp_vanilla$w,
+               "RPP + mu"      = rpp_mu$w)
+barplotPortfolioRisk(w_all, Sigma, col = viridisLite::viridis(ncol(w_all)))
 ```
 
 
@@ -163,7 +138,7 @@ Although portfolio management did not change much during the 40 years after the 
 ## From “dollar” to risk diversification
 Since the global financial crisis in 2008, **risk management** has particularly become more important than performance management in portfolio optimization. Indeed, risk parity became a popular financial model after the global financial crisis in 2008 [@Qian2005; @Asness_etal2012].
 
-The alternative **risk parity portfolio design** has been receiving significant attention from both the theoretical and practical sides [@Roncalli2013riskparity, @Qian2016] because it
+The alternative **risk parity portfolio design** has been receiving significant attention from both the theoretical and practical sides [@Roncalli2013riskparity; @Qian2016] because it
 
 - diversifies the risk, instead of the capital, among the assets
 - is less sensitive to parameter estimation errors.
@@ -259,28 +234,21 @@ $$\begin{array}{ll}
 \end{array}$$
 where $F(\mathbf{w})$ denotes some additional objective function and $\cal{W}$ denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in Appendix I.
 
-The way to solve this general problem is derived in [@FengPal2015riskparity, @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See Appendix I for a general idea of the method.
+The way to solve this general problem is derived in [@FengPal2015riskparity; @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See Appendix I for a general idea of the method.
 
 
 
 
 
 
-# Using the package **riskParityPortfolio**
+# Using the Package **riskParityPortfolio**
 <!---
 TODO{Vinicius}: Revise all this section.
 --->
 
 A simple code example on how to design a risk parity portfolio is as follows:
-<!---
-```{r, echo=FALSE, message=FALSE}
-rainbow8equal <- c("#BF4D4D", "#BFA34D", "#86BF4D", "#4DBF69", "#4DBFBF", "#4D69BF", "#864DBF", "#BF4DA3")
-```
---->
-
 ```{r, message=FALSE}
 library(riskParityPortfolio)
-library(PerformanceAnalytics)  # for the color palette
 
 # generate synthetic data
 set.seed(42)
@@ -289,17 +257,10 @@ V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
 
 # compute risk parity portfolio
-portfolio <- riskParityPortfolio(Sigma)
+rpp <- riskParityPortfolio(Sigma)
 
-# plot the portfolio designed
-barplot(portfolio$w, main = "Portfolio Weights", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"),
-        args.legend = list(bg = "white"))
-# plot the risk contributions
-barplot(portfolio$risk_contribution,
-        main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1], legend = c("riskParityPortfolio"),
-        args.legend = list(bg = "white"))
+# plot
+barplotPortfolioRisk(rpp$w, Sigma, colors = "#BF4D4D")
 ```
 
 As presented earlier, the risk parity portfolios are designed in
@@ -417,26 +378,19 @@ w0 <- rep(1/N, N)
 
 # compute risk parity portfolios using different methods
 rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
+fincov_w <- RiskParity(Sigma)
 riskport_w <- optimalPortfolio(Sigma = Sigma, control = list(type = 'erc',
                                                              constraint = 'lo'))
-riskport_risk_contribution <- c(riskport_w * (Sigma %*% riskport_w))
-fincov_w <- RiskParity(Sigma)
-fincov_risk_contribution <- c(fincov_w * (Sigma %*% fincov_w))
 cccp_w <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
-cccp_risk_contribution <- c(cccp_w * (Sigma %*% cccp_w))
 
-barplot(rbind(rpp$w, fincov_w, cccp_w, riskport_w),
-        main = "Portfolios Weights", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:4],
-        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
-                   "RiskPortfolios"), args.legend = list(bg = "white"))
-barplot(rbind(rpp$risk_contribution, fincov_risk_contribution, cccp_risk_contribution,
-              riskport_risk_contribution),
-        main = "Risk Contribution of the Portfolios", xlab = "stocks", ylab = "dollars",
-        beside = TRUE, col = rainbow8equal[1:4],
-        legend = c("riskParityPortfolio", "FinCovRegularization", "cccp",
-                   "RiskPortfolios"),
-        args.legend = list(x = "bottomright", bg = "white"))
+# plot
+w_all <- cbind("riskParityPortfolio"  = rpp$w,
+               "FinCovRegularization" = fincov_w,
+               "cccp"                 = cccp_w,
+               "RiskPortfolios"       = riskport_w)
+#barplotPortfolioRisk(w_all, Sigma, colors = viridisLite::viridis(ncol(w_all)))
+barplotPortfolioRisk(w_all, Sigma, 
+                     colors = c("#BF4D4D", "#BFA34D", "#86BF4D", "#4DBF69"))
 ```
 
 Depending on the condition number of the covariance matrix, we found that the
@@ -486,7 +440,7 @@ minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\rig
 A double-index summation can also be used:
 $R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$.
 
-We consider the risk formulations as presented in [@FengPal2015riskparity, @FengPal2016monograph].
+We consider the risk formulations as presented in [@FengPal2015riskparity; @FengPal2016monograph].
 They can be passed through the keyword argument `formulation` in the function
 `riskParityPortfolio()`.
 

@@ -18,18 +18,16 @@ a detailed documentation and comparison, with several illustrative examples.
 }
 \section{Functions}{
 
-\code{\link{riskParityPortfolio}}
+\code{\link{riskParityPortfolio}}, \code{\link{barplotPortfolioRisk}}
 }
 
 \section{Help}{
 
 For a quick help see the README file:
-\href{https://CRAN.R-project.org/package=riskParityPortfolio/readme/README.html}{CRAN-README} and
 \href{https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md}{GitHub-README}.
 
 For more details see the vignette:
-\href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{html-vignette} and
-\href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio-pdf.pdf}{pdf-vignette}.
+\href{https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html}{CRAN-vignette}.
 }
 
 \references{

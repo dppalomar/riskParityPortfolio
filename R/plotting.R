@@ -8,9 +8,10 @@
 #' 
 #' @param w Vector or matrix containing the portfolio(s) weights. 
 #'          For multiple portfolios, they should be columnwise and named for the legend.
-#' @param Sigma  Covariance matrix of the assets.
+#' @param Sigma Covariance matrix of the assets.
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 #'             \code{"ggplot2"} (the packages \code{ggplot2} and \code{gridExtra} must be installed).
+#' @param colors Vector of colors for the portfolios (default uses grDevices::topo.colors()).
 #' @examples
 #' library(riskParityPortfolio)
 #' 
@@ -32,28 +33,28 @@
 #' # plot
 #' barplotPortfolioRisk(w_single, Sigma)
 #' barplotPortfolioRisk(w_multiple, Sigma)
-#' barplotPortfolioRisk(w_multiple, Sigma, col = viridisLite::viridis(ncol(w)))
+#' barplotPortfolioRisk(w_multiple, Sigma, colors = viridisLite::viridis(ncol(w)))
 #' 
 #' @import ggplot2
 #' @import gridExtra
 #' @export
-barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), ...) {
+barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), colors = topo.colors(ncol(w))) {
   w <- as.matrix(w)
   if (is.null(colnames(w)))
     colnames(w) <- paste0("portf-", 1:ncol(w))
+  if (is.null(rownames(w)))
+    rownames(w) <- paste0("stock", 1:nrow(w))  
   RRC <- w * (Sigma %*% w)
   RRC <- sweep(RRC, MARGIN = 2, STATS = colSums(RRC), FUN = "/")  # normalize each column
   
   # plot
-  params <- list(...)
-  if (is.null(params$col)) params$col <- topo.colors(ncol(w))  #viridisLite::viridis(ncol(w))
   switch(match.arg(type),
          "simple" = {
            old_par <- par(mfrow=c(2,1))
-           barplot(t(w), col = params$col,
+           barplot(t(w), col = colors,
                    beside = ncol(w) > 1, legend = colnames(w),
                    main = "Portfolio weight allocation", ylab = "capital")
-           barplot(t(RRC), col = params$col,
+           barplot(t(RRC), col = colors,
                    beside = ncol(w) > 1,
                    main = "Relative risk contribution", xlab = "stocks", ylab = "risk")
            par(old_par)
@@ -62,16 +63,22 @@ barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), ...) {
            # stock <- portfolio <- value <- NULL  # ugly hack to deal with CRAN note
            p1 <- ggplot(data = melt_portf_matrix(w), aes(x = stock, y = value)) + 
              geom_bar(aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
-             scale_fill_manual(values = params$col) +
+             scale_fill_manual(values = colors) +
              labs(title = "Portfolio weight allocation", x = "stocks", y = "capital") + 
              theme(legend.title = element_blank())
            p2 <- ggplot(data = melt_portf_matrix(RRC), aes(x = stock, y = value)) + 
              geom_bar(aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) + 
-             scale_fill_manual(values = params$col) +
+             scale_fill_manual(values = colors) +
              labs(title = "Relative risk contribution", x = "stocks", y = "risk") + 
              theme(legend.title = element_blank())
-           # remove legend if only one portfolio
-           if (ncol(w) == 1) {
+           # theme(plot.title = element_text(size = 16),
+           #       axis.title = element_text(size = 14, color = '#555555'),
+           #       axis.text = element_text(size = 11),
+           #       legend.position = c(0.9, 0.86), #c(0.905, 0.88), 
+           #       legend.title = element_blank(), 
+           #       legend.spacing.x = unit(4, 'pt'),
+           #       legend.text = element_text(size = 13))
+           if (ncol(w) == 1) {  # remove legend if only one portfolio
              p1 <- p1 + theme(legend.position = "none")
              p2 <- p2 + theme(legend.position = "none")
            }           

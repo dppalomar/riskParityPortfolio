@@ -2,7 +2,7 @@
 % Please edit documentation in R/riskParityPortfolio.R
 \name{riskParityPortfolio}
 \alias{riskParityPortfolio}
-\title{Design of Risk Parity Portfolios}
+\title{Design of risk parity portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
   lmd_var = 0, w_lb = 0, w_ub = 1, Cmat = NULL, cvec = NULL,
