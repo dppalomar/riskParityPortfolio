@@ -697,6 +697,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            "alabama" = {
              warning("Methods 'slsqp' and 'alabama' are deprecated and will be removed in the next release.
                       We strongly recommend the more robust and scalable method = 'sca'.")
+             # reminder: remove argument use_gradient after decrecating...
              if (has_fancy_box) stop("Box constraints are not supported for method ", method)
              if (has_var) stop("Variance term is not supported for method ", method)
              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
