@@ -40,6 +40,8 @@ LinkingTo:
 RoxygenNote: 6.1.1
 Imports:
     alabama,
+    ggplot2,
+    gridExtra,
     nloptr,
     quadprog,
     Rcpp
@@ -50,7 +52,8 @@ Suggests:
     prettydoc,
     rmarkdown,
     R.rsp,
-    testthat
+    testthat,
+    viridisLite
 VignetteBuilder:
     knitr,
     rmarkdown,
