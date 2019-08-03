@@ -6,7 +6,7 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
 
 riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                   mu = NULL, lmd_mu = 1e-4, lmd_var = 0,
+                                   mu = NULL, lmd_mu = 0, lmd_var = 0,
                                    w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
                                    Cmat = NULL, cvec = NULL, Dmat = NULL, dvec = NULL,
                                    formulation = c("rc-over-b-double-index",
@@ -218,7 +218,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
 
 
 riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
-                                         mu = NULL, lmd_mu = 1e-4,
+                                         mu = NULL, lmd_mu = 0,
                                          formulation = c("rc-over-b-double-index",
                                                          "rc-double-index",
                                                          "rc-over-var vs b",
