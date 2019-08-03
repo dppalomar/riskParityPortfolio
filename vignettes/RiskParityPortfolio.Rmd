@@ -346,13 +346,79 @@ plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "blue",
 ```
 
 
-## RPP with additional linear constraints
-TBD
-<!---
-TODO{Vinicius}
---->
+## Risk parity portfolio with general linear constraints
 
+In version 2.0, we added support for general linear constraints, i.e., `riskParityPortfolio` is now able
+to solve the following problem
+$$\begin{array}{ll}
+\underset{\mathbf{w}}{\textsf{minimize}} &
+R(\mathbf{w}) + \lambda F(\mathbf{w})\\
+\textsf{subject to} & \mathbf{C}\mathbf{w} = \mathbf{c},~~\mathbf{D}\mathbf{w} \leq \mathbf{d}
+\end{array}$$
 
+Users interested in the details of the algorithm behind the solution for the aforementioned problem
+are refered to section V (*Advanced Solving Approaches*) of [@FengPal2015riskparity]. In summary,
+the algorithm fits well within the SCA framework, while preserving speed and scalability.
+
+It was recently mentioned by [@RichardRoncalli2019] that the problem of designing risk parity
+portfolios with general constraints is harder than it seems. Indeed, [@RichardRoncalli2019] shows
+that, after imposing general linear constraints, the property of equal risk contributions (ERC)
+is unlikely to be preserved among the assets affected by the constraints.
+
+Let's check out a numerical example from [@RichardRoncalli2019]. Consider we have a universe of
+eight assets and we would like to design a risk parity portfolio $\mathbf{w}$ satisfying the
+following constraints:
+$$ w_5 + w_6 + w_7 + w_8 \geq 30\%, $$ $$ w_2 + w_6 \geq w_1 + w_5 + 5\%, $$ and $$ \sum w_i = 100\% . $$
+
+```{r}
+# compute the covariance matrix
+vol <- c(0.05, 0.05, 0.07, 0.1, 0.15, 0.15, 0.15, 0.18)
+Corr <- rbind(c(100,  80,  60, -20, -10, -20, -20, -20),
+              c( 80, 100,  40, -20, -20, -10, -20, -20),
+              c( 60,  40, 100,  50,  30,  20,  20,  30),
+              c(-20, -20,  50, 100,  60,  60,  50,  60),
+              c(-10, -20,  30,  60, 100,  90,  70,  70),
+              c(-20, -10,  20,  60,  90, 100,  60,  70),
+              c(-20, -20,  20,  50,  70,  60, 100,  70),
+              c(-20, -20,  30,  60,  70,  70,  70, 100)) / 100
+Sigma <- Corr * (vol %o% vol)
+
+Cmat <- matrix(1, 1, nrow(Sigma))
+cvec <- c(1)
+Dmat <- matrix(c(rep(0, 4), rep(-1, 4)), nrow = 1)
+dvec <- c(-0.3)
+
+# define linear constraints
+Cmat <- matrix(1, 1, nrow(Sigma))
+cvec <- c(1)
+Dmat <- matrix(0, 2, 8)
+Dmat[1, ] <- c(rep(0, 4), rep(-1, 4))
+Dmat[2, ] <- c(1, -1, 0, 0, 1, -1, 0, 0)
+dvec <- c(-0.3, -0.05)
+
+# design portfolio
+rpp <- riskParityPortfolio(Sigma, method = "sca",
+                           Cmat = Cmat, cvec = cvec,
+                           Dmat = Dmat, dvec = dvec)
+# plot portfolio weights
+barplot(100 * rpp$w,
+        main = "Portfolio weights",
+        xlab = "stocks", ylab = "Relative weight value", beside = TRUE, col = heat.colors(1))
+# plot the risk contributions
+barplot(100 * rpp$risk_contribution / sum(rpp$risk_contribution),
+        main = "Risk contributions",
+        xlab = "stocks", ylab = "Relative contribution", beside = TRUE,  col = heat.colors(1))
+
+# Are the constraints satisfied?
+# equality constraints
+print(Cmat %*% rpp$w)
+# inequality constraints
+print(Dmat %*% rpp$w)
+```
+As we can observe, the risk contributions are somewhat clustered according to the relationship
+among assets defined by the linear constraints, as mentioned by [@RichardRoncalli2019].
+
+The results obtained by our implementation agree with those reported by [@RichardRoncalli2019].
 
 
 # Comparison with other Packages
@@ -389,7 +455,7 @@ w_all <- cbind("riskParityPortfolio"  = rpp$w,
                "cccp"                 = cccp_w,
                "RiskPortfolios"       = riskport_w)
 #barplotPortfolioRisk(w_all, Sigma, colors = viridisLite::viridis(ncol(w_all)))
-barplotPortfolioRisk(w_all, Sigma, 
+barplotPortfolioRisk(w_all, Sigma,
                      colors = c("#BF4D4D", "#BFA34D", "#86BF4D", "#4DBF69"))
 ```
 
@@ -597,175 +663,8 @@ standard R libraries. Furthermore, it is straightforward that adding the mean re
 or variance terms still keeps the structure of the problem intact.
 
 
-
 # Appendix III: Computational time {-}
-In the subsections that follows we explore the computational time required by
-`method = "sca"`, `method = "alabama"`, and `method = "slsqp"` for some of the formulations presented above.
-Additionally, we compare `method = "alabama"` and `method = "slsqp"` without using the
-gradient of the objective function.
 
-
-## Experiment: formulation "rc-over-var vs b"
-```{r, message = FALSE, cache=TRUE}
-set.seed(42)
-N <- 100
-V <- matrix(rnorm(N^2), ncol = N)
-Sigma <- V %*% t(V)
-w0 <- riskParityPortfolio(Sigma, formulation = "diag")$w
-
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                 method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                        method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                   method = "alabama")
-res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                          method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                               method = "sca")
-
-plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
-     pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
-     ylab = "Objective function", main = "Convergence trend versus CPU time",
-     ylim = c(0, 0.01))
-lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
-      col = "red")
-lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
-      cex=.8, col = "purple")
-lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
-      col = "green")
-lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
-      col = "black")
-
-legend("topright", legend=c("alabama-nograd",
-                            "alabama",
-                            "slsqp-nograd",
-                            "slsqp",
-                            "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
-```
-
-
-## Experiment: formulation "rc vs b-times-var"
-```{r, message = FALSE, cache=TRUE}
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
-                                 method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
-                                        method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
-                                   method = "alabama")
-res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
-                                          method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc vs b-times-var",
-                               method = "sca")
-
-plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
-     pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
-     ylab = "Objective function", main = "Convergence trend versus CPU time",
-     ylim = c(0, 0.009))
-lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
-      col = "red")
-lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
-      cex=.8, col = "purple")
-lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
-      col = "green")
-lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
-      col = "black")
-
-legend("topright", legend=c("alabama-nograd",
-                            "alabama",
-                            "slsqp-nograd",
-                            "slsqp",
-                            "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8)
-```
-
-
-## Experiment: formulation "rc-over-sd vs b-times-sd"
-```{r, message = FALSE, cache=TRUE}
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
-                                 method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
-                                        method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
-                                   method = "alabama")
-res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
-                                          method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-sd vs b-times-sd",
-                               method = "sca")
-
-plot(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b",
-     pch=19, cex=.6, col = "blue", xlab = "Elapsed time (seconds)",
-     ylab = "Objective function", main = "Convergence trend versus CPU time",
-     ylim = c(0, 0.01))
-lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
-      col = "red")
-lines(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b", pch=17,
-      cex=.8, col = "purple")
-lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
-      col = "green")
-lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
-      col = "black")
-
-legend("topright", legend=c("alabama-nograd",
-                            "alabama",
-                            "slsqp-nograd",
-                            "slsqp",
-                            "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8, bg = "white")
-```
-
-
-## Experiment with real market data
-Now, let us query some real market data (from the package `sparseIndexTracking`)
-and check the time comparison of the different methods.
-
-```{r, message = FALSE, cache=TRUE}
-library(sparseIndexTracking)
-library(xts)
-data(INDEX_2010)
-Sigma <- cov(INDEX_2010$X)
-N <- nrow(Sigma)
-w0 <- rep(1/N, N)
-
-res_slsqp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                 method = "slsqp")
-res_slsqp_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                        method = "slsqp", use_gradient = FALSE)
-res_alabama <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                   method = "alabama")
-res_alabama_nograd <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                                          method = "alabama", use_gradient = FALSE)
-res_sca <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-over-var vs b",
-                               method = "sca")
-
-plot(res_alabama_nograd$elapsed_time, res_alabama_nograd$obj_fun, type = "b",
-     pch=19, cex=.6, col = "purple", xlab = "Elapsed time (seconds)",
-     ylab = "Objective function", main = "Convergence trend versus CPU time")
-lines(res_alabama$elapsed_time, res_alabama$obj_fun, type = "b", pch=18, cex=.8,
-      col = "red")
-lines(res_slsqp_nograd$elapsed_time, res_slsqp_nograd$obj_fun, type = "b", pch=17,
-      cex=.8, col = "blue")
-lines(res_slsqp$elapsed_time, res_slsqp$obj_fun, type = "b", pch=16, cex=.8,
-      col = "green")
-lines(res_sca$elapsed_time, res_sca$obj_fun, type = "b", pch=15, cex=.8,
-      col = "black")
-
-legend("topright", legend=c("alabama-nograd",
-                            "alabama",
-                            "slsqp-nograd",
-                            "slsqp",
-                            "sca"),
-       col=c("purple", "red", "blue", "green", "black"), lty=c(1, 1, 1), cex=0.8,
-       bg = "white")
-```
-
-It can be noted that the `"alabama"` and `"slsqp"` greatly benefit from the additional gradient
-information. Despite that fact, the `"sca"` method still performs faster. Additionally,
-in some cases, the `"sca"` method attains a better solution than the other methods.
-
-
-## Design of high dimensional risk parity portfolio
 In order to efficiently design high dimensional portfolios that follows the risk parity criterion,
 we implement the cyclical coordinate descent algorithm proposed by [@GriveauRichardRoncalli2013]. In brief, this
 algorithm optimizes for one portfolio weight at a time while leaving the rest fixed.
