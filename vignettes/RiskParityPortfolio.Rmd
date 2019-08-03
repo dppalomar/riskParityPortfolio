@@ -237,10 +237,6 @@ where $F(\mathbf{w})$ denotes some additional objective function and $\cal{W}$ d
 The way to solve this general problem is derived in [@FengPal2015riskparity; @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See Appendix I for a general idea of the method.
 
 
-
-
-
-
 # Using the Package **riskParityPortfolio**
 <!---
 TODO{Vinicius}: Revise all this section.
@@ -260,13 +256,12 @@ Sigma <- cov(V)
 rpp <- riskParityPortfolio(Sigma)
 
 # plot
-barplotPortfolioRisk(rpp$w, Sigma, colors = "#BF4D4D")
+barplotPortfolioRisk(rpp$w, Sigma, colors = "#a29bfe")
 ```
 
 As presented earlier, the risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests,
 which can be noted in the chart above.
-
 
 
 # Modern Risk Parity Portfolio
@@ -303,7 +298,7 @@ for (lmd_mu in lmd_sweep) {
   risk_parity <- c(risk_parity, rpp$risk_parity)
 }
 
-plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "blue",
+plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "#ff7675",
      xlab = "Risk Parity", ylab = "Expected Return",
      ylim = c(min(mean_return), max(mean_return)),
      xlim = c(min(risk_parity), max(risk_parity)),
@@ -325,20 +320,19 @@ Let's check the following illustrative example that depicts the trade-off betwee
 volatility and risk parity:
 
 ```{r, message=FALSE, cache=TRUE}
-N <- 10
-Sigma <- diag(c(1:N))
+load("Sigma_mu.RData")
 lmd_sweep <- c(10 ^ (seq(-5, 5, .25)))
 variance <- c()
 risk_parity <- c()
 
 for (lmd_var in lmd_sweep) {
-  rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var)
+  rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var, formulation = "rc-double-index")
   variance <- c(variance, rpp$variance)
   risk_parity <- c(risk_parity, rpp$risk_parity)
 }
 
 volatility <- sqrt(variance)
-plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "blue",
+plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "#ff7675",
      xlab = "Risk Parity", ylab = "Volatility",
      ylim = c(min(volatility), max(volatility)),
      xlim = c(min(risk_parity), max(risk_parity)),
@@ -346,8 +340,7 @@ plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "blue",
 ```
 
 
-## Risk parity portfolio with general linear constraints
-
+## RPP with general linear constraints
 In version 2.0, we added support for general linear constraints, i.e., `riskParityPortfolio` is now able
 to solve the following problem
 $$\begin{array}{ll}
@@ -401,13 +394,7 @@ rpp <- riskParityPortfolio(Sigma, method = "sca",
                            Cmat = Cmat, cvec = cvec,
                            Dmat = Dmat, dvec = dvec)
 # plot portfolio weights
-barplot(100 * rpp$w,
-        main = "Portfolio weights",
-        xlab = "stocks", ylab = "Relative weight value", beside = TRUE, col = heat.colors(1))
-# plot the risk contributions
-barplot(100 * rpp$risk_contribution / sum(rpp$risk_contribution),
-        main = "Risk contributions",
-        xlab = "stocks", ylab = "Relative contribution", beside = TRUE,  col = heat.colors(1))
+barplotPortfolioRisk(rpp$w, Sigma, col = viridisLite::viridis(ncol(w_all)))
 
 # Are the constraints satisfied?
 # equality constraints
@@ -456,7 +443,7 @@ w_all <- cbind("riskParityPortfolio"  = rpp$w,
                "RiskPortfolios"       = riskport_w)
 #barplotPortfolioRisk(w_all, Sigma, colors = viridisLite::viridis(ncol(w_all)))
 barplotPortfolioRisk(w_all, Sigma,
-                     colors = c("#BF4D4D", "#BFA34D", "#86BF4D", "#4DBF69"))
+                     colors = c("#55efc4", "#0984e3", "#fd79a8", "#2d3436"))
 ```
 
 Depending on the condition number of the covariance matrix, we found that the
@@ -692,7 +679,7 @@ for (i in size_seq) {
   times[3, i] <- median(bench$time[c(FALSE, FALSE, TRUE)] / 10 ^ 6)
 }
 
-colors <- c("#0B032D", "#FFB997", "red")
+colors <- c("#2d3436", "#6c5ce7", "#74b9ff")
 plot(size_seq, times[1,], type = "b", pch=15, cex=.75, col = colors[1],
      xlab = "Portfolio size N", ylab = "CPU time [ms]", xaxt = "n")
 grid()
