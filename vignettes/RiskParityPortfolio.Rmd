@@ -120,7 +120,7 @@ Let us denote the **returns** of $N$ assets at time $t$ with the vector $\mathbf
 The portfolio vector $\mathbf{w}$ denotes the normalized dollar weights allocated to the $N$ assets ($\mathbf{1}^{T}\mathbf{w}=1$) and the **portfolio return** is then $r_{t}^{\sf portf} = \mathbf{w}^{T}\mathbf{r}_{t}$, with expected return $\mathbf{w}^{T}\boldsymbol{\mu}$ and variance $\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$.
 
 ## Markowitz
-Markowitz proposed in his seminar 1952 paper [@Markowitz1952] to find a trade-off between the portfolio expected return and its risk measured by the variance:
+Markowitz proposed in his seminal 1952 paper [@Markowitz1952] to find a trade-off between the portfolio expected return and its risk measured by the variance:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{maximize}} & \mathbf{w}^{T}\boldsymbol{\mu}-\lambda\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
 \textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1,
