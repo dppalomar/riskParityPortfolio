@@ -44,7 +44,7 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
   B << Cmat, Dmat;
   double LC = (B * lltOfQk.solve(B.transpose())).norm(), fac;
   w_prev = wk;
-  unsigned int i = 1;
+  unsigned int i = 0;
   while (true) {
     fac = (i - 1.)/(i + 2.);
     w_tilde = -lltOfQk.solve(qk + Cmat.transpose() * xi + Dmat.transpose() * chi);
