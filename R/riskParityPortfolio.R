@@ -464,7 +464,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' overall variance, \code{lmd_mu} and \code{lmd_var} are the trade-off weights
 #' for the expected return and the variance terms, respectively, \code{w_lb} and
 #' \code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w},
-#' \code{Cmat \%*\% w = cvec} denotes arbitrary linear equality constrains, and  
+#' \code{Cmat \%*\% w = cvec} denotes arbitrary linear equality constrains, and
 #' \code{Dmat \%*\% w = dvec} denotes arbitrary linear inequality constrains.
 #'
 #' @details By default, the problem considered is the vanilla risk parity portfolio:
@@ -515,7 +515,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'        the initial point for the subsequent method. The default is
 #'        \code{"cyclical-spinu"}. See details below.
 #' @param method method to solve the non-vanilla formulation. The default is \code{"sca"}.
-#'        See details below.
+#'        See details below. (DEPRECATED)
 #' @param formulation string indicating the risk concentration formulation to be used.
 #'        It must be one of: "diag", "rc-double-index",
 #'        "rc-over-b-double-index", "rc-over-var vs b",
@@ -568,13 +568,13 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' res <- riskParityPortfolio(Sigma)
 #' names(res)
 #' #> [1] "w"                 "risk_contribution"
-#' 
+#'
 #' res$w
 #' #> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
-#' 
+#'
 #' res$risk_contribution
 #' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
-#' 
+#'
 #' c(res$w * (Sigma %*% res$w))
 #' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
 #'
@@ -595,7 +595,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' risk parity portfolios. <https://arxiv.org/pdf/1311.4057.pdf>
 #'
 #' @author Ze Vinicius and Daniel P. Palomar
-#' 
+#'
 #' @export
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 0, lmd_var = 0,
@@ -622,8 +622,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
   has_inequality_constraints <- !(is.null(Dmat) || is.null(dvec))
   has_initial_point <- !is.null(w0)
-  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box || has_equality_constraints || has_inequality_constraints)
-  
+  is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
+                              has_equality_constraints || has_inequality_constraints)
+
   # check wrong parameters
   if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
   if (sum(w_ub) < 1) stop("Problem infeasible: relax the upper bounds.")
@@ -632,7 +633,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     stop("Shape mismatch: mu has to have nrow(Sigma) number of elements")
   if (has_initial_point && (length(w0) != N))
     stop("Shape mismatch: w0 has to have nrow(Sigma) number of elements")
-  
   # if diag, then call diagonal solver
   if (has_formulation && formulation == "diag") {
     if (!is_vanilla_formulation)
@@ -689,8 +689,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            "sca" = portfolio <- riskParityPortfolioSCA(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        lmd_var = lmd_var, w_lb = w_lb, w_ub = w_ub,
                                                        Cmat = Cmat, cvec = cvec, Dmat = Dmat, dvec = dvec,
-                                                       formulation = formulation, w0 = w0, theta0 = theta0, 
-                                                       gamma = gamma, zeta = zeta, tau = tau, 
+                                                       formulation = formulation, w0 = w0, theta0 = theta0,
+                                                       gamma = gamma, zeta = zeta, tau = tau,
                                                        maxiter = maxiter, ftol = ftol, wtol = wtol,
                                                        use_qp_solver = use_qp_solver),
            "slsqp" = ,
