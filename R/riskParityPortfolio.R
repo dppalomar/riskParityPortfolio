@@ -5,9 +5,9 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 }
 
 
-isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, wtol) {
-  equality_feasibility <- all(abs(Cmat %*% w - cvec) < wtol)
-  inequality_feasibility <- all(Dmat %*% w <= dvec)
+isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, tol = 1e-6) {
+  equality_feasibility <- all(abs(Cmat %*% w - cvec) < tol)
+  inequality_feasibility <- all(Dmat %*% w - dvec <= tol)
   return (equality_feasibility & inequality_feasibility)
 }
 

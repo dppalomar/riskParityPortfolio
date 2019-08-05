@@ -28,13 +28,10 @@ test_that("isFeasiblePortfolio makes sense", {
   cvec <- c(1)
   Dmat <- -diag(2)
   dvec <- c(0, 0)
-  wtol <- 1e-6
 
   w <- c(.5, .5)
-  expect_true(isFeasiblePortfolio(w = w, Cmat = Cmat, cvec = cvec, Dmat = Dmat,
-                                  dvec = dvec, wtol = wtol))
+  expect_true(isFeasiblePortfolio(w, Cmat, cvec, Dmat, dvec))
   w <- c(-.5, -.3)
-  expect_false(isFeasiblePortfolio(w = w, Cmat = Cmat, cvec = cvec, Dmat = Dmat,
-                                  dvec = dvec, wtol = wtol))
+  expect_true(isFeasiblePortfolio(w, Cmat, cvec, Dmat, dvec))
 })
 
