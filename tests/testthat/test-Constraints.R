@@ -74,5 +74,7 @@ test_that("rpp_with_equality_constraints_iteration agree with solve.QP", {
 
   c_solution <- riskParityPortfolio:::rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
   qp_solution <- quadprog::solve.QP(Qk, -qk, Amat = t(Cmat), bvec = cvec, meq = 1)$solution
+  r_solution <- riskParityPortfolio:::rpp_equality_constraints_iteration_R(Cmat, cvec, Qk, qk)
   expect_true(all(abs(c_solution - qp_solution) < 1e-5))
+  expect_true(all(abs(c_solution - r_solution) < 1e-5))
 })
