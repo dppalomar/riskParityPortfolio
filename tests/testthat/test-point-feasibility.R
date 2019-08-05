@@ -22,3 +22,19 @@ test_that("unitroot and QP solvers agree", {
                projectQP(w0, w_lb, w_ub))
 })
 
+
+test_that("isFeasiblePortfolio makes sense", {
+  Cmat <- c(1, 1)
+  cvec <- c(1)
+  Dmat <- -diag(2)
+  dvec <- c(0, 0)
+  wtol <- 1e-6
+
+  w <- c(.5, .5)
+  expect_true(isFeasiblePortfolio(w = w, Cmat = Cmat, cvec = cvec, Dmat = Dmat,
+                                  dvec = dvec, wtol = wtol))
+  w <- c(-.5, -.3)
+  expect_false(isFeasiblePortfolio(w = w, Cmat = Cmat, cvec = cvec, Dmat = Dmat,
+                                  dvec = dvec, wtol = wtol))
+})
+
