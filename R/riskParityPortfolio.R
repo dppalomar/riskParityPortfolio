@@ -38,7 +38,7 @@ rpp_eq_and_ineq_constraints_iteration_R <- function(Cmat, cvec, Dmat, dvec, Qk,
   repeat {
     w_tilde_i <- -inv_Qk %*% (qk + t(Cmat) %*% dual_lmd_i + t(Dmat) %*% dual_mu_i)
     #w_tilde_i <- -solve(Qk, qk + t(Cmat) %*% dual_lmd_i + t(Dmat) %*% dual_mu_i)
-    w_tilde_bar_i <- w_i_tilde + (i-1)/(i+2) * (w_tilde_i - w_tilde_i_minus_1)
+    w_tilde_bar_i <- w_tilde_i + (i-1)/(i+2) * (w_tilde_i - w_tilde_i_minus_1)
     dual_lmd_i_plus_1 <- dual_lmd_i + (i-1)/(i+2) * (dual_lmd_i - dual_lmd_i_minus_1) + 1/L*(Cmat %*% w_tilde_bar_i - cvec)
     dual_mu_i_plus_1  <- pmax(0, dual_mu_i  + (i-1)/(i+2) * (dual_mu_i  - dual_mu_i_minus_1 ) + 1/L*(Dmat %*% w_tilde_bar_i - dvec))
     if (i > 0 && all(abs(w_tilde_bar_i - w_tilde_bar_i_minus_1) <= 
