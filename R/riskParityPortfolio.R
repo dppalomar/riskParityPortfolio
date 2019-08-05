@@ -11,7 +11,7 @@ isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, tol = 1e-6) {
   return (equality_feasibility & inequality_feasibility)
 }
 
-# this implementation is not optimized, it's just a first attempt
+
 rpp_equality_constraints_iteration_R <- function(Cmat, cvec, Qk, qk) {
   inv_Qk <- solve(Qk)  # it's faster to compute the inverse!
   lmd_k <- -solve(Cmat %*% inv_Qk %*% t(Cmat), Cmat %*% inv_Qk %*%qk + cvec)

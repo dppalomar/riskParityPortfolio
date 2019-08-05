@@ -85,11 +85,13 @@ test_that("rpp_with_equality_constraints_iteration agree with solve.QP", {
 # op <- microbenchmark(
 #   cpp_code = riskParityPortfolio:::rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk),
 #   R_code = riskParityPortfolio:::rpp_equality_constraints_iteration_R(Cmat, cvec, Qk, qk),
+#   QP_solver = qp_solution <- quadprog::solve.QP(Qk, -qk, Amat = t(Cmat), bvec = cvec, meq = 1),
 #   times = 100)
 # print(op)
 # boxplot(op, main = "Time comparison [milliseconds]",
 #         xlab = NULL, ylab = NULL,
 #         unit = "ms", outline = FALSE, las = 2)
+
 
 
 test_that("rpp_with_ineq_and_eq_constraints_iteration agree with solve.QP", {
@@ -119,4 +121,23 @@ test_that("rpp_with_ineq_and_eq_constraints_iteration agree with solve.QP", {
                                                                             rep(0, nrow(Cmat)), rep(0, nrow(Cmat)))[[5]]
   expect_true(all(abs(c_solution - r_solution) < 1e-5))
 })
+
+
+# # speed comparison between R and Cpp
+# library(microbenchmark)
+# op <- microbenchmark(
+#   cpp_code = riskParityPortfolio:::rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk,
+#                                                                          rep(0, nrow(Dmat)), rep(0, nrow(Dmat)),
+#                                                                          rep(0, nrow(Cmat)), rep(0, nrow(Cmat))),
+#   R_code = riskParityPortfolio:::rpp_eq_and_ineq_constraints_iteration_R(Cmat, cvec, Dmat, dvec, Qk, qk, wk,
+#                                                                          rep(0, nrow(Dmat)), rep(0, nrow(Dmat)),
+#                                                                          rep(0, nrow(Cmat)), rep(0, nrow(Cmat))),
+#   QP_solver = quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec, meq = 1),
+#   times = 10)
+# print(op)
+# boxplot(op, main = "Time comparison [milliseconds]",
+#         xlab = NULL, ylab = NULL,
+#         unit = "ms", outline = FALSE, las = 2)
+
+
 
