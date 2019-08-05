@@ -64,3 +64,17 @@ test_that("ineq and eq constraints behave correctly", {
     expect_true(abs(sum(rpp$w) - 1) < 1e-5)
   }
 })
+
+test_that("rpp_with_equality_constraints_iteration agree with solve.QP", {
+  N <- sample(c(1:10), 1)
+  Qk <- diag(c(1:N))
+  qk <- rep(1, N)
+  Cmat <- matrix(1, 1, N)
+  cvec <- c(runif(1))
+
+  c_solution <- riskParityPortfolio:::rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
+  qp_solution <- quadprog::solve.QP(Qk, -qk, Amat = t(Cmat), bvec = cvec, meq = 1)$solution
+  r_solution <- riskParityPortfolio:::rpp_equality_constraints_iteration_R(Cmat, cvec, Qk, qk)
+  expect_true(all(abs(c_solution - qp_solution) < 1e-5))
+  expect_true(all(abs(c_solution - r_solution) < 1e-5))
+})
