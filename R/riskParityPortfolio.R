@@ -21,19 +21,24 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6,
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
+  formulation <- match.arg(formulation)
   if (is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-  # check if general linear constraints were specified
-  has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
-  has_inequality_constraints <- !(is.null(Dmat) || is.null(dvec))
+  # define boolean cases for easier reading of code
+  has_eq_constraints <- !(is.null(Cmat) || is.null(cvec))
+  has_ineq_constraints <- !(is.null(Dmat) || is.null(dvec))
   #has_eq_and_ineq_constraints <- !(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec)) 
   #TODO{Vinicius}: please make sure the next line is correct
-  has_eq_and_ineq_constraints <- has_equality_constraints & has_inequality_constraints
-   
+  has_eq_and_ineq_constraints <- has_eq_constraints & has_ineq_constraints
+  has_mu <- !is.null(mu)
+  has_var <- lmd_var > 0  
+  has_theta <- grepl("theta", formulation)
+  
+  # computation of feasible initial point
   if (has_eq_and_ineq_constraints) {
     w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
     xi <- xi_prev <- rep(0, length(cvec))
     chi <- chi_prev <- rep(0, length(dvec))
-  } # check if only equality constraints were specified
+  }
   #TODO{Vinicius}: why do we need a separate projection? We should have a single one. Let's skype
   else if (has_equality_constraints) {
     w0 <- project_onto_equality_constraint_set(w0, Cmat, cvec)
@@ -41,28 +46,31 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
   }
   #TODO{Vinicius}: Hehe. The projection above is wrong because when you project on the linear constraints you forgot the other constraints. Let's skype
-  formulation <- match.arg(formulation)
-  has_theta <- grepl("theta", formulation)
   if (has_theta) {
     if (is.null(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
-      if (formulation == "rc vs theta")
-        theta0 <- mean(r0)
-      else if (formulation == "rc-over-b vs theta")
-        theta0 <- mean(r0 / b)
-    }
+      theta0 <- switch(formulation,
+                       "rc vs theta" = mean(r0),
+                       "rc-over-b vs theta" = mean(r0 / b),
+                       stop("Oops... Formulation name contains theta but it is not supported."))
+      }
     w0 <- as.vector(c(w0, theta0))
   }
+  
+  # parameters tau for SCA method
   if (is.null(tau))
     tau <- .05 * sum(diag(Sigma)) / (2*N)
-  if (has_theta) {
+  tauI <- diag(rep(tau, length(w0)))
+  
+  # packing linear constrains
+  if (has_theta) {  
+    #TODO{Vinicius}: Hey, here we can remove the last column of Amat and last element of bvec!!
     Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
     bvec <- c(1, c(w_lb, 0), c(-w_ub, 0))
   } else {
     Amat <- cbind(rep(1, N), diag(N), -diag(N))
     bvec <- c(1, w_lb, -w_ub)
   }
-
   switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
@@ -106,21 +114,19 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
          },
          stop("formulation ", formulation, " is not included.")
   )
-  has_mu <- !is.null(mu)
+  
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
   if (has_mu) {
+    if (lmd_mu == 0) stop("Ooppss... You specified mu but chose lmd_mu == 0...")
     if (has_theta) fun_k <- fun_k - lmd_mu * t(mu) %*% wk[1:N]
     else fun_k <- fun_k - lmd_mu * t(mu) %*% wk
   }
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
-  if (has_theta) tauI <- diag(rep(tau, N + 1))
-  else tauI <- diag(rep(tau, N))
-  has_var <- lmd_var > 0
-
+  # SCA outer loop
   start_time <- proc.time()[3]
   for (k in 1:maxiter) {
     # auxiliary quantities
