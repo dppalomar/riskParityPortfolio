@@ -45,8 +45,8 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
   # computation of feasible initial point
   if (has_eq_and_ineq_constraints) {
     #w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
-    xi <- xi_prev <- rep(0, length(cvec))
-    chi <- chi_prev <- rep(0, length(dvec))  #TODO: remember that an alternative for the dual_lmd is to use the lmd given by the Alg. 2
+    dual_lmd_0 <- dual_lmd_minus_1 <- rep(0, length(cvec))
+    dual_mu_0 <- dual_mu_minus_1 <- rep(0, length(dvec))  #TODO: remember that an alternative for the dual_lmd is to use the lmd given by the Alg. 2
   }
   #TODO{Vinicius}: why do we need a separate projection? We should have a single one. Let's skype
   else if (has_equality_constraints) {
@@ -169,12 +169,12 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
       if (!use_qp_solver){
         if (has_eq_and_ineq_constraints) {
           params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk,
-                                                          qk, wk, chi, chi_prev, xi,
-                                                          xi_prev)
-          chi_prev <- params[[1]]
-          chi <- params[[2]]
-          xi_prev <- params[[3]]
-          xi <- params[[4]]
+                                                          qk, wk, dual_mu_0, dual_mu_minus_1, dual_lmd_0,
+                                                          dual_lmd_minus_1)
+          dual_mu_minus_1 <- params[[1]]
+          dual_mu_0 <- params[[2]]
+          dual_lmd_minus_1 <- params[[3]]
+          dual_lmd_0 <- params[[4]]
           w_hat <- params[[5]]
         } else if (has_equality_constraints) {
           w_hat <- rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)

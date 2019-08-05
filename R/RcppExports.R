@@ -33,7 +33,7 @@ project_onto_equality_constraint_set <- function(w, Cmat, cvec) {
     .Call('_riskParityPortfolio_project_onto_equality_constraint_set', PACKAGE = 'riskParityPortfolio', w, Cmat, cvec)
 }
 
-rpp_eq_and_ineq_constraints_iteration <- function(Cmat, cvec, Dmat, dvec, Qk, qk, wk, chi, chi_prev, xi, xi_prev) {
-    .Call('_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration', PACKAGE = 'riskParityPortfolio', Cmat, cvec, Dmat, dvec, Qk, qk, wk, chi, chi_prev, xi, xi_prev)
+rpp_eq_and_ineq_constraints_iteration <- function(Cmat, cvec, Dmat, dvec, Qk, qk, wk, dual_mu_0, dual_mu_minus_1, dual_lmd_0, dual_lmd_minus_1) {
+    .Call('_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration', PACKAGE = 'riskParityPortfolio', Cmat, cvec, Dmat, dvec, Qk, qk, wk, dual_mu_0, dual_mu_minus_1, dual_lmd_0, dual_lmd_minus_1)
 }
 
