@@ -5,7 +5,14 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 }
 
 
-riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, wtol) {
+  equality_feasibility <- all(abs(Cmat %*% w - cvec) < wtol)
+  inequality_feasibility <- all(Dmat %*% w <= dvec)
+  return (equality_feasibility & inequality_feasibility)
+}
+
+
+riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 0, lmd_var = 0,
                                    w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
                                    Cmat = NULL, cvec = NULL, Dmat = NULL, dvec = NULL,
@@ -17,7 +24,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                                    "rc vs b-times-var",
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
-                                   w0 = NULL, theta0 = NULL, gamma = .9, zeta = 1e-7,
+                                   theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6,
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
@@ -65,7 +72,7 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   tauI <- diag(rep(tau, length(w0)))
   
   # packing linear constrains
-  if (has_theta) {  
+  if (has_theta) {
     #TODO{Vinicius}: Hey, here we can remove the last column of Amat and last element of bvec!!
     #Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
     #bvec <- c(1, c(w_lb, 0), c(-w_ub, 0))
@@ -158,7 +165,6 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
     # else {
     #    if (has_only_equality_constraints) Alg. 2
     #    else Alg 3
-    }
     if (has_eq_and_ineq_constraints || has_equality_constraints) {
       if (!use_qp_solver){
         if (has_eq_and_ineq_constraints) {
