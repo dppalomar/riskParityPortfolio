@@ -22,22 +22,24 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
   formulation <- match.arg(formulation)
-  if (is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  if (is.null(w0)) stop("SCA function requires an initial point.")
+  #if (isFeasible(w0, Cmat, cvec, Dmat, dvec)) stop("Initial point for SCA function must be feasible.")
+  
   # define boolean cases for easier reading of code
+  has_mu <- !is.null(mu)
+  has_var <- lmd_var > 0
+  has_theta <- grepl("theta", formulation)
+  #TODO: remove the next three lines
   has_eq_constraints <- !(is.null(Cmat) || is.null(cvec))
   has_ineq_constraints <- !(is.null(Dmat) || is.null(dvec))
-  #has_eq_and_ineq_constraints <- !(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec)) 
-  #TODO{Vinicius}: please make sure the next line is correct
   has_eq_and_ineq_constraints <- has_eq_constraints & has_ineq_constraints
-  has_mu <- !is.null(mu)
-  has_var <- lmd_var > 0  
-  has_theta <- grepl("theta", formulation)
   
+  #TODO: the initial point does not need to be computed here as per our skype discussion
   # computation of feasible initial point
   if (has_eq_and_ineq_constraints) {
-    w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
+    #w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
     xi <- xi_prev <- rep(0, length(cvec))
-    chi <- chi_prev <- rep(0, length(dvec))
+    chi <- chi_prev <- rep(0, length(dvec))  #TODO: remember that an alternative for the dual_lmd is to use the lmd given by the Alg. 2
   }
   #TODO{Vinicius}: why do we need a separate projection? We should have a single one. Let's skype
   else if (has_equality_constraints) {
@@ -65,12 +67,15 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
   # packing linear constrains
   if (has_theta) {  
     #TODO{Vinicius}: Hey, here we can remove the last column of Amat and last element of bvec!!
-    Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
-    bvec <- c(1, c(w_lb, 0), c(-w_ub, 0))
-  } else {
-    Amat <- cbind(rep(1, N), diag(N), -diag(N))
-    bvec <- c(1, w_lb, -w_ub)
+    #Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
+    #bvec <- c(1, c(w_lb, 0), c(-w_ub, 0))
+    #TODO: apart from that the code has to be changed, please check the following code:
+    Cmat <- cbind(Cmat, 0)
+    Dmat <- cbind(Dmat, 0)
+    Dmat <- rbind(Dmat, 0); Dmat[nrow(Dmat), ncol(Dmat)] <- 1; dvec <- c(dvec, 0)  # this line is optional
   }
+  # TODO: if (all elements of dvec are either +Inf or -Inr) then has_only_equality_constraints is TRUE
+  
   switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
@@ -148,6 +153,12 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
       if (has_theta) qk <- qk - lmd_mu * c(mu, 0)
       else qk <- qk - lmd_mu * mu
     # build and solve problem (39) as in Feng & Palomar TSP2015
+    # TODO:
+    # if use_qp_solver then...
+    # else {
+    #    if (has_only_equality_constraints) Alg. 2
+    #    else Alg 3
+    }
     if (has_eq_and_ineq_constraints || has_equality_constraints) {
       if (!use_qp_solver){
         if (has_eq_and_ineq_constraints) {
@@ -687,9 +698,11 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
       w0 <- theta_rc*w_rc + theta_mu*w_mu + theta_var*w_gmvp
     }
-    # TODO: Here we should do different projections depending on whether there are or not linear constraints
-    # Also, should we incorporate the other constraints in the general matrices? (sum(w)==1 and box constraints)
-    # make w0 feasible (excluding the general linear constraints)
+    # TODO:
+    # add sumn(w)=1 and box constraints in the general linear constraint matrices and vector
+    # if (!has_equality_constraints && !has_inequality_constraints) then LineBoxProjection()
+    # else OtherGeneralProjection()
+    # Call SCA with general linear constraints (so change arguments, do not pass box constraints separately)
     if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
       if (has_initial_point) warning("Initial point is infeasible. Projecting it onto the feasible set.")
       w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
