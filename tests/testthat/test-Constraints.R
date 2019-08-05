@@ -66,7 +66,7 @@ test_that("ineq and eq constraints behave correctly", {
 })
 
 test_that("rpp_with_equality_constraints_iteration agree with solve.QP", {
-  N <- sample(c(1:10), 1)
+  N <- sample(c(2:10), 1)
   Qk <- diag(c(1:N))
   qk <- rep(1, N)
   Cmat <- matrix(1, 1, N)
@@ -80,15 +80,43 @@ test_that("rpp_with_equality_constraints_iteration agree with solve.QP", {
 })
 
 
-# speed comparison between R and Cpp
-library(microbenchmark)
-op <- microbenchmark(
-  cpp_code = riskParityPortfolio:::rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk),
-  R_code = riskParityPortfolio:::rpp_equality_constraints_iteration_R(Cmat, cvec, Qk, qk),
-  times = 100)
-print(op)
-boxplot(op, main = "Time comparison [milliseconds]",
-        xlab = NULL, ylab = NULL,
-        unit = "ms", outline = FALSE, las = 2)
+# # speed comparison between R and Cpp
+# library(microbenchmark)
+# op <- microbenchmark(
+#   cpp_code = riskParityPortfolio:::rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk),
+#   R_code = riskParityPortfolio:::rpp_equality_constraints_iteration_R(Cmat, cvec, Qk, qk),
+#   times = 100)
+# print(op)
+# boxplot(op, main = "Time comparison [milliseconds]",
+#         xlab = NULL, ylab = NULL,
+#         unit = "ms", outline = FALSE, las = 2)
 
+
+test_that("rpp_with_ineq_and_eq_constraints_iteration agree with solve.QP", {
+  N <- sample(c(2:10), 1)
+  Qk <- diag(c(1:N))
+  qk <- rep(1, N)
+  Cmat <- matrix(1, 1, N)
+  cvec <- c(runif(1))
+  Dmat <- matrix(0, N, N)
+  diag(Dmat) <- rep(-1, N)
+  dvec = c(rep(0, N))
+  meq <- nrow(Cmat)
+  Amat <- t(rbind(Cmat, -Dmat))
+  bvec <- c(cvec, -dvec)
+
+  # use the uniform portfolio as initial guess
+  wk <- rep(1/N, N)
+  c_solution <- riskParityPortfolio:::rpp_eq_and_ineq_constraints_iteration(
+                                                                            Cmat, cvec, Dmat, dvec, Qk, qk, wk,
+                                                                            rep(0, nrow(Dmat)), rep(0, nrow(Dmat)),
+                                                                            rep(0, nrow(Cmat)), rep(0, nrow(Cmat)))[[5]]
+  qp_solution <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec, meq = 1)$solution
+  expect_true(all(abs(c_solution - qp_solution) < 1e-5))
+  r_solution <- riskParityPortfolio:::rpp_eq_and_ineq_constraints_iteration_R(
+                                                                            Cmat, cvec, Dmat, dvec, Qk, qk, wk,
+                                                                            rep(0, nrow(Dmat)), rep(0, nrow(Dmat)),
+                                                                            rep(0, nrow(Cmat)), rep(0, nrow(Cmat)))[[5]]
+  expect_true(all(abs(c_solution - r_solution) < 1e-5))
+})
 
