@@ -21,24 +21,26 @@ riskParityPortfolioSCA <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6,
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
-  if(is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
-  # check if equality and inequality constraints were specified
-  has_equality_constraints <- FALSE
-  has_eq_and_ineq_constraints <- FALSE
-  if (!(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec))) {
-    has_eq_and_ineq_constraints <- TRUE
+  if (is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
+  # check if general linear constraints were specified
+  has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
+  has_inequality_constraints <- !(is.null(Dmat) || is.null(dvec))
+  #has_eq_and_ineq_constraints <- !(is.null(Dmat) || is.null(dvec) || is.null(Cmat) || is.null(cvec)) 
+  #TODO{Vinicius}: please make sure the next line is correct
+  has_eq_and_ineq_constraints <- has_equality_constraints & has_inequality_constraints
+   
+  if (has_eq_and_ineq_constraints) {
     w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
-    xi = rep(0, length(cvec))
-    xi_prev = rep(0, length(cvec))
-    chi = rep(0, length(dvec))
-    chi_prev = rep(0, length(dvec))
+    xi <- xi_prev <- rep(0, length(cvec))
+    chi <- chi_prev <- rep(0, length(dvec))
   } # check if only equality constraints were specified
-  else if (!(is.null(Cmat) || is.null(cvec))) {
-    has_equality_constraints <- TRUE
+  #TODO{Vinicius}: why do we need a separate projection? We should have a single one. Let's skype
+  else if (has_equality_constraints) {
     w0 <- project_onto_equality_constraint_set(w0, Cmat, cvec)
   } else {
     w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
   }
+  #TODO{Vinicius}: Hehe. The projection above is wrong because when you project on the linear constraints you forgot the other constraints. Let's skype
   formulation <- match.arg(formulation)
   has_theta <- grepl("theta", formulation)
   if (has_theta) {
@@ -662,10 +664,10 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                         stop("method_init ", method_init, " is not supported."))
   } else {  # nonconvex solver
     if (!has_initial_point) {
-      w0 <- switch(match.arg(method_init),
-                   "newton" = riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
-                   "cyclical-spinu" = riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
-                   "cyclical-roncalli" = riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)$w,
+      w_rc <- switch(match.arg(method_init),
+                     "newton" = riskParityPortfolioNewton(Sigma, b, maxiter, ftol)$w,
+                     "cyclical-spinu" = riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol)$w,
+                     "cyclical-roncalli" = riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol)$w,
                    stop("method_init ", method_init, " is not supported."))
       # create fancy initial point for the case of additional objectives
       w_gmvp <- 1 / diag(Sigma)
@@ -677,8 +679,10 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_rc <- 1 / (1 + lmd_var + lmd_mu*sum(has_mu))
       theta_mu <- lmd_mu*sum(has_mu) / (1 + lmd_var + lmd_mu*sum(has_mu))
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
-      w0 <- theta_rc*w0 + theta_mu*w_mu + theta_var*w_gmvp
+      w0 <- theta_rc*w_rc + theta_mu*w_mu + theta_var*w_gmvp
     }
+    # TODO: Here we should do different projections depending on whether there are or not linear constraints
+    # Also, should we incorporate the other constraints in the general matrices? (sum(w)==1 and box constraints)
     # make w0 feasible (excluding the general linear constraints)
     if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
       if (has_initial_point) warning("Initial point is infeasible. Projecting it onto the feasible set.")
@@ -700,6 +704,8 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
              # reminder: remove argument use_gradient after decrecating...
              if (has_fancy_box) stop("Box constraints are not supported for method ", method)
              if (has_var) stop("Variance term is not supported for method ", method)
+             if (has_equality_constraints || has_inequality_constraints) 
+               stop("General linear constraints not supported for method ", method)
              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        formulation = formulation, method = method,
                                                        use_gradient = use_gradient, w0 = w0, theta0 = theta0,
