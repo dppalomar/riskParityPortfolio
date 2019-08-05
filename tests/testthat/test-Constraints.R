@@ -78,3 +78,17 @@ test_that("rpp_with_equality_constraints_iteration agree with solve.QP", {
   expect_true(all(abs(c_solution - qp_solution) < 1e-5))
   expect_true(all(abs(c_solution - r_solution) < 1e-5))
 })
+
+
+# speed comparison between R and Cpp
+library(microbenchmark)
+op <- microbenchmark(
+  cpp_code = riskParityPortfolio:::rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk),
+  R_code = riskParityPortfolio:::rpp_equality_constraints_iteration_R(Cmat, cvec, Qk, qk),
+  times = 100)
+print(op)
+boxplot(op, main = "Time comparison [milliseconds]",
+        xlab = NULL, ylab = NULL,
+        unit = "ms", outline = FALSE, las = 2)
+
+
