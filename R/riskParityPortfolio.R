@@ -14,11 +14,11 @@ isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, tol = 1e-6) {
 # this implementation is not optimized, it's just a first attempt
 rpp_equality_constraints_iteration_R <- function(Cmat, cvec, Qk, qk) {
   inv_Qk <- solve(Qk)
-  lmd_k <- -solve(Cmat %*% inv_Qk %*% t(Cmat), inv_Qk %*%qk + cvec)
+  lmd_k <- -solve(Cmat %*% inv_Qk %*% t(Cmat), Cmat %*% inv_Qk %*%qk + cvec)
   #lmd_k <- -solve(Cmat %*% solve(Qk, t(Cmat)), solve(Qk, qk) + cvec)
   w_hat <- -inv_Qk %*% (qk + t(Cmat) %*% lmd_k)
   #w_hat <- -solve(Qk, qk + t(Cmat) %*% lmd_k)
-  return(w_hat)
+  return(as.vector(w_hat))
 }
 
 
