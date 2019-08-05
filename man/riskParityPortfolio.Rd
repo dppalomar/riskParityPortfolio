@@ -4,7 +4,7 @@
 \alias{riskParityPortfolio}
 \title{Design of risk parity portfolios}
 \usage{
-riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 1e-04,
+riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 0,
   lmd_var = 0, w_lb = 0, w_ub = 1, Cmat = NULL, cvec = NULL,
   Dmat = NULL, dvec = NULL, method_init = c("cyclical-spinu",
   "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
@@ -27,10 +27,10 @@ is desired in the objective)}
 (only currently available for the SCA method)}
 
 \item{w_lb}{lower bound (either a vector or a scalar) on the value of each
-portfolio weight (only currently available for the SCA method)}
+portfolio weight}
 
 \item{w_ub}{upper bound (either a vector or a scalar) on the value of each
-portfolio weight (only currently available for the SCA method)}
+portfolio weight}
 
 \item{Cmat}{TBD}
 
@@ -46,7 +46,7 @@ the initial point for the subsequent method. The default is
 \code{"cyclical-spinu"}. See details below.}
 
 \item{method}{method to solve the non-vanilla formulation. The default is \code{"sca"}.
-See details below.}
+See details below. (DEPRECATED)}
 
 \item{formulation}{string indicating the risk concentration formulation to be used.
 It must be one of: "diag", "rc-double-index",
@@ -120,7 +120,7 @@ where \code{R(w)} denotes the risk concentration,
 overall variance, \code{lmd_mu} and \code{lmd_var} are the trade-off weights
 for the expected return and the variance terms, respectively, \code{w_lb} and
 \code{w_ub} are the lower and upper bound vector values for the portfolio vector \code{w},
-\code{Cmat \%*\% w = cvec} denotes arbitrary linear equality constrains, and  
+\code{Cmat \%*\% w = cvec} denotes arbitrary linear equality constrains, and
 \code{Dmat \%*\% w = dvec} denotes arbitrary linear inequality constrains.
 }
 \details{
