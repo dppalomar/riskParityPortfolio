@@ -376,29 +376,20 @@ Corr <- rbind(c(100,  80,  60, -20, -10, -20, -20, -20),
               c(-20, -20,  30,  60,  70,  70,  70, 100)) / 100
 Sigma <- Corr * (vol %o% vol)
 
-Cmat <- matrix(1, 1, nrow(Sigma))
-cvec <- c(1)
-Dmat <- matrix(c(rep(0, 4), rep(-1, 4)), nrow = 1)
-dvec <- c(-0.3)
-
 # define linear constraints
-Cmat <- matrix(1, 1, nrow(Sigma))
-cvec <- c(1)
 Dmat <- matrix(0, 2, 8)
 Dmat[1, ] <- c(rep(0, 4), rep(-1, 4))
 Dmat[2, ] <- c(1, -1, 0, 0, 1, -1, 0, 0)
 dvec <- c(-0.3, -0.05)
 
 # design portfolio
-rpp <- riskParityPortfolio(Sigma, method = "sca",
-                           Cmat = Cmat, cvec = cvec,
-                           Dmat = Dmat, dvec = dvec)
+rpp <- riskParityPortfolio(Sigma, method = "sca", Dmat = Dmat, dvec = dvec)
 # plot portfolio weights
 barplotPortfolioRisk(rpp$w, Sigma, col = viridisLite::viridis(ncol(w_all)))
 
 # Are the constraints satisfied?
 # equality constraints
-print(Cmat %*% rpp$w)
+print(sum(rpp$w))
 # inequality constraints
 print(Dmat %*% rpp$w)
 ```
@@ -471,7 +462,7 @@ op <- microbenchmark(
           rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
           cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
           optPort = optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo')),
-          times = 10L, control = (order = "block"))
+          times = 10L)
 print(op)
 par(mar = c(7, 4, 4, 2))
 boxplot(op, main = "Time comparison [milliseconds]",
