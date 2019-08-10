@@ -471,7 +471,7 @@ op <- microbenchmark(
           rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
           cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
           optPort = optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo')),
-          times = 10L)
+          times = 10L, control = (order = "block"))
 print(op)
 par(mar = c(7, 4, 4, 2))
 boxplot(op, main = "Time comparison [milliseconds]",

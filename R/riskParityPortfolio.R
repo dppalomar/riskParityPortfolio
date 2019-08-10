@@ -8,56 +8,16 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, tol = 1e-6) {
   equality_feasibility <- all(abs(Cmat %*% w - cvec) < tol)
   inequality_feasibility <- all(Dmat %*% w - dvec <= tol)
-  return (equality_feasibility & inequality_feasibility)
+  return (equality_feasibility && inequality_feasibility)
 }
-
-# this implementation is not optimized, it's just a first attempt
-rpp_equality_constraints_iteration_R <- function(Cmat, cvec, Qk, qk) {
-  inv_Qk <- solve(Qk)  # it's faster to compute the inverse!
-  lmd_k <- -solve(Cmat %*% inv_Qk %*% t(Cmat), Cmat %*% inv_Qk %*%qk + cvec)
-  #lmd_k <- -solve(Cmat %*% solve(Qk, t(Cmat)), Cmat %*% solve(Qk, qk) + cvec)
-  w_hat <- -inv_Qk %*% (qk + t(Cmat) %*% lmd_k)
-  #w_hat <- -solve(Qk, qk + t(Cmat) %*% lmd_k)
-  return(as.vector(w_hat))
-}
-
-
-rpp_eq_and_ineq_constraints_iteration_R <- function(Cmat, cvec, Dmat, dvec, Qk,
-                                                    qk, wk, 
-                                                    dual_mu_0, dual_mu_minus_1, 
-                                                    dual_lmd_0, dual_lmd_minus_1, 
-                                                    wtol = 1e-6) {
-  B <- rbind(Cmat, Dmat)
-  inv_Qk <- solve(Qk)
-  L <- norm(B %*% inv_Qk %*% t(B), type = "2")
-  #L <- norm(B %*% solve(Qk, t(B)), type = "2")
-  i <- 0
-  w_tilde_i_minus_1 <- wk
-  dual_lmd_i <- dual_lmd_0;                dual_mu_i <- dual_mu_0
-  dual_lmd_i_minus_1 <- dual_lmd_minus_1;  dual_mu_i_minus_1 <- dual_mu_minus_1
-  repeat {
-    w_tilde_i <- -inv_Qk %*% (qk + t(Cmat) %*% dual_lmd_i + t(Dmat) %*% dual_mu_i)
-    #w_tilde_i <- -solve(Qk, qk + t(Cmat) %*% dual_lmd_i + t(Dmat) %*% dual_mu_i)
-    w_tilde_bar_i <- w_tilde_i + (i-1)/(i+2) * (w_tilde_i - w_tilde_i_minus_1)
-    dual_lmd_i_plus_1 <- dual_lmd_i + (i-1)/(i+2) * (dual_lmd_i - dual_lmd_i_minus_1) + 1/L*(Cmat %*% w_tilde_bar_i - cvec)
-    dual_mu_i_plus_1  <- pmax(0, dual_mu_i  + (i-1)/(i+2) * (dual_mu_i  - dual_mu_i_minus_1 ) + 1/L*(Dmat %*% w_tilde_bar_i - dvec))
-    if (i > 0 && all(abs(w_tilde_bar_i - w_tilde_bar_i_minus_1) <= 
-                     .5 * wtol * (abs(w_tilde_bar_i) + abs(w_tilde_bar_i_minus_1)))) break;
-    i <- i+1
-    w_tilde_i_minus_1 <- w_tilde_i
-    w_tilde_bar_i_minus_1 <- w_tilde_bar_i
-    dual_lmd_i_minus_1 <- dual_lmd_i;  dual_mu_i_minus_1 <- dual_mu_i
-    dual_lmd_i <- dual_lmd_i_plus_1;   dual_mu_i <- dual_mu_i_plus_1;
-  }
-  return(list(dual_mu_i_plus_1, dual_mu_i, dual_lmd_i_plus_1, dual_lmd_i, w_tilde_bar_i))
-}
-
 
 
 riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 0, lmd_var = 0,
                                    w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
-                                   Cmat = NULL, cvec = NULL, Dmat = NULL, dvec = NULL,
+                                   Cmat = rep(1, nrow(Sigma)), cvec = c(1), Dmat = rbind(diag(nrow(Sigma)),
+                                                                                         -diag(nrow(Sigma))),
+                                   dvec = c(w_ub, -w_lb),
                                    formulation = c("rc-over-b-double-index",
                                                    "rc-double-index",
                                                    "rc-over-var vs b",
@@ -67,36 +27,14 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
                                    theta0 = NULL, gamma = .9, zeta = 1e-7,
-                                   tau = NULL, maxiter = 500, ftol = 1e-6, wtol = 1e-6,
+                                   tau = NULL, maxiter = 500, ftol = 1e-8, wtol = 1e-5,
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
   formulation <- match.arg(formulation)
-  if (is.null(w0)) stop("SCA function requires an initial point.")
-  #if (isFeasible(w0, Cmat, cvec, Dmat, dvec)) stop("Initial point for SCA function must be feasible.")
-  
   # define boolean cases for easier reading of code
   has_mu <- !is.null(mu)
   has_var <- lmd_var > 0
   has_theta <- grepl("theta", formulation)
-  #TODO: remove the next three lines
-  has_eq_constraints <- !(is.null(Cmat) || is.null(cvec))
-  has_ineq_constraints <- !(is.null(Dmat) || is.null(dvec))
-  has_eq_and_ineq_constraints <- has_eq_constraints & has_ineq_constraints
-  
-  #TODO: the initial point does not need to be computed here as per our skype discussion
-  # computation of feasible initial point
-  if (has_eq_and_ineq_constraints) {
-    #w0 <- project_onto_eq_and_ineq_constraint_set(w0, Cmat, cvec, Dmat, dvec)
-    dual_lmd_0 <- dual_lmd_minus_1 <- rep(0, length(cvec))
-    dual_mu_0 <- dual_mu_minus_1 <- rep(0, length(dvec))  #TODO: remember that an alternative for the dual_lmd is to use the lmd given by the Alg. 2
-  }
-  #TODO{Vinicius}: why do we need a separate projection? We should have a single one. Let's skype
-  else if (has_equality_constraints) {
-    w0 <- project_onto_equality_constraint_set(w0, Cmat, cvec)
-  } else {
-    w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
-  }
-  #TODO{Vinicius}: Hehe. The projection above is wrong because when you project on the linear constraints you forgot the other constraints. Let's skype
   if (has_theta) {
     if (is.null(theta0)) {
       r0 <- w0 * (Sigma %*% w0)
@@ -107,24 +45,30 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
       }
     w0 <- as.vector(c(w0, theta0))
   }
-  
   # parameters tau for SCA method
   if (is.null(tau))
     tau <- .05 * sum(diag(Sigma)) / (2*N)
   tauI <- diag(rep(tau, length(w0)))
-  
   # packing linear constrains
   if (has_theta) {
-    #TODO{Vinicius}: Hey, here we can remove the last column of Amat and last element of bvec!!
-    #Amat <- cbind(c(rep(1, N), 0), diag(rep(1, N+1)), -diag(c(rep(1, N), 0)))
-    #bvec <- c(1, c(w_lb, 0), c(-w_ub, 0))
-    #TODO: apart from that the code has to be changed, please check the following code:
     Cmat <- cbind(Cmat, 0)
     Dmat <- cbind(Dmat, 0)
     Dmat <- rbind(Dmat, 0); Dmat[nrow(Dmat), ncol(Dmat)] <- 1; dvec <- c(dvec, 0)  # this line is optional
   }
-  # TODO: if (all elements of dvec are either +Inf or -Inr) then has_only_equality_constraints is TRUE
-  
+  # check the type of constraints
+  if ((sum(dvec == Inf) + sum(dvec == (-Inf))) == length(dvec))
+    has_only_equality_constraints = TRUE
+  else
+    has_only_equality_constraints = FALSE
+  # initiliaze some variables depending on the type of solver
+  if (use_qp_solver) {
+    meq <- nrow(Cmat)
+    Amat <- t(rbind(Cmat, -Dmat))
+    bvec <- c(cvec, -dvec)
+  } else {
+    dual_lmd_0 <- dual_lmd_minus_1 <- rep(0, length(cvec))
+    dual_mu_0 <- dual_mu_minus_1 <- rep(0, length(dvec))
+  }
   switch(formulation,
          "rc-double-index" = {
            R <- R_rc_double_index
@@ -168,7 +112,6 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
          },
          stop("formulation ", formulation, " is not included.")
   )
-  
   # compute and store objective function at the initial value
   wk <- w0
   fun_k <- R(wk, Sigma, b)
@@ -201,42 +144,20 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
     if (has_mu)
       if (has_theta) qk <- qk - lmd_mu * c(mu, 0)
       else qk <- qk - lmd_mu * mu
-    # build and solve problem (39) as in Feng & Palomar TSP2015
-    # TODO:
-    # if use_qp_solver then...
-    # else {
-    #    if (has_only_equality_constraints) Alg. 2
-    #    else Alg 3
-    if (has_eq_and_ineq_constraints || has_equality_constraints) {
-      if (!use_qp_solver){
-        if (has_eq_and_ineq_constraints) {
-          params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk,
-                                                          qk, wk, dual_mu_0, dual_mu_minus_1, dual_lmd_0,
-                                                          dual_lmd_minus_1)
-          dual_mu_minus_1 <- params[[1]]
-          dual_mu_0 <- params[[2]]
-          dual_lmd_minus_1 <- params[[3]]
-          dual_lmd_0 <- params[[4]]
-          w_hat <- params[[5]]
-        } else if (has_equality_constraints) {
-          w_hat <- rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
-        }
-      } else {
-        if (has_equality_constraints) {
-          meq <- nrow(Cmat)
-          w_hat <- quadprog::solve.QP(Qk, -qk, Amat = t(Cmat), bvec = cvec,
-                                      meq = meq)$solution
-        } else if (has_eq_and_ineq_constraints) {
-          meq <- nrow(Cmat)
-          Amat <- rbind(Cmat, -Dmat)
-          bvec <- c(cvec, -dvec)
-          w_hat <- quadprog::solve.QP(Qk, -qk, Amat = t(Amat), bvec = bvec,
-                                      meq = meq)$solution
-        }
-      }
+    # solve problem (39) as in Feng & Palomar TSP2015
+    if (use_qp_solver) {
+      w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec, meq = meq)$solution
+    } else if (has_only_equality_constraints) {
+      w_hat <- rpp_equality_constraints_iteration(Cmat, cvec, Qk, qk)
     } else {
-      w_hat <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec,
-                                  meq = 1)$solution
+      params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk,
+                                                      dual_mu_0, dual_mu_minus_1, dual_lmd_0,
+                                                      dual_lmd_minus_1)
+      dual_mu_minus_1 <- params[[1]]
+      dual_mu_0 <- params[[2]]
+      dual_lmd_minus_1 <- params[[3]]
+      dual_lmd_0 <- params[[4]]
+      w_hat <- params[[5]]
     }
     w_next <- wk + gamma * (w_hat - wk)
     # save objective function value and elapsed time
@@ -332,6 +253,18 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
   Amat <- -t(rbind(Cmat, Dmat))
   b0 <- -c(cvec, dvec)
   return(quadprog::solve.QP(Dmat = I, dvec = w0, Amat = Amat, bvec = b0, meq = meq)$solution)
+}
+
+
+are_constraints_valid <- function(Cmat, cvec, Dmat, dvec) {
+  is_Dmat_null <- is.null(Dmat)
+  is_dvec_null <- is.null(dvec)
+  if ((!is_Dmat_null) && is_dvec_null) stop("Matrix Dmat has been given, but vector dvec is NULL.")
+  if (is_Dmat_null && (!is_dvec_null)) stop("Vector dvec has been given, but matrix Dmat is NULL.")
+  if (nrow(Cmat) != length(cvec)) stop("Shapes of Cmat and cvec are inconsistent.")
+  if ((!is_Dmat_null) && (!is_dvec_null) && nrow(Dmat) != length(dvec)) stop("Shapes of Dmat and dvec are inconsistent.")
+  if (Matrix::rankMatrix(Cmat) != nrow(Cmat)) stop("Cmat contains linearly dependent rows.")
+  if ((!is_Dmat_null) && Matrix::rankMatrix(Dmat) != nrow(Dmat)) stop("Dmat contains linearly dependent rows.")
 }
 
 
@@ -493,12 +426,13 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 0, lmd_var = 0,
                                 w_lb = 0, w_ub = 1,
-                                Cmat = NULL, cvec = NULL, Dmat = NULL, dvec = NULL,
+                                Cmat = rep(1, nrow(Sigma)), cvec = c(1),
+                                Dmat = NULL, dvec = NULL,
                                 method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
-                                maxiter = 500, ftol = 1e-8, wtol = 1e-6,
+                                maxiter = 500, ftol = 1e-8, wtol = 1e-5,
                                 use_gradient = TRUE, use_qp_solver = FALSE) {
   # default values
   stocks_names <- colnames(Sigma)
@@ -512,11 +446,12 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_var <- lmd_var > 0
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
-  has_equality_constraints <- !(is.null(Cmat) || is.null(cvec))
-  has_inequality_constraints <- !(is.null(Dmat) || is.null(dvec))
   has_initial_point <- !is.null(w0)
+  has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
-                              has_equality_constraints || has_inequality_constraints)
+                              has_only_equality_constraints || has_inequality_constraints)
+  if (!is_vanilla_formulation) are_constraints_valid(Cmat, cvec, Dmat, dvec)
+  has_inequality_constraints <- !is.null(Dmat)
 
   # check wrong parameters
   if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
@@ -572,14 +507,20 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
       w0 <- theta_rc*w_rc + theta_mu*w_mu + theta_var*w_gmvp
     }
-    # TODO:
-    # add sumn(w)=1 and box constraints in the general linear constraint matrices and vector
-    # if (!has_equality_constraints && !has_inequality_constraints) then LineBoxProjection()
-    # else OtherGeneralProjection()
-    # Call SCA with general linear constraints (so change arguments, do not pass box constraints separately)
-    if (sum(w0) != 1 || any(w0 < w_lb) || any(w0 > w_ub)) {
-      if (has_initial_point) warning("Initial point is infeasible. Projecting it onto the feasible set.")
-      w0 <- projectBudgetLineAndBox(w0, w_lb, w_ub)
+    if (!isFeasible(w0, Cmat, cvec, Dmat, dvec)) {
+      if (has_initial_point)
+        warning("Initial point is infeasible. Projecting it onto the feasible set.")
+      if (has_only_equality_constraints) {
+        w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat,
+                                                      cvec = cvec, Dmat = NULL,
+                                                      dvec = NULL)
+      } else {
+        In <- diag(nrow(Sigma))
+        if (is.null(Dmat)) Dmat <- rbind(-In, In)
+        if (is.null(dvec)) dvec <- c(-w_lb, w_ub)
+        w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat, cvec = cvec,
+                                                      Dmat = Dmat, dvec = dvec)
+      }
     }
     # solve nonconvex formulation
     switch(match.arg(method),
@@ -597,7 +538,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
              # reminder: remove argument use_gradient after decrecating...
              if (has_fancy_box) stop("Box constraints are not supported for method ", method)
              if (has_var) stop("Variance term is not supported for method ", method)
-             if (has_equality_constraints || has_inequality_constraints) 
+             if (has_only_equality_constraints || has_inequality_constraints)
                stop("General linear constraints not supported for method ", method)
              portfolio <- riskParityPortfolioGenSolver(Sigma = Sigma, b = b, mu = mu, lmd_mu = lmd_mu,
                                                        formulation = formulation, method = method,
