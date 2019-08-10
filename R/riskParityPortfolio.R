@@ -7,6 +7,8 @@ riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
 
 isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, tol = 1e-6) {
   equality_feasibility <- all(abs(Cmat %*% w - cvec) < tol)
+  if (is.null(Dmat))
+    return (equality_feasibility)
   inequality_feasibility <- all(Dmat %*% w - dvec <= tol)
   return (equality_feasibility && inequality_feasibility)
 }
@@ -15,8 +17,8 @@ isFeasiblePortfolio <- function(w, Cmat, cvec, Dmat, dvec, tol = 1e-6) {
 riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                    mu = NULL, lmd_mu = 0, lmd_var = 0,
                                    w_lb = rep(0, nrow(Sigma)), w_ub = rep(1, nrow(Sigma)),
-                                   Cmat = rep(1, nrow(Sigma)), cvec = c(1), Dmat = rbind(diag(nrow(Sigma)),
-                                                                                         -diag(nrow(Sigma))),
+                                   Cmat = matrix(1, 1, nrow(Sigma)), cvec = c(1),
+                                   Dmat = rbind(diag(nrow(Sigma)), -diag(nrow(Sigma))),
                                    dvec = c(w_ub, -w_lb),
                                    formulation = c("rc-over-b-double-index",
                                                    "rc-double-index",
@@ -256,18 +258,6 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 }
 
 
-are_constraints_valid <- function(Cmat, cvec, Dmat, dvec) {
-  is_Dmat_null <- is.null(Dmat)
-  is_dvec_null <- is.null(dvec)
-  if ((!is_Dmat_null) && is_dvec_null) stop("Matrix Dmat has been given, but vector dvec is NULL.")
-  if (is_Dmat_null && (!is_dvec_null)) stop("Vector dvec has been given, but matrix Dmat is NULL.")
-  if (nrow(Cmat) != length(cvec)) stop("Shapes of Cmat and cvec are inconsistent.")
-  if ((!is_Dmat_null) && (!is_dvec_null) && nrow(Dmat) != length(dvec)) stop("Shapes of Dmat and dvec are inconsistent.")
-  if (Matrix::rankMatrix(Cmat) != nrow(Cmat)) stop("Cmat contains linearly dependent rows.")
-  if ((!is_Dmat_null) && Matrix::rankMatrix(Dmat) != nrow(Dmat)) stop("Dmat contains linearly dependent rows.")
-}
-
-
 #' @title Design of risk parity portfolios
 #'
 #' @description This function designs risk parity portfolios to equalize/distribute
@@ -426,7 +416,7 @@ are_constraints_valid <- function(Cmat, cvec, Dmat, dvec) {
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 0, lmd_var = 0,
                                 w_lb = 0, w_ub = 1,
-                                Cmat = rep(1, nrow(Sigma)), cvec = c(1),
+                                Cmat = matrix(1, 1, nrow(Sigma)), cvec = c(1),
                                 Dmat = NULL, dvec = NULL,
                                 method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
@@ -434,12 +424,24 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
                                 maxiter = 500, ftol = 1e-8, wtol = 1e-5,
                                 use_gradient = TRUE, use_qp_solver = FALSE) {
+  # check that constraints are consistent
+  if (nrow(Cmat) > 1)
+    if (Matrix::rankMatrix(Cmat) != nrow(Cmat)) stop("Cmat contains linearly dependent rows.")
+  if (nrow(Cmat) != length(cvec)) stop("Shapes of Cmat and cvec are inconsistent.")
+  is_Dmat_null <- is.null(Dmat)
+  is_dvec_null <- is.null(dvec)
+  if ((!is_Dmat_null) && is_dvec_null) stop("Matrix Dmat has been given, but vector dvec is NULL.")
+  if (is_Dmat_null && (!is_dvec_null)) stop("Vector dvec has been given, but matrix Dmat is NULL.")
   # default values
   stocks_names <- colnames(Sigma)
   N <- nrow(Sigma)
   if (is.null(b)) b <- rep(1/N, N)
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
   if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
+  In <- diag(nrow(Sigma))
+  if (is.null(Dmat)) Dmat <- rbind(-In, In)
+  if (is.null(dvec)) dvec <- c(-w_lb, w_ub)
+  if (nrow(Dmat) != length(dvec)) stop("Shapes of Dmat and dvec are inconsistent.")
   # define boolean cases for easier reading of code
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
@@ -448,10 +450,9 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
   has_initial_point <- !is.null(w0)
   has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
-  has_inequality_constraints <- !is.null(Dmat)
+  has_inequality_constraints <- !is_Dmat_null
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
                               has_only_equality_constraints || has_inequality_constraints)
-  if (!is_vanilla_formulation) are_constraints_valid(Cmat, cvec, Dmat, dvec)
 
   # check wrong parameters
   if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
@@ -515,9 +516,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                                       cvec = cvec, Dmat = NULL,
                                                       dvec = NULL)
       } else {
-        In <- diag(nrow(Sigma))
-        if (is.null(Dmat)) Dmat <- rbind(-In, In)
-        if (is.null(dvec)) dvec <- c(-w_lb, w_ub)
         w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat, cvec = cvec,
                                                       Dmat = Dmat, dvec = dvec)
       }

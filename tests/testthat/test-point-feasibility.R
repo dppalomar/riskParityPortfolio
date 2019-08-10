@@ -32,6 +32,6 @@ test_that("isFeasiblePortfolio makes sense", {
   w <- c(.5, .5)
   expect_true(isFeasiblePortfolio(w, Cmat, cvec, Dmat, dvec))
   w <- c(-.5, -.3)
-  expect_true(isFeasiblePortfolio(w, Cmat, cvec, Dmat, dvec))
+  expect_false(isFeasiblePortfolio(w, Cmat, cvec, Dmat, dvec))
 })
 

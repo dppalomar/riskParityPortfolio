@@ -5,12 +5,13 @@
 \title{Design of risk parity portfolios}
 \usage{
 riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 0,
-  lmd_var = 0, w_lb = 0, w_ub = 1, Cmat = NULL, cvec = NULL,
-  Dmat = NULL, dvec = NULL, method_init = c("cyclical-spinu",
-  "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
-  formulation = NULL, w0 = NULL, theta0 = NULL, gamma = 0.9,
-  zeta = 1e-07, tau = NULL, maxiter = 500, ftol = 1e-08,
-  wtol = 1e-06, use_gradient = TRUE, use_qp_solver = FALSE)
+  lmd_var = 0, w_lb = 0, w_ub = 1, Cmat = matrix(1, 1,
+  nrow(Sigma)), cvec = c(1), Dmat = NULL, dvec = NULL,
+  method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
+  method = c("sca", "alabama", "slsqp"), formulation = NULL,
+  w0 = NULL, theta0 = NULL, gamma = 0.9, zeta = 1e-07,
+  tau = NULL, maxiter = 500, ftol = 1e-08, wtol = 1e-05,
+  use_gradient = TRUE, use_qp_solver = FALSE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix (this is the only mandatory argument)}
