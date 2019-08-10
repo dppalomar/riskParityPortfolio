@@ -10,7 +10,7 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
                                                          "rc-over-b vs theta"),
                                          method = c("slsqp", "alabama"),
                                          use_gradient = TRUE, w0 = NULL, theta0 = NULL,
-                                         maxiter = 1000, ftol = 1e-8, wtol = .5e-6) {
+                                         maxiter = 100, ftol = 1e-8, wtol = .5e-6) {
   N <- nrow(Sigma)
   if (is.null(w0)) w0 <- riskParityPortfolioDiagSigma(Sigma, b)$w
   formulation <- match.arg(formulation)

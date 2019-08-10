@@ -55,7 +55,6 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
   if (has_theta) {
     Cmat <- cbind(Cmat, 0)
     Dmat <- cbind(Dmat, 0)
-    Dmat <- rbind(Dmat, 0); Dmat[nrow(Dmat), ncol(Dmat)] <- 1; dvec <- c(dvec, 0)  # this line is optional
   }
   # check the type of constraints
   has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
@@ -168,13 +167,13 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
     if (has_var)
       if (has_theta) fun_next <- fun_next + lmd_var * (t(w_next[1:N]) %*% Sigma %*% w_next[1:N])
       else fun_next <- fun_next + lmd_var * (t(w_next) %*% Sigma %*% w_next)
-    fun_seq <- c(fun_seq, fun_next)
     # check convergence on parameters and objective function
     has_w_converged <- all((abs(w_next - wk) <= .5 * wtol * (abs(wk) + abs(w_next))))
-    has_fun_converged <- abs(fun_next - fun_k) <= .5 * ftol * (abs(fun_k) + abs(fun_next))
-    if (k > 1 && (has_w_converged && has_fun_converged)) break
+    has_fun_converged <- (abs(fun_next - fun_k) <= .5 * ftol * (abs(fun_k) + abs(fun_next)))
+    if (k > 1 && (has_w_converged || has_fun_converged)) break
     # update variables
     wk <- w_next
+    fun_seq <- c(fun_seq, fun_next)
     fun_k <- fun_next
     gamma <- gamma * (1 - zeta * gamma)
   }

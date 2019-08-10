@@ -39,5 +39,5 @@ test_that("another constrained example", {
     rpp <- riskParityPortfolio(Sigma, method = "sca",
                                Dmat = Dmat, dvec = dvec)
     expect_true(abs(sum(rpp$w) - 1) < 1e-4)
-    expect_true(all(-Dmat %*% rpp$w > -(dvec + 1e-5)))
+    expect_true(all(-Dmat %*% rpp$w >= -(dvec + 1e-6)))
 })
