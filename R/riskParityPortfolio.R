@@ -29,7 +29,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
                                    theta0 = NULL, gamma = .9, zeta = 1e-7,
-                                   tau = NULL, maxiter = 500, ftol = 1e-8, wtol = 1e-5,
+                                   tau = NULL, maxiter = 500, ftol = 1e-8, wtol = 1e-6,
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
   formulation <- match.arg(formulation)
@@ -151,7 +151,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
     } else {
       params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk,
                                                       dual_mu_0, dual_mu_minus_1, dual_lmd_0,
-                                                      dual_lmd_minus_1, maxiter)
+                                                      dual_lmd_minus_1, maxiter, wtol)
       dual_mu_minus_1 <- params[[1]]
       dual_mu_0 <- params[[2]]
       dual_lmd_minus_1 <- params[[3]]
@@ -413,15 +413,29 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 lmd_mu = 0, lmd_var = 0,
                                 w_lb = 0, w_ub = 1,
-                                Cmat = matrix(1, 1, nrow(Sigma)), cvec = c(1),
+                                Cmat = NULL, cvec = NULL,
                                 Dmat = NULL, dvec = NULL,
                                 method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
-                                maxiter = 500, ftol = 1e-8, wtol = 1e-5,
+                                maxiter = 500, ftol = 1e-8, wtol = 1e-6,
                                 use_gradient = TRUE, use_qp_solver = FALSE) {
+  N <- nrow(Sigma)
+  stocks_names <- colnames(Sigma)
   # check that constraints are consistent
+  is_Cmat_null <- is.null(Cmat)
+  is_cvec_null <- is.null(cvec)
+  if ((!is_Cmat_null) && is_cvec_null) stop("Matrix Cmat has been given, but vector cvec is NULL.")
+  if (is_Cmat_null && (!is_cvec_null)) stop("Vector cvec has been given, but matrix Cmat is NULL.")
+  if (is_Cmat_null)
+    Cmat <- matrix(1, 1, N)
+  else
+    Cmat <- rbind(Cmat, matrix(1, 1, N))
+  if (is_cvec_null)
+    cvec <- c(1)
+  else
+    cvec <- c(cvec, 1)
   if (nrow(Cmat) > 1)
     if (Matrix::rankMatrix(Cmat) != nrow(Cmat)) stop("Cmat contains linearly dependent rows.")
   if (nrow(Cmat) != length(cvec)) stop("Shapes of Cmat and cvec are inconsistent.")
@@ -430,8 +444,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if ((!is_Dmat_null) && is_dvec_null) stop("Matrix Dmat has been given, but vector dvec is NULL.")
   if (is_Dmat_null && (!is_dvec_null)) stop("Vector dvec has been given, but matrix Dmat is NULL.")
   # default values
-  stocks_names <- colnames(Sigma)
-  N <- nrow(Sigma)
   if (is.null(b)) b <- rep(1/N, N)
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
   if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
@@ -446,11 +458,13 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_formulation <- !is.null(formulation)
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
   has_initial_point <- !is.null(w0)
+  has_equality_constraints <- nrow(Cmat) > 1
   has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
   has_inequality_constraints <- !is_Dmat_null
   has_std_constraints <- !has_only_equality_constraints && (nrow(Cmat) == 1) && is_Dmat_null
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
-                              has_only_equality_constraints || has_inequality_constraints)
+                              has_only_equality_constraints || has_equality_constraints ||
+                              has_inequality_constraints)
 
   # check wrong parameters
   if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")

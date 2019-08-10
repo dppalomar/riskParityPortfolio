@@ -32,7 +32,7 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
                                       const Eigen::VectorXd& wk,
                                       Eigen::VectorXd& dual_mu_0, Eigen::VectorXd& dual_mu_minus_1,
                                       Eigen::VectorXd& dual_lmd_0, Eigen::VectorXd& dual_lmd_minus_1,
-                                      unsigned int maxiter) {
+                                      unsigned int maxiter, double tol) {
 
   std::vector<Eigen::VectorXd> params;
   unsigned int n = Cmat.cols();
@@ -45,8 +45,7 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
   B << Cmat, Dmat;
   double LC = (B * lltOfQk.solve(B.transpose())).norm(), fac;
   w_prev = wk;
-  unsigned int i = 0;
-  while (true) {
+  for(unsigned int i = 0; i < maxiter; ++i) {
     fac = (i - 1.)/(i + 2.);
     w_tilde = -lltOfQk.solve(qk + Cmat.transpose() * dual_lmd_0 + Dmat.transpose() * dual_mu_0);
     w_tilde_bar = w_tilde +  fac * (w_tilde - w_prev);
@@ -56,12 +55,10 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
     dual_lmd_minus_1 = dual_lmd_0;
     dual_mu_0 = dual_mu_next;
     dual_lmd_0 = dual_lmd_next;
-    if(((w_tilde - w_prev).array().abs() <= .5e-5 * (w_tilde.array().abs() + w_prev.array().abs())).all())
+    if(((w_tilde - w_prev).array().abs() <=
+        tol * (w_tilde.array().abs() + w_prev.array().abs())).all())
       break;
     w_prev = w_tilde;
-    ++i;
-    if(i > maxiter)
-      break;
   }
   params.push_back(dual_mu_0);
   params.push_back(dual_mu_next);

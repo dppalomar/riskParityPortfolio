@@ -3,7 +3,7 @@ context("Constraints")
 # generate a random Sigma
 set.seed(123)
 N <- 10
-V <- matrix(rnorm(N^2), N, N)
+V <- matrix(rnorm(10000), N, N)
 Sigma <- cov(V)
 formulations_list <- c("rc-double-index", "rc-over-b-double-index",
                        "rc-over-var vs b", "rc-over-var",
@@ -33,35 +33,25 @@ test_that("error controls work", {
   expect_warning(riskParityPortfolio(Sigma, w0 = rep(1, N)))
   expect_warning(riskParityPortfolio(Sigma, formulation = "diag", w0 = rep(1, N)))
   expect_warning(riskParityPortfolio(Sigma, formulation = "rc-double-index"))
-  expect_warning(riskParityPortfolio(Sigma, formulation = "rc-double-index", mu = rep(0, N), w0 = rep(1, N)))
 })
 
 test_that("equality constraints behave correctly", {
-  Cmat <- matrix(1, 1, N)
+  Cmat <- matrix(0, 1, nrow(Sigma))
+  Cmat[1] <- 1
+  Cmat[2] <- 1
   for(formulation in formulations_list_wo_theta) {
     w_sum <- runif(1)
-    rpp <- riskParityPortfolio(Sigma, method = "sca",
-                               Cmat = Cmat,
-                               cvec = c(w_sum),
+    rpp <- riskParityPortfolio(Sigma, method = "sca", Cmat = Cmat, cvec = c(w_sum),
                                formulation = formulation)
-    expect_true(abs(sum(rpp$w) - w_sum) < 1e-5)
+    expect_true(abs(Cmat %*% rpp$w - w_sum) < 1e-5)
   }
 })
 
 test_that("ineq and eq constraints behave correctly", {
-  N <- 10
-  V <- matrix(rnorm(1000 * N), nrow=N)
-  Sigma <- cov(t(V))
-  Cmat <- matrix(1, 1, N)
-  Dmat <- matrix(0, N, N)
-  diag(Dmat) <- rep(-1, N)
   for(formulation in formulations_list_wo_theta) {
-    rpp <- riskParityPortfolio(Sigma, method = "sca",
-                               Cmat = Cmat, Dmat = Dmat,
-                               cvec = c(1),
-                               dvec = c(rep(0, N)), formulation = formulation)
+    rpp <- riskParityPortfolio(Sigma, method = "sca", formulation = formulation)
     expect_true(all(rpp$w > 0))
-    expect_true(abs(sum(rpp$w) - 1) < 1e-4)
+    expect_true(abs(sum(rpp$w) - 1) < 1e-5)
   }
 })
 
@@ -112,7 +102,7 @@ test_that("rpp_with_ineq_and_eq_constraints_iteration agree with solve.QP", {
   c_solution <- riskParityPortfolio:::rpp_eq_and_ineq_constraints_iteration(
                                                                             Cmat, cvec, Dmat, dvec, Qk, qk, wk,
                                                                             rep(0, nrow(Dmat)), rep(0, nrow(Dmat)),
-                                                                            rep(0, nrow(Cmat)), rep(0, nrow(Cmat)), 100)[[5]]
+                                                                            rep(0, nrow(Cmat)), rep(0, nrow(Cmat)), 100, 1e-6)[[5]]
   qp_solution <- quadprog::solve.QP(Qk, -qk, Amat = Amat, bvec = bvec, meq = 1)$solution
   expect_true(all(abs(c_solution - qp_solution) < 1e-5))
   r_solution <- riskParityPortfolio:::rpp_eq_and_ineq_constraints_iteration_R(
