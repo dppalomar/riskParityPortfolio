@@ -9,8 +9,8 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 0,
   Dmat = NULL, dvec = NULL, method_init = c("cyclical-spinu",
   "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
   formulation = NULL, w0 = NULL, theta0 = NULL, gamma = 0.9,
-  zeta = 1e-07, tau = NULL, maxiter = 500, ftol = 1e-08,
-  wtol = 1e-06, use_gradient = TRUE, use_qp_solver = FALSE)
+  zeta = 1e-07, tau = NULL, maxiter = 1000, ftol = 1e-08,
+  wtol = 5e-07, use_gradient = TRUE, use_qp_solver = FALSE)
 }
 \arguments{
 \item{Sigma}{covariance or correlation matrix (this is the only mandatory argument)}

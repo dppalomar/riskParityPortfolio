@@ -29,7 +29,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
                                                    "rc vs theta",
                                                    "rc-over-b vs theta"),
                                    theta0 = NULL, gamma = .9, zeta = 1e-7,
-                                   tau = NULL, maxiter = 500, ftol = 1e-8, wtol = 1e-6,
+                                   tau = NULL, maxiter = 1000, ftol = 1e-8, wtol = .5e-6,
                                    use_qp_solver = FALSE) {
   N <- nrow(Sigma)
   formulation <- match.arg(formulation)
@@ -115,7 +115,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
   wk <- w0
   fun_k <- R(wk, Sigma, b)
   if (has_mu) {
-    if (lmd_mu == 0) stop("Ooppss... You specified mu but chose lmd_mu == 0...")
+    if (lmd_mu == 0) warning("The mean return vector has been given, but lmd_mu = 0.")
     if (has_theta) fun_k <- fun_k - lmd_mu * t(mu) %*% wk[1:N]
     else fun_k <- fun_k - lmd_mu * t(mu) %*% wk
   }
@@ -419,7 +419,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
-                                maxiter = 500, ftol = 1e-8, wtol = 1e-6,
+                                maxiter = 1000, ftol = 1e-8, wtol = .5e-6,
                                 use_gradient = TRUE, use_qp_solver = FALSE) {
   N <- nrow(Sigma)
   stocks_names <- colnames(Sigma)
@@ -447,10 +447,19 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if (is.null(b)) b <- rep(1/N, N)
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
   if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
-  In <- diag(nrow(Sigma))
-  if (is.null(Dmat)) Dmat <- rbind(-In, In)
-  if (is.null(dvec)) dvec <- c(-w_lb, w_ub)
-  if (nrow(Dmat) != length(dvec)) stop("Shapes of Dmat and dvec are inconsistent.")
+  has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
+  if (!has_only_equality_constraints) {
+    In <- diag(nrow(Sigma))
+    if (is.null(Dmat))
+      Dmat <- rbind(-In, In)
+    else
+      Dmat <- rbind(Dmat, -In, In)
+    if (is.null(dvec))
+      dvec <- c(-w_lb, w_ub)
+    else
+      dvec <- c(dvec, -w_lb, w_ub)
+    if (nrow(Dmat) != length(dvec)) stop("Shapes of Dmat and dvec are inconsistent.")
+  }
   # define boolean cases for easier reading of code
   has_mu <- !is.null(mu)
   has_theta <- !is.null(theta0)
@@ -459,7 +468,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
   has_initial_point <- !is.null(w0)
   has_equality_constraints <- nrow(Cmat) > 1
-  has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
   has_inequality_constraints <- !is_Dmat_null
   has_std_constraints <- !has_only_equality_constraints && (nrow(Cmat) == 1) && is_Dmat_null
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
@@ -521,12 +529,11 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       w0 <- theta_rc*w_rc + theta_mu*w_mu + theta_var*w_gmvp
     }
     if (!isFeasiblePortfolio(w0, Cmat, cvec, Dmat, dvec)) {
-      if (has_initial_point)
-        warning("Initial point is infeasible. Projecting it onto the feasible set.")
+      if (has_initial_point) warning("Initial portfolio is unfeasible, projecting it onto the feasible set.")
       if (has_only_equality_constraints) {
         w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat,
-                                                      cvec = cvec, Dmat = NULL,
-                                                      dvec = NULL)
+                                                      cvec = cvec, Dmat = Dmat,
+                                                      dvec = dvec)
       } else if(has_inequality_constraints) {
         w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat, cvec = cvec,
                                                       Dmat = Dmat, dvec = dvec)

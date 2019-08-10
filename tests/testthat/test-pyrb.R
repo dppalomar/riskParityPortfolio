@@ -22,12 +22,9 @@ test_that("unconstrained example", {
 
 
 test_that("constrained example", {
-    Cmat <- matrix(1, 1, nrow(Sigma))
-    cvec <- c(1)
     Dmat <- matrix(c(rep(0, 4), rep(-1, 4)), nrow = 1)
     dvec <- c(-0.3)
     rpp <- riskParityPortfolio(Sigma, method = "sca",
-                               Cmat = Cmat, cvec = cvec,
                                Dmat = Dmat, dvec = dvec)
     expect_true(abs(sum(rpp$w) - 1) < 1e-4)
     expect_true(-Dmat %*% rpp$w > 0.3)
@@ -35,15 +32,12 @@ test_that("constrained example", {
 
 
 test_that("another constrained example", {
-    Cmat <- matrix(1, 1, nrow(Sigma))
-    cvec <- c(1)
     Dmat <- matrix(0, 2, 8)
     Dmat[1, ] <- c(rep(0, 4), rep(-1, 4))
     Dmat[2, ] <- c(1, -1, 0, 0, 1, -1, 0, 0)
     dvec <- c(-0.3, -0.05)
     rpp <- riskParityPortfolio(Sigma, method = "sca",
-                               Cmat = Cmat, cvec = cvec,
                                Dmat = Dmat, dvec = dvec)
     expect_true(abs(sum(rpp$w) - 1) < 1e-4)
-    expect_true(all(-Dmat %*% rpp$w > -dvec))
+    expect_true(all(-Dmat %*% rpp$w > -(dvec + 1e-5)))
 })

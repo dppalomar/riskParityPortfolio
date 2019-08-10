@@ -40,16 +40,23 @@ test_that("equality constraints behave correctly", {
   Cmat[1] <- 1
   Cmat[2] <- 1
   for(formulation in formulations_list_wo_theta) {
-    w_sum <- runif(1)
-    rpp <- riskParityPortfolio(Sigma, method = "sca", Cmat = Cmat, cvec = c(w_sum),
+    w12_sum <- runif(1)
+    rpp <- riskParityPortfolio(Sigma, method = "sca", Cmat = Cmat, cvec = c(w12_sum),
                                formulation = formulation)
-    expect_true(abs(Cmat %*% rpp$w - w_sum) < 1e-5)
+    expect_true(abs(sum(rpp$w) - 1) < 1e-4)
+    expect_true(abs(Cmat %*% rpp$w - w12_sum) < 1e-4)
   }
 })
 
 test_that("ineq and eq constraints behave correctly", {
+  Dmat <- matrix(0, 1, nrow(Sigma))
+  Dmat[1] <- 1
+  Dmat[2] <- 1
   for(formulation in formulations_list_wo_theta) {
-    rpp <- riskParityPortfolio(Sigma, method = "sca", formulation = formulation)
+    w12_sum <- runif(1)
+    rpp <- riskParityPortfolio(Sigma, method = "sca", Dmat = Dmat, dvec = c(w12_sum),
+                               formulation = formulation)
+    expect_true(Dmat %*% rpp$w <= (w12_sum + 1e-5))
     expect_true(all(rpp$w > 0))
     expect_true(abs(sum(rpp$w) - 1) < 1e-5)
   }
