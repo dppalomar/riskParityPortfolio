@@ -448,10 +448,10 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_fancy_box <- any(w_lb != 0) || any(w_ub != 1)
   has_initial_point <- !is.null(w0)
   has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
+  has_inequality_constraints <- !is.null(Dmat)
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
                               has_only_equality_constraints || has_inequality_constraints)
   if (!is_vanilla_formulation) are_constraints_valid(Cmat, cvec, Dmat, dvec)
-  has_inequality_constraints <- !is.null(Dmat)
 
   # check wrong parameters
   if (sum(w_lb) > 1) stop("Problem infeasible: relax the lower bounds.")
@@ -507,7 +507,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
       theta_var <- lmd_var / (1 + lmd_var + lmd_mu*sum(has_mu))
       w0 <- theta_rc*w_rc + theta_mu*w_mu + theta_var*w_gmvp
     }
-    if (!isFeasible(w0, Cmat, cvec, Dmat, dvec)) {
+    if (!isFeasiblePortfolio(w0, Cmat, cvec, Dmat, dvec)) {
       if (has_initial_point)
         warning("Initial point is infeasible. Projecting it onto the feasible set.")
       if (has_only_equality_constraints) {
