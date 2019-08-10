@@ -31,7 +31,8 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
                                       const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk,
                                       const Eigen::VectorXd& wk,
                                       Eigen::VectorXd& dual_mu_0, Eigen::VectorXd& dual_mu_minus_1,
-                                      Eigen::VectorXd& dual_lmd_0, Eigen::VectorXd& dual_lmd_minus_1) {
+                                      Eigen::VectorXd& dual_lmd_0, Eigen::VectorXd& dual_lmd_minus_1,
+                                      unsigned int maxiter) {
 
   std::vector<Eigen::VectorXd> params;
   unsigned int n = Cmat.cols();
@@ -55,10 +56,12 @@ rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::
     dual_lmd_minus_1 = dual_lmd_0;
     dual_mu_0 = dual_mu_next;
     dual_lmd_0 = dual_lmd_next;
-    if(((w_tilde - w_prev).array().abs() <= .5e-6 * (w_tilde.array().abs() + w_prev.array().abs())).all())
+    if(((w_tilde - w_prev).array().abs() <= .5e-5 * (w_tilde.array().abs() + w_prev.array().abs())).all())
       break;
     w_prev = w_tilde;
     ++i;
+    if(i > maxiter)
+      break;
   }
   params.push_back(dual_mu_0);
   params.push_back(dual_mu_next);

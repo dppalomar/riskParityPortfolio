@@ -58,10 +58,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
     Dmat <- rbind(Dmat, 0); Dmat[nrow(Dmat), ncol(Dmat)] <- 1; dvec <- c(dvec, 0)  # this line is optional
   }
   # check the type of constraints
-  if ((sum(dvec == Inf) + sum(dvec == (-Inf))) == length(dvec))
-    has_only_equality_constraints = TRUE
-  else
-    has_only_equality_constraints = FALSE
+  has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
   # initiliaze some variables depending on the type of solver
   if (use_qp_solver) {
     meq <- nrow(Cmat)
@@ -154,7 +151,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
     } else {
       params <- rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk,
                                                       dual_mu_0, dual_mu_minus_1, dual_lmd_0,
-                                                      dual_lmd_minus_1)
+                                                      dual_lmd_minus_1, maxiter)
       dual_mu_minus_1 <- params[[1]]
       dual_mu_0 <- params[[2]]
       dual_lmd_minus_1 <- params[[3]]
@@ -451,6 +448,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   has_initial_point <- !is.null(w0)
   has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
   has_inequality_constraints <- !is_Dmat_null
+  has_std_constraints <- !has_only_equality_constraints && (nrow(Cmat) == 1) && is_Dmat_null
   is_vanilla_formulation <- !(has_mu || has_theta || has_var || has_fancy_box ||
                               has_only_equality_constraints || has_inequality_constraints)
 
@@ -515,9 +513,11 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
         w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat,
                                                       cvec = cvec, Dmat = NULL,
                                                       dvec = NULL)
-      } else {
+      } else if(has_inequality_constraints) {
         w0 <- project_onto_eq_and_ineq_constraint_set(w0 = w0, Cmat = Cmat, cvec = cvec,
                                                       Dmat = Dmat, dvec = dvec)
+      } else {
+        w0 <- projectBudgetLineAndBox(w0 = w0, w_lb = w_lb, w_ub = w_ub)
       }
     }
     # solve nonconvex formulation

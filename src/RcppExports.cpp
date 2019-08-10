@@ -119,8 +119,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rpp_eq_and_ineq_constraints_iteration
-std::vector<Eigen::VectorXd> rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec, const Eigen::MatrixXd& Dmat, const Eigen::VectorXd& dvec, const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk, const Eigen::VectorXd& wk, Eigen::VectorXd& dual_mu_0, Eigen::VectorXd& dual_mu_minus_1, Eigen::VectorXd& dual_lmd_0, Eigen::VectorXd& dual_lmd_minus_1);
-RcppExport SEXP _riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration(SEXP CmatSEXP, SEXP cvecSEXP, SEXP DmatSEXP, SEXP dvecSEXP, SEXP QkSEXP, SEXP qkSEXP, SEXP wkSEXP, SEXP dual_mu_0SEXP, SEXP dual_mu_minus_1SEXP, SEXP dual_lmd_0SEXP, SEXP dual_lmd_minus_1SEXP) {
+std::vector<Eigen::VectorXd> rpp_eq_and_ineq_constraints_iteration(const Eigen::MatrixXd& Cmat, const Eigen::VectorXd& cvec, const Eigen::MatrixXd& Dmat, const Eigen::VectorXd& dvec, const Eigen::MatrixXd& Qk, const Eigen::VectorXd& qk, const Eigen::VectorXd& wk, Eigen::VectorXd& dual_mu_0, Eigen::VectorXd& dual_mu_minus_1, Eigen::VectorXd& dual_lmd_0, Eigen::VectorXd& dual_lmd_minus_1, unsigned int maxiter);
+RcppExport SEXP _riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration(SEXP CmatSEXP, SEXP cvecSEXP, SEXP DmatSEXP, SEXP dvecSEXP, SEXP QkSEXP, SEXP qkSEXP, SEXP wkSEXP, SEXP dual_mu_0SEXP, SEXP dual_mu_minus_1SEXP, SEXP dual_lmd_0SEXP, SEXP dual_lmd_minus_1SEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -135,7 +135,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type dual_mu_minus_1(dual_mu_minus_1SEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type dual_lmd_0(dual_lmd_0SEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd& >::type dual_lmd_minus_1(dual_lmd_minus_1SEXP);
-    rcpp_result_gen = Rcpp::wrap(rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk, dual_mu_0, dual_mu_minus_1, dual_lmd_0, dual_lmd_minus_1));
+    Rcpp::traits::input_parameter< unsigned int >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(rpp_eq_and_ineq_constraints_iteration(Cmat, cvec, Dmat, dvec, Qk, qk, wk, dual_mu_0, dual_mu_minus_1, dual_lmd_0, dual_lmd_minus_1, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -149,7 +150,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_riskParityPortfolio_obj_function_roncalli", (DL_FUNC) &_riskParityPortfolio_obj_function_roncalli, 3},
     {"_riskParityPortfolio_rpp_equality_constraints_iteration", (DL_FUNC) &_riskParityPortfolio_rpp_equality_constraints_iteration, 4},
     {"_riskParityPortfolio_project_onto_equality_constraint_set", (DL_FUNC) &_riskParityPortfolio_project_onto_equality_constraint_set, 3},
-    {"_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration", (DL_FUNC) &_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration, 11},
+    {"_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration", (DL_FUNC) &_riskParityPortfolio_rpp_eq_and_ineq_constraints_iteration, 12},
     {NULL, NULL, 0}
 };
 

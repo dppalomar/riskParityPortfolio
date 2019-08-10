@@ -9,8 +9,8 @@ colnames(Sigma) <- as.character(c(1:10))
 
 test_that("diag formulation throws error when other constraints or terms are
           included", {
-  expect_error(riskParityPortfolio(Sigma, w_lb = 0.5, formulation = "diag"))
-  expect_error(riskParityPortfolio(Sigma, lmb_var = 0.5, formulation = "diag"))
+  expect_error(riskParityPortfolio(Sigma, w_lb = 0.05, formulation = "diag"))
+  expect_error(riskParityPortfolio(Sigma, lmd_var = 0.5, formulation = "diag"))
   expect_error(riskParityPortfolio(Sigma, mu = rep(1/N, N), formulation = "diag"))
 })
 
