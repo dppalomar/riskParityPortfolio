@@ -140,12 +140,12 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 <li><a href="#rpp-with-general-linear-constraints">RPP with general linear constraints</a></li>
 </ul></li>
 <li><a href="#comparison-with-other-packages">Comparison with other Packages</a></li>
-<li><a href="#appendix-i-risk-concentration-formulations">Appendix I: Risk concentration formulations</a></li>
-<li><a href="#appendix-ii-numerical-algorithms-for-the-risk-parity-portfolio">Appendix II: Numerical algorithms for the risk parity portfolio</a><ul>
+<li><a href="#appendix-i---risk-concentration-formulations">Appendix I - Risk concentration formulations</a></li>
+<li><a href="#appendix-ii---numerical-algorithms-for-the-risk-parity-portfolio">Appendix II - Numerical algorithms for the risk parity portfolio</a><ul>
 <li><a href="#algorithms-for-the-vanilla-risk-parity-formulation">Algorithms for the vanilla risk parity formulation</a></li>
 <li><a href="#successive-convex-approximation-algorithm-for-the-modern-risk-parity-formulation">Successive convex approximation algorithm for the modern risk parity formulation</a></li>
 </ul></li>
-<li><a href="#appendix-iii-computational-time">Appendix III: Computational time</a></li>
+<li><a href="#appendix-iii---computational-time">Appendix III - Computational time</a></li>
 <li><a href="#references">References</a></li>
 </ul>
 </div>
@@ -257,7 +257,7 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 <p>There are many reformulations possible. For illustrative purposes, one such formulation is <span class="math display">\[\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &amp; \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} \color{blue}{- \;F(\mathbf{w})}\\
 \textsf{subject to} &amp; \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1, \quad\color{blue}{\mathbf{w}\in\cal{W}}
-\end{array}\]</span> where <span class="math inline">\(F(\mathbf{w})\)</span> denotes some additional objective function and <span class="math inline">\(\cal{W}\)</span> denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in Appendix I.</p>
+\end{array}\]</span> where <span class="math inline">\(F(\mathbf{w})\)</span> denotes some additional objective function and <span class="math inline">\(\cal{W}\)</span> denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in <a href="#appendix-i---risk-concentration-formulations">Appendix I</a>.</p>
 <p>The way to solve this general problem is derived in <span class="citation">[9], [10]</span> and is based on a powerful optimization framework named successive convex approximation (SCA) <span class="citation">[11]</span>. See <a href="#successive-convex-approximation-algorithm-for-the-modern-risk-parity-formulation">Appendix II</a> for a general idea of the method.</p>
 </div>
 </div>
@@ -469,8 +469,8 @@ R(\mathbf{w}) + \lambda F(\mathbf{w})\\
 TODO{Vinicius}: Revise the structure of all the appendices given the update I have done above. Note the places where I refer to an appendix, it should be done properly with a markdown code but I don't have the time now to search that.
 --->
 </div>
-<div id="appendix-i-risk-concentration-formulations" class="section level1 unnumbered">
-<h1>Appendix I: Risk concentration formulations</h1>
+<div id="appendix-i---risk-concentration-formulations" class="section level1 unnumbered">
+<h1>Appendix I - Risk concentration formulations</h1>
 <p>In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be minimized: <span class="math inline">\(R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}\)</span>, where the <span class="math inline">\(g_{i}\)</span>’s denote the different risk contribution errors, e.g., <span class="math inline">\(g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\)</span>. A double-index summation can also be used: <span class="math inline">\(R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}\)</span>.</p>
 <p>We consider the risk formulations as presented in <span class="citation">[9], [10]</span>. They can be passed through the keyword argument <code>formulation</code> in the function <code>riskParityPortfolio()</code>.</p>
 <p>The name of the formulations and their mathematical expressions are presented as follows.</p>
@@ -497,8 +497,8 @@ R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\
 R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
 \]</span></p>
 </div>
-<div id="appendix-ii-numerical-algorithms-for-the-risk-parity-portfolio" class="section level1 unnumbered">
-<h1>Appendix II: Numerical algorithms for the risk parity portfolio</h1>
+<div id="appendix-ii---numerical-algorithms-for-the-risk-parity-portfolio" class="section level1 unnumbered">
+<h1>Appendix II - Numerical algorithms for the risk parity portfolio</h1>
 <p>In this appendix we describe the algorithms implemented for both the vanilla risk parity portfolio and the modern risk parity portfolio that may contain additional objective terms and constraints.</p>
 <div id="algorithms-for-the-vanilla-risk-parity-formulation" class="section level2">
 <h2>Algorithms for the vanilla risk parity formulation</h2>
@@ -557,8 +557,8 @@ This method simply minimizes in a cyclical manner with respect to each element o
 <p>The above problem is a quadratic program (QP) which can be efficiently solved by standard R libraries. Furthermore, it is straightforward that adding the mean return or variance terms still keeps the structure of the problem intact.</p>
 </div>
 </div>
-<div id="appendix-iii-computational-time" class="section level1 unnumbered">
-<h1>Appendix III: Computational time</h1>
+<div id="appendix-iii---computational-time" class="section level1 unnumbered">
+<h1>Appendix III - Computational time</h1>
 <p>In order to efficiently design high dimensional portfolios that follows the risk parity criterion, we implement the cyclical coordinate descent algorithm proposed by <span class="citation">[7]</span>. In brief, this algorithm optimizes for one portfolio weight at a time while leaving the rest fixed.</p>
 <p>The plot below illustrates the computational scaling of both Newton and cyclical algorithms. Note that the cyclical algorithm is implemented for two different formulations used by <span class="citation">[6]</span> and <span class="citation">[7]</span>, respectively. Nonetheless, they output the same solution, as they should.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw">library</span>(microbenchmark)</a>

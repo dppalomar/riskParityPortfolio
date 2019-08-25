@@ -234,7 +234,8 @@ $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} \color{blue}{- \;F(\mathbf{w})}\\
 \textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1, \quad\color{blue}{\mathbf{w}\in\cal{W}}
 \end{array}$$
-where $F(\mathbf{w})$ denotes some additional objective function and $\cal{W}$ denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in Appendix I.
+where $F(\mathbf{w})$ denotes some additional objective function and $\cal{W}$ denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in
+[Appendix I](#appendix-i---risk-concentration-formulations).
 
 The way to solve this general problem is derived in [@FengPal2015riskparity; @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See
 [Appendix II](#successive-convex-approximation-algorithm-for-the-modern-risk-parity-formulation) for a general idea of the method.
@@ -494,7 +495,7 @@ the interior-point method used by `cccp` and the formulation used by `RiskPortfo
 <!---
 TODO{Vinicius}: Revise the structure of all the appendices given the update I have done above. Note the places where I refer to an appendix, it should be done properly with a markdown code but I don't have the time now to search that.
 --->
-# Appendix I: Risk concentration formulations {-}
+# Appendix I - Risk concentration formulations {-}
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
 minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
 A double-index summation can also be used:
@@ -545,7 +546,7 @@ R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{
 $$
 
 
-# Appendix II: Numerical algorithms for the risk parity portfolio {-}
+# Appendix II - Numerical algorithms for the risk parity portfolio {-}
 In this appendix we describe the algorithms implemented for both the vanilla
 risk parity portfolio and the modern risk parity portfolio that may contain
 additional objective terms and constraints.
@@ -659,7 +660,7 @@ standard R libraries. Furthermore, it is straightforward that adding the mean re
 or variance terms still keeps the structure of the problem intact.
 
 
-# Appendix III: Computational time {-}
+# Appendix III - Computational time {-}
 
 In order to efficiently design high dimensional portfolios that follows the risk parity criterion,
 we implement the cyclical coordinate descent algorithm proposed by [@GriveauRichardRoncalli2013]. In brief, this
