@@ -1,4 +1,4 @@
-## Changes in riskParityPortfolio version 0.1.2.9000 (2019-XX-XX)
+## Changes in riskParityPortfolio version 0.2.0 (2019-08-XX)
 
 * Included the R/Finance 2019 slides as an additional vignette.
 * Included the slides on risk parity portfolio from the Convex Optimization course at 

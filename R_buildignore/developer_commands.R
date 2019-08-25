@@ -33,7 +33,6 @@ devtools::document()  #or Ctrl-Shift-L (to generate all documentation via roxyge
 # Code tests (https://codecov.io/gh/mirca/riskParityPortfolio)
 devtools::test()
 covr::package_coverage()  # coverage of tests
-#goodpractice::gp()  # overall checks
 
 
 # CRAN check and submission (http://r-pkgs.had.co.nz/release.html)
@@ -45,8 +44,8 @@ devtools::build()
 #devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
-#R CMD check riskParityPortfolio_0.1.2.tar.gz --as-cran  # this is before submission to CRAN
-#R CMD install riskParityPortfolio_0.1.2.tar.gz
+#R CMD check riskParityPortfolio_0.2.0.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
+#R CMD install riskParityPortfolio_0.2.0.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
 
 
