@@ -35,6 +35,7 @@ opts_chunk$set(
   pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
+options(width=120)
 # rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "prettydoc::html_pretty")
 ```
 
@@ -195,7 +196,7 @@ However, for non-diagonal $\boldsymbol{\Sigma}$ or with other additional constra
 
 
 ## Vanilla convex formulation
-Suppose we only have the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$. Then after the change of variable $\mathbf{x}=\mathbf{w}/\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$, the equations $w_i (\Sigma \mathbf{w})_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}$ become $x_i\left(\boldsymbol{\Sigma}\mathbf{x}\right)_i = b_i$ or, more compactly in vector form, as
+Suppose we only have the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$. Then, after the change of variable $\mathbf{x}=\mathbf{w}/\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$, the equations $w_i (\Sigma \mathbf{w})_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}$ become $x_i\left(\boldsymbol{\Sigma}\mathbf{x}\right)_i = b_i$ or, more compactly in vector form, as
 $$\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$$
 with $\mathbf{x} \ge \mathbf{0}$ and we can always recover the portfolio by normalizing: $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
 
@@ -207,19 +208,20 @@ following convex optimization problem:
 $$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \sum_{i=1}^{N}b_i\log(x_i),$$
 where the portfolio can be recovered as $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
 
-Interestingly, Spinu realized in [@Spinu2013] that precisely the risk budgeting equation $\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$ corresponds to the gradient of the convex function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$ set to zero: 
+Indeed, Spinu realized in [@Spinu2013] that precisely the risk budgeting equation $\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$ corresponds to the gradient of the convex function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$ set to zero: 
 $$\nabla f(\mathbf{x}) = \boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}/\mathbf{x} = \mathbf{0}.$$
 
 Thus, a convenient way to solve the problem is by solving the following convex optimization problem:
 $$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$$
 which has optimality condition $\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$.
 
-Such solution can be computed using a general-purpose convex optimization package, but faster algorithms such as **Newton method** and the **cyclical coordinate descent method**, proposed by [@Spinu2013] and [@GriveauRichardRoncalli2013], are implemented in this package. (Yet another convex formulation was proposed in [@KayaLee2012].)
+Such solution can be computed using a general-purpose convex optimization package, but faster algorithms such as the **Newton method** and the **cyclical coordinate descent method**, employed in [@Spinu2013] and [@GriveauRichardRoncalli2013], are implemented in this package. (Yet another convex formulation was proposed in [@KayaLee2012].)
 
 
 
 ## General nonconvex formulation
 The previous methods are based on a convex reformulation of the problem so they are guaranteed to converge to the optimal risk budgeting solution. However, they can only be employed for the simplest risk budgeting formulation with a simplex constraint set (i.e., $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$). They cannot be used if
+
 - we have other constraints like allowing shortselling or box constraints: $l_i \le w_i \le u_i$
 - on top of the risk budgeting constraints $w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = b_i \;\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$ we have other objectives like maximizing the expected return $\mathbf{w}^T\boldsymbol{\mu}$ or minimizing the overall variance $\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
 
@@ -256,7 +258,7 @@ Sigma <- cov(V)
 rpp <- riskParityPortfolio(Sigma)
 
 # plot
-barplotPortfolioRisk(rpp$w, Sigma, colors = "#a29bfe")
+barplotPortfolioRisk(rpp$w, Sigma, col = "#A29BFE")
 ```
 
 As presented earlier, the risk parity portfolios are designed in
@@ -282,15 +284,17 @@ R(\mathbf{w}) - \lambda_{\mu} \mathbf{w}^{T}\boldsymbol{\mu}\\
 where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function or risk parity function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda_{\mu}$ is a trade-off parameter.
 
 ```{r, message=FALSE, cache=TRUE}
+library(ggplot2)
+library(riskParityPortfolio)
+
 N <- 10
 V <- matrix(rnorm(N^2), nrow = N)
 Sigma <- cov(V)
 mu <- runif(N)
 
-lmd_sweep <- c(0, 10^seq(-5, 2, .25))
+lmd_sweep <- 10^seq(-5, 2, .25)
 mean_return <- c()
 risk_parity <- c()
-
 for (lmd_mu in lmd_sweep) {
   rpp <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = lmd_mu,
                              formulation = "rc-double-index")
@@ -298,59 +302,71 @@ for (lmd_mu in lmd_sweep) {
   risk_parity <- c(risk_parity, rpp$risk_parity)
 }
 
-plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "#ff7675",
-     xlab = "Risk Parity", ylab = "Expected Return",
-     ylim = c(min(mean_return), max(mean_return)),
-     xlim = c(min(risk_parity), max(risk_parity)),
-     main = "Expected Return vs Risk Parity")
+# plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "#ff7675",
+#      xlab = "Risk Parity", ylab = "Expected Return",
+#      ylim = c(min(mean_return), max(mean_return)),
+#      xlim = c(min(risk_parity), max(risk_parity)),
+#      main = "Expected Return vs Risk Parity")
+ggplot(data.frame(risk_parity, mean_return), aes(x = risk_parity, y = mean_return)) +
+  geom_line() + geom_point() +
+  labs(title = "Expected Return vs Risk Parity", 
+       x = "Risk Parity", y = "Expected Return")
 ```
 
 
 ## RPP with additional variance term
-Similarly, the `riskParityPortfolio` package allows us to include the variance
-as an objective term, so that the actual optimization problem can be expressed as
+Similarly, the `riskParityPortfolio` package allows us to include the variance $\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$
+as an objective term:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) + \lambda_{\sf var} \mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
 \textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
 \end{array}$$
+where $\lambda_{\sf var}$ is a trade-off parameter.
 
 In the code, that can be done by passing a positive value to the parameter `lmd_var`.
 Let's check the following illustrative example that depicts the trade-off between
 volatility and risk parity:
 
 ```{r, message=FALSE, cache=TRUE}
+library(ggplot2)
+library(riskParityPortfolio)
+
 load("Sigma_mu.RData")
-lmd_sweep <- c(10 ^ (seq(-5, 5, .25)))
+
+lmd_sweep <- 10^seq(-5, 5, .25)
 variance <- c()
 risk_parity <- c()
-
 for (lmd_var in lmd_sweep) {
   rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var, formulation = "rc-double-index")
   variance <- c(variance, rpp$variance)
   risk_parity <- c(risk_parity, rpp$risk_parity)
 }
-
 volatility <- sqrt(variance)
-plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "#ff7675",
-     xlab = "Risk Parity", ylab = "Volatility",
-     ylim = c(min(volatility), max(volatility)),
-     xlim = c(min(risk_parity), max(risk_parity)),
-     main = "Volatility vs Risk Parity")
+
+# plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "#ff7675",
+#      xlab = "Risk Parity", ylab = "Volatility",
+#      ylim = c(min(volatility), max(volatility)),
+#      xlim = c(min(risk_parity), max(risk_parity)),
+#      main = "Volatility vs Risk Parity")
+ggplot(data.frame(risk_parity, volatility), aes(x = risk_parity, y = volatility)) +
+  geom_line() + geom_point() +
+  labs(title = "Volatility vs Risk Parity", 
+       x = "Risk Parity", y = "Volatility")
 ```
 
 
 ## RPP with general linear constraints
 In version 2.0, we added support for general linear constraints, i.e., `riskParityPortfolio` is now able
-to solve the following problem
+to solve the following problem:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{minimize}} &
 R(\mathbf{w}) + \lambda F(\mathbf{w})\\
-\textsf{subject to} & \mathbf{C}\mathbf{w} = \mathbf{c},~~\mathbf{D}\mathbf{w} \leq \mathbf{d}
+\textsf{subject to} & \mathbf{C}\mathbf{w} = \mathbf{c},~~\mathbf{D}\mathbf{w} \leq \mathbf{d}.
 \end{array}$$
 
-Users interested in the details of the algorithm behind the solution for the aforementioned problem
-are refered to section V (*Advanced Solving Approaches*) of [@FengPal2015riskparity]. In summary,
+Users interested in the details of the algorithm used to solve this problems
+are refered to Section V (*Advanced Solving Approaches*) of [@FengPal2015riskparity]. In summary,
 the algorithm fits well within the SCA framework, while preserving speed and scalability.
 
 It was recently mentioned by [@RichardRoncalli2019] that the problem of designing risk parity
@@ -361,7 +377,7 @@ is unlikely to be preserved among the assets affected by the constraints.
 Let's check out a numerical example from [@RichardRoncalli2019]. Consider we have a universe of
 eight assets and we would like to design a risk parity portfolio $\mathbf{w}$ satisfying the
 following constraints:
-$$ w_5 + w_6 + w_7 + w_8 \geq 30\%, $$ $$ w_2 + w_6 \geq w_1 + w_5 + 5\%, $$ and $$ \sum w_i = 100\% . $$
+$$ w_5 + w_6 + w_7 + w_8 \geq 30\%, $$ $$ w_2 + w_6 \geq w_1 + w_5 + 5\%, $$ and $$ \sum_i w_i = 100\% . $$
 
 ```{r}
 # compute the covariance matrix
@@ -380,21 +396,23 @@ Sigma <- Corr * (vol %o% vol)
 Dmat <- matrix(0, 2, 8)
 Dmat[1, ] <- c(rep(0, 4), rep(-1, 4))
 Dmat[2, ] <- c(1, -1, 0, 0, 1, -1, 0, 0)
-dvec <- c(-0.3, -0.05)
+dvec <- c(-0.30, -0.05)
 
 # design portfolio
 rpp <- riskParityPortfolio(Sigma, method = "sca", Dmat = Dmat, dvec = dvec)
 # plot portfolio weights
-barplotPortfolioRisk(rpp$w, Sigma, col = viridisLite::viridis(ncol(w_all)))
+barplotPortfolioRisk(rpp$w, Sigma)
+```
+As we can observe, the risk contributions are somewhat clustered according to the relationship
+among assets defined by the linear constraints, as mentioned by [@RichardRoncalli2019].
 
-# Are the constraints satisfied?
+The linear constraints are obviously satisfied:
+```{r}
 # equality constraints
 print(sum(rpp$w))
 # inequality constraints
 print(Dmat %*% rpp$w)
 ```
-As we can observe, the risk contributions are somewhat clustered according to the relationship
-among assets defined by the linear constraints, as mentioned by [@RichardRoncalli2019].
 
 The results obtained by our implementation agree with those reported by [@RichardRoncalli2019].
 
@@ -413,8 +431,7 @@ library(RiskPortfolios)
 # generate synthetic data
 set.seed(42)
 N <- 10
-#V <- matrix(rnorm(N^2), nrow = N)  # with this, RiskPortfolios::optimalPortfolio() fails
-V <- matrix(rnorm(N*(N+N/5)), N+N/5, N)  # with this, FinCovRegularization::RiskParity() fails
+V <- matrix(rnorm(N*(N+N/5)), N+N/5, N)
 Sigma <- cov(V)
 
 # uniform initial guess for the portfolio weights
@@ -422,24 +439,23 @@ w0 <- rep(1/N, N)
 
 # compute risk parity portfolios using different methods
 rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
-fincov_w <- RiskParity(Sigma)
-riskport_w <- optimalPortfolio(Sigma = Sigma, control = list(type = 'erc',
-                                                             constraint = 'lo'))
-cccp_w <- c(getx(rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
+fincov_w <- FinCovRegularization::RiskParity(Sigma)
+riskport_w <- optimalPortfolio(Sigma = Sigma, 
+                               control = list(type = "erc",
+                                              constraint = "lo"))
+cccp_w <- c(getx(cccp::rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
 
 # plot
 w_all <- cbind("riskParityPortfolio"  = rpp$w,
                "FinCovRegularization" = fincov_w,
                "cccp"                 = cccp_w,
                "RiskPortfolios"       = riskport_w)
-#barplotPortfolioRisk(w_all, Sigma, colors = viridisLite::viridis(ncol(w_all)))
-barplotPortfolioRisk(w_all, Sigma,
-                     colors = c("#55efc4", "#0984e3", "#fd79a8", "#2d3436"))
+barplotPortfolioRisk(w_all, Sigma)
 ```
 
 Depending on the condition number of the covariance matrix, we found that the
 packages `FinCovRegularization` and `RiskPortfolios` may fail unexpectedly.
-Apart from that, the other functions perform the same.
+Apart from that, all functions perform similarly.
 
 Now, let's see a comparison, in terms of computational time, of our cyclical coordinate descent
 implementation against the `rp()` function from the `cccp` package and the `optimalPortfolio()` function
@@ -448,6 +464,7 @@ we call directly the core internal function `risk_parity_portfolio_ccd_spinu()`,
 computes the risk parity weights, just like `rp()` and `optimalPortfolio()`.)
 ```{r, cache=TRUE}
 library(microbenchmark)
+library(ggplot2)
 library(cccp)
 library(RiskPortfolios)
 library(riskParityPortfolio)
@@ -459,15 +476,13 @@ b <- rep(1/N, N)
 
 # use risk_parity_portfolio_nn with default values of tolerance and number of iterations
 op <- microbenchmark(
-          rp_cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-          cyclical = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
-          optPort = optimalPortfolio(Sigma = Sigma, control = list(type = 'erc', constraint = 'lo')),
+          cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
+          riskParityPortfolio = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
+          RiskPortfolios = optimalPortfolio(Sigma = Sigma, 
+                                            control = list(type = 'erc', constraint = 'lo')),
           times = 10L)
 print(op)
-par(mar = c(7, 4, 4, 2))
-boxplot(op, main = "Time comparison [milliseconds]",
-        xlab = NULL, ylab = NULL,
-        unit = "ms", outline = FALSE, las = 2)
+autoplot(op)
 ```
 
 As it can be observed, our implementation is orders of maginitude faster than
@@ -556,7 +571,8 @@ Unfortunately, even though these two problems are convex, they do not conform wi
 
 Nevertheless, there are several simple iterative algorithms that can be used, like the Newton method and the cyclical coordinate descent algorithm.
 
-### Newton method
+
+**Newton method**    
 The Newton method obtains the iterates based on the gradient $\nabla f$ and the Hessian ${\sf H}$ of the objective function $f(\mathbf{x})$ as follows:
 $$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} - {\sf H}^{-1}(\mathbf{x}^{(k)})\nabla f(\mathbf{x}^{(k)})$$
 
@@ -576,7 +592,8 @@ In practice, one may need to use the backtracking method to properly adjust the 
     {\sf H}(\mathbf{x}) &= \left(\boldsymbol{\Sigma} - \boldsymbol{\Sigma}\mathbf{x}\mathbf{x}^T\boldsymbol{\Sigma}/\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}\right) / \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
     \end{array}$$
 
-### Cyclical coordinate descent algorithm
+
+**Cyclical coordinate descent algorithm**    
 This method simply minimizes in a cyclical manner with respect to each element
 of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\ldots,x_{i-1},0,x_{i+1},\ldots,x_N]^T$),
 while helding the other elements fixed.
@@ -653,6 +670,7 @@ and [@GriveauRichardRoncalli2013], respectively. Nonetheless, they output the sa
 ```{r, cache=TRUE}
 library(microbenchmark)
 library(riskParityPortfolio)
+library(ggplot2)
 
 sizes <- c(10, 50, 100, 200, 300, 400, 500, 600, 700)
 size_seq <- c(1:length(sizes))
@@ -670,15 +688,24 @@ for (i in size_seq) {
   times[3, i] <- median(bench$time[c(FALSE, FALSE, TRUE)] / 10 ^ 6)
 }
 
-colors <- c("#2d3436", "#6c5ce7", "#74b9ff")
-plot(size_seq, times[1,], type = "b", pch=15, cex=.75, col = colors[1],
-     xlab = "Portfolio size N", ylab = "CPU time [ms]", xaxt = "n")
-grid()
-lines(size_seq, times[2,], type = "b", pch=16, cex=.75, col = colors[2])
-lines(size_seq, times[3,], type = "b", pch=17, cex=.75, col = colors[3])
-axis(side = 1, at = size_seq, labels = sizes)
-legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
-       col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
+# colors <- c("#2d3436", "#6c5ce7", "#74b9ff")
+# plot(size_seq, times[1,], type = "b", pch=15, cex=.75, col = colors[1],
+#      xlab = "Portfolio size N", ylab = "CPU time [ms]", xaxt = "n")
+# grid()
+# lines(size_seq, times[2,], type = "b", pch=16, cex=.75, col = colors[2])
+# lines(size_seq, times[3,], type = "b", pch=17, cex=.75, col = colors[3])
+# axis(side = 1, at = size_seq, labels = sizes)
+# legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
+#        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
+
+df <- data.frame(size_seq, newton = times[1, ], cyclical_spinu = times[2, ], cyclical_roncalli = times[3, ])
+molten_df <- reshape2::melt(df, id.vars = "size_seq")
+ggplot(molten_df, aes(x = size_seq, y = value, col = variable)) + 
+  geom_line() + geom_point() + 
+  scale_color_manual(values = c("#2d3436", "#6c5ce7", "#74b9ff")) +
+  theme(legend.title = ggplot2::element_blank()) +
+  labs(title = "Speed comparison of methods for the convex formulation", 
+       x = "Portfolio size N", y = "CPU time [ms]")
 ```
 
 
