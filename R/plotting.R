@@ -11,7 +11,7 @@
 #' @param Sigma Covariance matrix of the assets.
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 #'             \code{"ggplot2"} (the packages \code{ggplot2} and \code{gridExtra} must be installed).
-#' @param colors Vector of colors for the portfolios (default uses grDevices::topo.colors()).
+#' @param colors Vector of colors for the portfolios (optional).
 #' @examples
 #' library(riskParityPortfolio)
 #' 
@@ -34,11 +34,12 @@
 #' barplotPortfolioRisk(w_single, Sigma)
 #' barplotPortfolioRisk(w_multiple, Sigma)
 #' barplotPortfolioRisk(w_multiple, Sigma, colors = viridisLite::viridis(4))
+#' barplotPortfolioRisk(w_multiple, Sigma) + ggplot2::scale_fill_viridis_d()
 #' 
 #' @author Daniel P. Palomar and Ze Vinicius
 #' 
 #' @export
-barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple", "ggplot2-old"), colors = topo.colors(ncol(w))) {
+barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple", "ggplot2-old"), colors = NULL) {
   w <- as.matrix(w)
   if (is.null(colnames(w)))
     colnames(w) <- paste0("portf-", 1:ncol(w))
@@ -50,6 +51,8 @@ barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple", "ggplot
   # plot
   switch(match.arg(type),
          "simple" = {
+           if (is.null(colors))
+             colors <- topo.colors(ncol(w))
            old_par <- par(mfrow=c(2,1))
            barplot(t(w), col = colors,
                    beside = ncol(w) > 1, legend = colnames(w),
@@ -68,10 +71,11 @@ barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple", "ggplot
            p <- ggplot2::ggplot(molten_portf_matrix, ggplot2::aes(x = stock, y = value)) + 
              ggplot2::geom_bar(ggplot2::aes(fill = portfolio), color = "black", stat = "identity", position = "dodge", width = 0.8) +
              ggplot2::facet_wrap(~ type, ncol = 1, scales = "free", labeller = ggplot2::labeller(type = labels)) +
-             ggplot2::scale_fill_manual(values = colors) +
              ggplot2::labs(title = "Portfolio capital and risk distribution", x = "stocks", y = NULL) + 
              ggplot2::theme(legend.title = ggplot2::element_blank()) +
              ggplot2::theme(strip.text = ggplot2::element_text(size = 11))
+           if (!is.null(colors))
+             p <- p + ggplot2::scale_fill_manual(values = colors)
            if (ncol(w) == 1)  # remove legend if only one portfolio
              p <- p + ggplot2::theme(legend.position = "none")
            p

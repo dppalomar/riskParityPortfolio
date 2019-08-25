@@ -109,7 +109,7 @@ w_all <- cbind("EWP"           = rep(1/nrow(Sigma), nrow(Sigma)),
                "RPP (naive)"   = rpp_naive$w,
                "RPP (vanilla)" = rpp_vanilla$w,
                "RPP + mu"      = rpp_mu$w)
-barplotPortfolioRisk(w_all, Sigma, col = viridisLite::viridis(ncol(w_all)))
+barplotPortfolioRisk(w_all, Sigma)
 ```
 
 
