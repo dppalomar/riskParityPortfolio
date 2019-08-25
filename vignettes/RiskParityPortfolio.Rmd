@@ -698,13 +698,13 @@ for (i in size_seq) {
 # legend("topleft", legend = c("newton", "cyclical-spinu", "cyclical-roncalli"),
 #        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 
-df <- data.frame(size_seq, newton = times[1, ], cyclical_spinu = times[2, ], cyclical_roncalli = times[3, ])
+df <- data.frame(sizes, newton = times[1, ], cyclical_spinu = times[2, ], cyclical_roncalli = times[3, ])
 molten_df <- reshape2::melt(df, id.vars = "size_seq")
-ggplot(molten_df, aes(x = size_seq, y = value, col = variable)) + 
-  geom_line() + geom_point() + 
+ggplot(molten_df, aes(x = sizes, y = value, col = variable)) +
+  geom_line() + geom_point() +
   scale_color_manual(values = c("#2d3436", "#6c5ce7", "#74b9ff")) +
   theme(legend.title = ggplot2::element_blank()) +
-  labs(title = "Speed comparison of methods for the convex formulation", 
+  labs(title = "Speed comparison of methods for the convex formulation",
        x = "Portfolio size N", y = "CPU time [ms]")
 ```
 
