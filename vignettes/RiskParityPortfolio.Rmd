@@ -236,7 +236,8 @@ $$\begin{array}{ll}
 \end{array}$$
 where $F(\mathbf{w})$ denotes some additional objective function and $\cal{W}$ denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in Appendix I.
 
-The way to solve this general problem is derived in [@FengPal2015riskparity; @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See Appendix I for a general idea of the method.
+The way to solve this general problem is derived in [@FengPal2015riskparity; @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See
+[Appendix II](#successive-convex-approximation-algorithm-for-the-modern-risk-parity-formulation) for a general idea of the method.
 
 
 # Using the Package **riskParityPortfolio**
@@ -699,7 +700,7 @@ for (i in size_seq) {
 #        col=colors, pch=c(15, 16, 17), lty=c(1, 1, 1), bty="n")
 
 df <- data.frame(sizes, newton = times[1, ], cyclical_spinu = times[2, ], cyclical_roncalli = times[3, ])
-molten_df <- reshape2::melt(df, id.vars = "size_seq")
+molten_df <- reshape2::melt(df, id.vars = "sizes")
 ggplot(molten_df, aes(x = sizes, y = value, col = variable)) +
   geom_line() + geom_point() +
   scale_color_manual(values = c("#2d3436", "#6c5ce7", "#74b9ff")) +
