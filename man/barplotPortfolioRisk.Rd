@@ -4,8 +4,8 @@
 \alias{barplotPortfolioRisk}
 \title{Create portfolio barplots with the capital allocation and the risk allocation}
 \usage{
-barplotPortfolioRisk(w, Sigma, type = c("ggplot2", "simple",
-  "ggplot2-old"), colors = NULL)
+barplotPortfolioRisk(w, Sigma, type = c("ggplot2", "simple"),
+  colors = NULL)
 }
 \arguments{
 \item{w}{Vector or matrix containing the portfolio(s) weights. 
@@ -40,7 +40,9 @@ w_single <- w_single/sum(w_single)  # normalize
 names(w_single) <- LETTERS[1:N]
 
 w_multiple <- matrix(runif(4*N), ncol = 4)
-w_multiple <- sweep(w_multiple, MARGIN = 2, STATS = colSums(w_multiple), FUN = "/")  # normalize each column
+w_multiple <- sweep(w_multiple,  # normalize each column
+                    MARGIN = 2, 
+                    STATS = colSums(w_multiple), FUN = "/")
 rownames(w_multiple) <- LETTERS[1:N]
 
 # plot

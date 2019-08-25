@@ -28,3 +28,5 @@
 ^vignettes/example\.html$
 ^vignettes/example\.pdf$
 ^vignettes/Sigma_mu\.RData$
+^vignettes/LinearConstraints\.Rmd$
+^vignettes/LinearConstraints\.html$

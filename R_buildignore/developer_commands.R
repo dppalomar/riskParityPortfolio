@@ -35,6 +35,11 @@ devtools::test()
 covr::package_coverage()  # coverage of tests
 
 
+# Compress pdf vignettes
+#tools::compactPDF("vignettes/slides-RFinance2019.pdf", gs_quality = "ebook")
+#tools::compactPDF("vignettes/slides-ConvexOptimizationCourseHKUST.pdf", gs_quality = "ebook")
+
+
 # CRAN check and submission (http://r-pkgs.had.co.nz/release.html)
 #  checklist: https://kalimu.github.io/post/checklist-for-r-package-submission-to-cran/
 devtools::check()
