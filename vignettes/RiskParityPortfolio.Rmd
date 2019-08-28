@@ -187,7 +187,7 @@ $$w_i (\Sigma \mathbf{w})_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \quad\forall i
 
 # Solving the Risk Parity Portfolio (RPP)
 ## Naive diagonal formulation
-Assuming that the assets are uncorrelated, i.e., that $\boldsymbol{\Sigma}$ is diagonal and simply using the volatilities $\boldsymbol{\sigma} = \sqrt{{\sf diag(\boldsymbol{\Sigma})}}$, one obtains
+Assuming that the assets are uncorrelated, i.e., that $\boldsymbol{\Sigma}$ is diagonal, and simply using the volatilities $\boldsymbol{\sigma} = \sqrt{{\sf diag(\boldsymbol{\Sigma})}}$, one obtains
 $$\mathbf{w} = \frac{\boldsymbol{\sigma}^{-1}}{\mathbf{1}^T\boldsymbol{\sigma}^{-1}}$$
 or, more generally,
 $$\mathbf{w} = \frac{\sqrt{\mathbf{b}}\odot\boldsymbol{\sigma}^{-1}}{\mathbf{1}^T\left(\sqrt{\mathbf{b}}\odot\boldsymbol{\sigma}^{-1}\right)}.$$
