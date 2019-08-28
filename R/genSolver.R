@@ -152,18 +152,20 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   w <- res$par
 
   portfolio_results <- list()
-  portfolio_results$risk_parity <- fun_seq[length(fun_seq)]
+  portfolio_results$risk_concentration <- fun_seq[length(fun_seq)]
   if (!has_theta) {
     portfolio_results$w <- w
-    portfolio_results$risk_contribution <- as.vector(w * (Sigma %*% w))
+    w_Sigmaw <- as.vector(w * (Sigma %*% w))
+    portfolio_results$relative_risk_contribution <- w_Sigmaw / sum(w_Sigmaw)
   } else {
     portfolio_results$w <- w[1:N]
     portfolio_results$theta <- w[N+1]
-    portfolio_results$risk_contribution <- as.vector(w[1:N] * (Sigma %*% w[1:N]))
+    w_Sigmaw
+    portfolio_results$relative_risk_contribution <- w_Sigmaw / sum(w_Sigmaw)
   }
   if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
-    portfolio_results$risk_parity <- portfolio_results$risk_parity + lmd_mu * portfolio_results$mean_return
+    portfolio_results$risk_concentration <- portfolio_results$risk_concentration + lmd_mu * portfolio_results$mean_return
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq

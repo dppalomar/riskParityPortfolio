@@ -179,22 +179,24 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
   }
 
   portfolio_results <- list()
-  portfolio_results$risk_parity <- fun_seq[length(fun_seq)]
+  portfolio_results$risk_concentration <- fun_seq[length(fun_seq)]
   if (!has_theta) {
     portfolio_results$w <- w_next
-    portfolio_results$risk_contribution <- as.vector(w_next * (Sigma %*% w_next))
+    w_Sigmaw <- as.vector(w_next * (Sigma %*% w_next))
+    portfolio_results$relative_risk_contribution <- w_Sigmaw / sum(w_Sigmaw)
   } else {
     portfolio_results$w <- w_next[1:N]
     portfolio_results$theta <- w_next[N+1]
-    portfolio_results$risk_contribution <- as.vector(w_next[1:N] * (Sigma %*% w_next[1:N]))
+    w_Sigmaw <- as.vector(w_next[1:N] * (Sigma %*% w_next[1:N]))
+    portfolio_results$relative_risk_contribution <- w_Sigmaw / sum(w_Sigmaw)
   }
   if (has_mu) {
     portfolio_results$mean_return <- t(mu) %*% portfolio_results$w
-    portfolio_results$risk_parity <- portfolio_results$risk_parity + lmd_mu * portfolio_results$mean_return
+    portfolio_results$risk_concentration <- portfolio_results$risk_concentration + lmd_mu * portfolio_results$mean_return
   }
   if (has_var) {
     portfolio_results$variance <- t(portfolio_results$w) %*% Sigma %*% portfolio_results$w
-    portfolio_results$risk_parity <- portfolio_results$risk_parity - lmd_var * portfolio_results$variance
+    portfolio_results$risk_concentration <- portfolio_results$risk_concentration - lmd_var * portfolio_results$variance
   }
   portfolio_results$obj_fun <- fun_seq
   portfolio_results$elapsed_time <- time_seq
@@ -357,12 +359,12 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'        quadprog to solve each iteration of the SCA algorithm. Default is FALSE.
 #' @return A list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
-#' \item{\code{risk_contribution}}{the risk contribution of every asset}
+#' \item{\code{relative_risk_contribution}}{the relative risk contribution of every asset}
 #' \item{\code{theta}}{the optimal value for theta (in case that it is part of
 #'                     the chosen formulation)}
 #' \item{\code{obj_fun}}{the sequence of values of the objective function at
 #'                       each iteration}
-#' \item{\code{risk_parity}}{the risk concentration term of the portfolio \code{R(w)}}
+#' \item{\code{risk_concentration}}{the risk concentration term of the portfolio \code{R(w)}}
 #' \item{\code{mean_return}}{the expected return term of the portoflio \code{t(w)\%*\%mu},
 #'                           if the term is included in the optimization}
 #' \item{\code{variance}}{the variance term of the portfolio \code{t(w)\%*\%Sigma\%*\%w},

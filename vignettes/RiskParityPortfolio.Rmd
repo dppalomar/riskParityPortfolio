@@ -296,20 +296,20 @@ mu <- runif(N)
 
 lmd_sweep <- 10^seq(-5, 2, .25)
 mean_return <- c()
-risk_parity <- c()
+risk_concentration <- c()
 for (lmd_mu in lmd_sweep) {
   rpp <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = lmd_mu,
                              formulation = "rc-double-index")
   mean_return <- c(mean_return, rpp$mean_return)
-  risk_parity <- c(risk_parity, rpp$risk_parity)
+  risk_concentration <- c(risk_concentration, rpp$risk_concentration)
 }
 
-# plot(risk_parity, mean_return, type = "b", pch = 19, cex = .6, col = "#ff7675",
-#      xlab = "Risk Parity", ylab = "Expected Return",
+# plot(risk_concentration, mean_return, type = "b", pch = 19, cex = .6, col = "#ff7675",
+#      xlab = "Risk Concentration", ylab = "Expected Return",
 #      ylim = c(min(mean_return), max(mean_return)),
-#      xlim = c(min(risk_parity), max(risk_parity)),
+#      xlim = c(min(risk_concentration), max(risk_concentration)),
 #      main = "Expected Return vs Risk Parity")
-ggplot(data.frame(risk_parity, mean_return), aes(x = risk_parity, y = mean_return)) +
+ggplot(data.frame(risk_concentration, mean_return), aes(x = risk_concentration, y = mean_return)) +
   geom_line() + geom_point() +
   labs(title = "Expected Return vs Risk Parity", 
        x = "Risk Parity", y = "Expected Return")
@@ -338,20 +338,20 @@ load("Sigma_mu.RData")
 
 lmd_sweep <- 10^seq(-5, 5, .25)
 variance <- c()
-risk_parity <- c()
+risk_concentration <- c()
 for (lmd_var in lmd_sweep) {
   rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var, formulation = "rc-double-index")
   variance <- c(variance, rpp$variance)
-  risk_parity <- c(risk_parity, rpp$risk_parity)
+  risk_concentration <- c(risk_concentration, rpp$risk_concentration)
 }
 volatility <- sqrt(variance)
 
-# plot(risk_parity, volatility, type = "b", pch = 19, cex = .6, col = "#ff7675",
+# plot(risk_concentration, volatility, type = "b", pch = 19, cex = .6, col = "#ff7675",
 #      xlab = "Risk Parity", ylab = "Volatility",
 #      ylim = c(min(volatility), max(volatility)),
-#      xlim = c(min(risk_parity), max(risk_parity)),
+#      xlim = c(min(risk_concentration), max(risk_concentration)),
 #      main = "Volatility vs Risk Parity")
-ggplot(data.frame(risk_parity, volatility), aes(x = risk_parity, y = volatility)) +
+ggplot(data.frame(risk_concentration, volatility), aes(x = risk_concentration, y = volatility)) +
   geom_line() + geom_point() +
   labs(title = "Volatility vs Risk Parity", 
        x = "Risk Parity", y = "Volatility")
@@ -480,7 +480,7 @@ b <- rep(1/N, N)
 op <- microbenchmark(
           cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
           riskParityPortfolio = riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
-          RiskPortfolios = optimalPortfolio(Sigma = Sigma, 
+          RiskPortfolios = optimalPortfolio(Sigma = Sigma,
                                             control = list(type = 'erc', constraint = 'lo')),
           times = 10L)
 print(op)
