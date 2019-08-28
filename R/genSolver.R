@@ -160,7 +160,6 @@ riskParityPortfolioGenSolver <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigm
   } else {
     portfolio_results$w <- w[1:N]
     portfolio_results$theta <- w[N+1]
-    w_Sigmaw
     portfolio_results$relative_risk_contribution <- w_Sigmaw / sum(w_Sigmaw)
   }
   if (has_mu) {

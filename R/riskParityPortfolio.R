@@ -1,7 +1,8 @@
 riskParityPortfolioDiagSigma <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))) {
   w <- sqrt(b) / sqrt(diag(Sigma))
   w <- w / sum(w)
-  return (list(w = w, risk_contribution = as.vector(w * (Sigma %*% w))))
+  w_Sigmaw <- as.vector(w * (Sigma %*% w))
+  return (list(w = w, relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw)))
 }
 
 
@@ -371,6 +372,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'                        if the term is included in the optimization}
 #' \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 #' \item{\code{convergence}}{boolean flag to indicate whether or not the optimization converged}
+#' \item{\code{is_feasible}}{boolean flag to indicate whether or not the computed portfolio respects the linear constraints}
 #'
 #' @examples
 #' library(riskParityPortfolio)
@@ -388,15 +390,12 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' res$w
 #' #> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
 #'
-#' res$risk_contribution
-#' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
-#'
-#' c(res$w * (Sigma %*% res$w))
-#' #> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+#' res$relative_risk_contribution
+#' #> [1] 0.2 0.2 0.2 0.2 0.2
 #'
 #' # risk budggeting portfolio
 #' res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
-#' res$risk_contribution/sum(res$risk_contribution)
+#' res$relative_risk_contribution
 #' #> [1] 0.40 0.40 0.10 0.05 0.05
 #'
 #' @references
@@ -571,5 +570,6 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
     )
   }
   names(portfolio$w) <- names(portfolio$risk_contribution) <- stocks_names
+  portfolio$is_feasible <- isFeasiblePortfolio(portfolio$w, Cmat, cvec, Dmat, dvec)
   return(portfolio)
 }
