@@ -318,10 +318,10 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'        portfolio weight
 #' @param w_ub upper bound (either a vector or a scalar) on the value of each
 #'        portfolio weight
-#' @param Cmat TBD
-#' @param cvec TBD
-#' @param Dmat TBD
-#' @param dvec TBD
+#' @param Cmat equality constraints matrix
+#' @param cvec equality constraints vector
+#' @param Dmat inequality constraints matrix
+#' @param dvec inequality constraints vector
 #' @param method_init method to compute the vanilla solution. In case of
 #'        additional constraints or objective terms, this solution is used as
 #'        the initial point for the subsequent method. The default is
@@ -353,6 +353,8 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' @param use_gradient this parameter is meaningful only if method is either
 #'        \code{"alabama"} or \code{"slsqp"}. If \code{TRUE} (default value), analytical gradients of the
 #'        objective function will be used (strongly recommended to achieve faster results).
+#' @param use_qp_solver whether or not to use the general QP solver from
+#'        quadprog to solve each iteration of the SCA algorithm. Default is FALSE.
 #' @return A list containing possibly the following elements:
 #' \item{\code{w}}{optimal portfolio vector}
 #' \item{\code{risk_contribution}}{the risk contribution of every asset}
