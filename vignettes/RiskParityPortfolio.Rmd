@@ -308,11 +308,11 @@ for (lmd_mu in lmd_sweep) {
 #      xlab = "Risk Concentration", ylab = "Expected Return",
 #      ylim = c(min(mean_return), max(mean_return)),
 #      xlim = c(min(risk_concentration), max(risk_concentration)),
-#      main = "Expected Return vs Risk Parity")
+#      main = "Expected Return vs Risk Concentration")
 ggplot(data.frame(risk_concentration, mean_return), aes(x = risk_concentration, y = mean_return)) +
   geom_line() + geom_point() +
-  labs(title = "Expected Return vs Risk Parity", 
-       x = "Risk Parity", y = "Expected Return")
+  labs(title = "Expected Return vs Risk Concentration", 
+       x = "Risk Concentration", y = "Expected Return")
 ```
 
 
@@ -347,14 +347,14 @@ for (lmd_var in lmd_sweep) {
 volatility <- sqrt(variance)
 
 # plot(risk_concentration, volatility, type = "b", pch = 19, cex = .6, col = "#ff7675",
-#      xlab = "Risk Parity", ylab = "Volatility",
+#      xlab = "Risk Concentration", ylab = "Volatility",
 #      ylim = c(min(volatility), max(volatility)),
 #      xlim = c(min(risk_concentration), max(risk_concentration)),
-#      main = "Volatility vs Risk Parity")
+#      main = "Volatility vs Risk Concentration")
 ggplot(data.frame(risk_concentration, volatility), aes(x = risk_concentration, y = volatility)) +
   geom_line() + geom_point() +
-  labs(title = "Volatility vs Risk Parity", 
-       x = "Risk Parity", y = "Volatility")
+  labs(title = "Volatility vs Risk Concentration",
+       x = "Risk Concentration", y = "Volatility")
 ```
 
 
