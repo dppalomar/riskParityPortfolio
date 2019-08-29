@@ -40,9 +40,9 @@ options(width=120)
 ```
 
 -----------
-> This vignette illustrates the design of risk parity portfolios, widely
-  used by practitioners in the financial industry, with the package
-  `riskParityPortfolio`, giving a description of the algorithms used and
+> This vignette illustrates the design of risk parity portfolios, which are
+  widely used by practitioners in the financial industry, with the package
+  `riskParityPortfolio`, giving a description of the algorithms and
   comparing the performance against existing packages.
 
 
@@ -74,32 +74,33 @@ save(Sigma, mu, file = "Sigma_mu.RData")
 ```{r, echo=FALSE}
 load("Sigma_mu.RData")
 ```
-First, load package:
+
+Let's start by loading the package:
 ```{r, echo=TRUE}
 library(riskParityPortfolio)
 ?riskParityPortfolio  # to get help for the function
 ```
 
-The simplest use is for the vanilla risk parity portfolio:
+The simplest use is for the [vanilla risk parity portfolio](#vanilla-convex-formulation):
 ```{r, echo=TRUE}
 rpp_vanilla <- riskParityPortfolio(Sigma)
 names(rpp_vanilla)
 print(rpp_vanilla$w, digits = 2)
 ```
 
-To obtain the naive diagonal solution:
+To obtain the [naive diagonal solution](#naive-diagonal-formulation), also known as inverse volatility portfolio,
+make use of the `formulation` argument:
 ```{r, echo=TRUE}
 rpp_naive <- riskParityPortfolio(Sigma, formulation = "diag")
 ```
 
 For a more realistic formulation including the expected return in the objective and box constraints:
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} \color{blue}{- \lambda \;\mathbf{w}^T\boldsymbol{\mu}}\\
+\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(\dfrac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}}{b_i}-\dfrac{w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}}{b_j}\right)^{2} \color{blue}{- \lambda \;\mathbf{w}^T\boldsymbol{\mu}}\\
 \textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1, \quad\color{blue}{\mathbf{l}\le\mathbf{w}\le\mathbf{u}}.
 \end{array}$$
 ```{r, echo=TRUE, size="small"}
-#rpp_mu <- riskParityPortfolio(Sigma, formulation = "rc-double-index",
-rpp_mu <- riskParityPortfolio(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)), formulation = "rc-over-b-double-index",
+rpp_mu <- riskParityPortfolio(Sigma, formulation = "rc-over-b-double-index",
                               mu = mu, lmd_mu = 1e-3, # for expected return term
                               w_ub = 0.16)            # for box upper bound constraints
 ```
@@ -116,12 +117,15 @@ barplotPortfolioRisk(w_all, Sigma)
 
 # What is a Risk Parity Portfolio?
 ## Signal model
-Let us denote the **returns** of $N$ assets at time $t$ with the vector $\mathbf{r}_{t}$ and suppose they follow an i.i.d. distribution (not totally accurate but widely adopted) with mean $\boldsymbol{\mu}$ and covariance matrix $\boldsymbol{\Sigma}$.
+Let us denote by $\mathbf{r}_{t}$ the vector of the **returns** of $N$ assets at time $t$ and suppose they follow an i.i.d. distribution
+(which is not a totally accurate assumption, but it is widely adopted, nonetheless) with mean $\boldsymbol{\mu}$ and covariance matrix $\boldsymbol{\Sigma}$.
 
-The portfolio vector $\mathbf{w}$ denotes the normalized dollar weights allocated to the $N$ assets ($\mathbf{1}^{T}\mathbf{w}=1$) and the **portfolio return** is then $r_{t}^{\sf portf} = \mathbf{w}^{T}\mathbf{r}_{t}$, with expected return $\mathbf{w}^{T}\boldsymbol{\mu}$ and variance $\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$.
+The portfolio vector $\mathbf{w}$ denotes the normalized dollar weights allocated to the $N$ assets, such that $\mathbf{1}^{T}\mathbf{w}=1$, and the
+**portfolio return** is then $r_{t}^{\sf portf} = \mathbf{w}^{T}\mathbf{r}_{t}$,
+with expected return $\mathbf{w}^{T}\boldsymbol{\mu}$ and variance $\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$.
 
-## Markowitz
-Markowitz proposed in his seminal 1952 paper [@Markowitz1952] to find a trade-off between the portfolio expected return and its risk measured by the variance:
+## Modern Portfolio Theory
+In 1952, Markowitz proposed in his seminal paper [@Markowitz1952] to find a trade-off between the portfolio expected return and its risk measured by the variance:
 $$\begin{array}{ll}
 \underset{\mathbf{w}}{\textsf{maximize}} & \mathbf{w}^{T}\boldsymbol{\mu}-\lambda\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
 \textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1,
@@ -130,8 +134,9 @@ where $\lambda$ is a parameter that controls how risk-averse the investor is.
 
 Markowitz's portfolio has been heavily critized for over half a century and has never been fully embraced by practitioners, among many reasons because:
 
-- it only considers the risk of the portfolio as a whole and ignores the risk diversification (i.e., concentrates risk too much in few assets, this was observed in the 2008 financial crisis)
-- it is highly sensitive to the estimation errors in the parameters (i.e., small estimation errors in the parameters may change completely the designed portfolio).
+- it only considers the risk of the portfolio as a whole and ignores the risk diversification
+  (i.e., concentrates too much risk in few assets, which was observed in the 2008 financial crisis)
+- it is highly sensitive to the estimation errors in the parameters (i.e., small estimation errors in the parameters may change the designed portfolio drastically).
 
 Although portfolio management did not change much during the 40 years after the seminal works of Markowitz and Sharpe, the development of risk budgeting techniques marked an important milestone in deepening the relationship between risk and asset management.
 
@@ -139,23 +144,24 @@ Although portfolio management did not change much during the 40 years after the 
 ## From “dollar” to risk diversification
 Since the global financial crisis in 2008, **risk management** has particularly become more important than performance management in portfolio optimization. Indeed, risk parity became a popular financial model after the global financial crisis in 2008 [@Qian2005; @Asness_etal2012].
 
-The alternative **risk parity portfolio design** has been receiving significant attention from both the theoretical and practical sides [@Roncalli2013riskparity; @Qian2016] because it
+The alternative **risk parity portfolio design** has been receiving significant attention from both the theoretical and practical sides [@Roncalli2013riskparity; @Qian2016] because it: (1) diversifies the risk, instead of the capital, among the assets and (2) is less sensitive to parameter estimation errors.
 
-- diversifies the risk, instead of the capital, among the assets
-- is less sensitive to parameter estimation errors.
+Nowadays, pension funds and institutional investors are using this approach in the development of smart indexing and the redefinition of long-term investment policies.
 
-Today, pension funds and institutional investors are using this approach in the development of smart indexing and the redefinition of long-term investment policies.
-
-**Risk parity** is an approach to portfolio management that focuses on **allocation of risk** rather than allocation of capital. The risk parity approach asserts that when asset allocations are adjusted to the same risk level, the portfolio can achieve a higher Sharpe ratio and can be more resistant to market downturns. 
+**Risk parity** is an approach to portfolio management that focuses on **allocation of risk** rather than allocation of capital. The risk parity approach asserts that when asset allocations are adjusted to the same risk level, the portfolio can achieve a higher Sharpe ratio and can be more resistant to market downturns.
 
 While the minimum variance portfolio tries to minimize the variance (with the disadvantage that a few assets may be the ones contributing most to the risk), the risk parity portfolio tries to constrain **each asset** (or asset class, such as bonds, stocks, real estate, etc.) to **contribute equally to the portfolio overall volatility**.
 
-The term “risk parity” was coined by Edward Qian from PanAgora Asset Management [@Qian2005] and was then adopted by the asset management industry. Some of its theoretical components were developed in the 1950s and 1960s but the first risk parity fund, called the “All Weather” fund, was pioneered by Bridgewater Associates LP in 1996. Interest in the risk parity approach has increased since the late 2000s financial crisis as the risk parity approach fared better than traditionally constructed portfolios.
+The term “risk parity” was coined by Edward Qian from PanAgora Asset Management [@Qian2005] and was then adopted by the asset management industry.
+Some of its theoretical components were developed in the 1950s and 1960s, but the first risk parity fund, called the “All Weather” fund, was pioneered
+by Bridgewater Associates LP in 1996. The interest in the risk parity approach has increased since the financial crisis in the late 2000s as the
+risk parity approach fared better than portfolios designed in traditional fashions.
 
-Some portfolio managers have expressed skepticism but others point to its performance during the financial crisis of 2007-2008 as an indication of its potential success.
+Some portfolio managers have expressed skepticism with risk parity, while others point to its performance during the financial crisis of
+2007-2008 as an indication of its potential success.
 
-
-The idea of the risk parity portfolio (RPP), aka equal risk portfolio (ERP), is to "equalize" the risk so that the risk contribution from the assets is equal, rather than simply having an equal capital allocation like the equally weighted portfolio (EWP):
+The idea of the risk parity portfolio (RPP), aka equal risk portfolio (ERP), is to "equalize" the risk so that the risk contribution of every asset is equal,
+rather than simply having an equal capital allocation like the equally weighted portfolio (EWP):
 
 ```{r, echo=FALSE}
 knitr::include_graphics("figures/EWP-and-RPP-w-and-RRC.png")
@@ -242,10 +248,6 @@ The way to solve this general problem is derived in [@FengPal2015riskparity; @Fe
 
 
 # Using the Package **riskParityPortfolio**
-<!---
-TODO{Vinicius}: Revise all this section.
---->
-
 A simple code example on how to design a risk parity portfolio is as follows:
 ```{r, message=FALSE}
 library(riskParityPortfolio)
@@ -263,7 +265,7 @@ rpp <- riskParityPortfolio(Sigma)
 barplotPortfolioRisk(rpp$w, Sigma, col = "#A29BFE")
 ```
 
-As presented earlier, the risk parity portfolios are designed in
+As presented earlier, risk parity portfolios are designed in
 such a way as to ensure equal risk contribution from the assests,
 which can be noted in the chart above.
 
@@ -299,7 +301,7 @@ mean_return <- c()
 risk_concentration <- c()
 for (lmd_mu in lmd_sweep) {
   rpp <- riskParityPortfolio(Sigma, mu = mu, lmd_mu = lmd_mu,
-                             formulation = "rc-double-index")
+                             formulation = "rc-over-sd vs b-times-sd")
   mean_return <- c(mean_return, rpp$mean_return)
   risk_concentration <- c(risk_concentration, rpp$risk_concentration)
 }
@@ -311,7 +313,7 @@ for (lmd_mu in lmd_sweep) {
 #      main = "Expected Return vs Risk Concentration")
 ggplot(data.frame(risk_concentration, mean_return), aes(x = risk_concentration, y = mean_return)) +
   geom_line() + geom_point() +
-  labs(title = "Expected Return vs Risk Concentration", 
+  labs(title = "Expected Return vs Risk Concentration",
        x = "Risk Concentration", y = "Expected Return")
 ```
 
@@ -340,7 +342,8 @@ lmd_sweep <- 10^seq(-5, 5, .25)
 variance <- c()
 risk_concentration <- c()
 for (lmd_var in lmd_sweep) {
-  rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var, formulation = "rc-double-index")
+  rpp <- riskParityPortfolio(Sigma, lmd_var = lmd_var,
+                             formulation = "rc-over-sd vs b-times-sd")
   variance <- c(variance, rpp$variance)
   risk_concentration <- c(risk_concentration, rpp$risk_concentration)
 }
@@ -490,11 +493,6 @@ autoplot(op)
 As it can be observed, our implementation is orders of maginitude faster than
 the interior-point method used by `cccp` and the formulation used by `RiskPortfolios`.
 
-
-
-<!---
-TODO{Vinicius}: Revise the structure of all the appendices given the update I have done above. Note the places where I refer to an appendix, it should be done properly with a markdown code but I don't have the time now to search that.
---->
 # Appendix I - Risk concentration formulations {-}
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
 minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
