@@ -119,6 +119,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
     if (has_theta) fun_k <- fun_k - lmd_mu * t(mu) %*% wk[1:N]
     else fun_k <- fun_k - lmd_mu * t(mu) %*% wk
   }
+  if (has_var) fun_k <- fun_k + lmd_var * t(wk) %*% Sigma %*% wk
   fun_seq <- c(fun_k)
   time_seq <- c(0)
 
