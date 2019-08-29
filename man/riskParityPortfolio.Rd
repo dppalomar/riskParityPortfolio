@@ -32,13 +32,13 @@ portfolio weight}
 \item{w_ub}{upper bound (either a vector or a scalar) on the value of each
 portfolio weight}
 
-\item{Cmat}{TBD}
+\item{Cmat}{equality constraints matrix}
 
-\item{cvec}{TBD}
+\item{cvec}{equality constraints vector}
 
-\item{Dmat}{TBD}
+\item{Dmat}{inequality constraints matrix}
 
-\item{dvec}{TBD}
+\item{dvec}{inequality constraints vector}
 
 \item{method_init}{method to compute the vanilla solution. In case of
 additional constraints or objective terms, this solution is used as
@@ -82,22 +82,26 @@ the optimum solution for a fixed vector of portfolio weights will be used.}
 \item{use_gradient}{this parameter is meaningful only if method is either
 \code{"alabama"} or \code{"slsqp"}. If \code{TRUE} (default value), analytical gradients of the
 objective function will be used (strongly recommended to achieve faster results).}
+
+\item{use_qp_solver}{whether or not to use the general QP solver from
+quadprog to solve each iteration of the SCA algorithm. Default is FALSE.}
 }
 \value{
 A list containing possibly the following elements:
 \item{\code{w}}{optimal portfolio vector}
-\item{\code{risk_contribution}}{the risk contribution of every asset}
+\item{\code{relative_risk_contribution}}{the relative risk contribution of every asset}
 \item{\code{theta}}{the optimal value for theta (in case that it is part of
                     the chosen formulation)}
 \item{\code{obj_fun}}{the sequence of values of the objective function at
                       each iteration}
-\item{\code{risk_parity}}{the risk concentration term of the portfolio \code{R(w)}}
+\item{\code{risk_concentration}}{the risk concentration term of the portfolio \code{R(w)}}
 \item{\code{mean_return}}{the expected return term of the portoflio \code{t(w)\%*\%mu},
                           if the term is included in the optimization}
 \item{\code{variance}}{the variance term of the portfolio \code{t(w)\%*\%Sigma\%*\%w},
                        if the term is included in the optimization}
 \item{\code{elapsed_time}}{elapsed time recorded at every iteration}
 \item{\code{convergence}}{boolean flag to indicate whether or not the optimization converged}
+\item{\code{is_feasible}}{boolean flag to indicate whether or not the computed portfolio respects the linear constraints}
 }
 \description{
 This function designs risk parity portfolios to equalize/distribute
@@ -167,15 +171,12 @@ names(res)
 res$w
 #> [1] 0.04142886 0.38873465 0.34916787 0.09124019 0.12942842
 
-res$risk_contribution
-#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
-
-c(res$w * (Sigma \%*\% res$w))
-#> [1] 0.007361995 0.007361995 0.007361995 0.007361995 0.007361995
+res$relative_risk_contribution
+#> [1] 0.2 0.2 0.2 0.2 0.2
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
-res$risk_contribution/sum(res$risk_contribution)
+res$relative_risk_contribution
 #> [1] 0.40 0.40 0.10 0.05 0.05
 
 }

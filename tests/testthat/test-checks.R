@@ -28,6 +28,6 @@ test_that("a warning is raised when initial point is not feasible", {
 test_that("stocks names remain consistent with input parameters", {
   portfolio <- riskParityPortfolio(Sigma)
   expect_equal(names(portfolio$w), colnames(Sigma))
-  expect_equal(names(portfolio$risk_contribution), colnames(Sigma))
+  expect_equal(names(portfolio$relative_risk_contribution), colnames(Sigma))
 })
 

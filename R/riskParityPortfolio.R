@@ -209,7 +209,8 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
 riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                       maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_nn(Sigma, b, ftol, maxiter)
-  return(list(w = w, risk_contribution = c(w * (Sigma %*% w)),
+  w_Sigmaw <- c(w * (Sigma %*% w))
+  return(list(w = w, relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw),
               obj_fun = obj_function_spinu(Sigma, w, b)))
 }
 
@@ -217,7 +218,8 @@ riskParityPortfolioNewton <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma))
 riskParityPortfolioCyclicalRoncalli <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                         maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_roncalli(Sigma, b, ftol, maxiter)
-  return(list(w = w, risk_contribution = c(w * (Sigma %*% w)),
+  w_Sigmaw <- c(w * (Sigma %*% w))
+  return(list(w = w, relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw),
               obj_fun = obj_function_roncalli(Sigma, w, b)))
 }
 
@@ -225,7 +227,8 @@ riskParityPortfolioCyclicalRoncalli <- function(Sigma, b = rep(1/nrow(Sigma), nr
 riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
                                              maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_spinu(Sigma, b, ftol, maxiter)
-  return(list(w = w, risk_contribution = c(w * (Sigma %*% w))))
+  w_Sigmaw <- c(w * (Sigma %*% w))
+  return(list(w = w, relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw)))
 }
 
 # minimize ||w - w0||^2
@@ -569,7 +572,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
            stop("method ", method, " is not included.")
     )
   }
-  names(portfolio$w) <- names(portfolio$risk_contribution) <- stocks_names
+  names(portfolio$w) <- names(portfolio$relative_risk_contribution) <- stocks_names
   portfolio$is_feasible <- isFeasiblePortfolio(portfolio$w, Cmat, cvec, Dmat, dvec)
   return(portfolio)
 }

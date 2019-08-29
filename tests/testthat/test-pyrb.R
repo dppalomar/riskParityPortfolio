@@ -15,9 +15,8 @@ Sigma <- Corr * (vol %o% vol)
 test_that("unconstrained example", {
     answer <- c(26.8306, 28.6769, 11.4095, 9.7985, 5.6135, 5.9029, 6.656, 5.1121) / 100
     rpp <- riskParityPortfolio(Sigma)
-    rc <- rpp$risk_contribution / sum(rpp$risk_contribution)
     expect_true(max(abs(answer - rpp$w)) < 1e-4)
-    expect_true(max(abs(rc - 0.125)) < 1e-4)
+    expect_true(max(abs(rpp$relative_risk_contribution - 0.125)) < 1e-4)
 })
 
 
