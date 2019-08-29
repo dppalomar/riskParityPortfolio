@@ -1,5 +1,4 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
 riskParityPortfolio
 ===================
 
@@ -32,11 +31,10 @@ convex approximation method proposed by [Feng & Palomar
 (2015)](https://doi.org/10.1109/TSP.2015.2452219).
 
 The latest stable version of **riskParityPortfolio** is available at
-<a href="https://CRAN.R-project.org/package=riskParityPortfolio" class="uri">https://CRAN.R-project.org/package=riskParityPortfolio</a>.
+<https://CRAN.R-project.org/package=riskParityPortfolio>.
 
 The latest development version of **riskParityPortfolio** is available
-at
-<a href="https://github.com/dppalomar/riskParityPortfolio" class="uri">https://github.com/dppalomar/riskParityPortfolio</a>.
+at <https://github.com/dppalomar/riskParityPortfolio>.
 
 **Check out the documentation here:
 <https://mirca.github.io/riskParityPortfolio>.**
@@ -112,17 +110,14 @@ Sigma <- cov(V)
 # risk parity portfolio
 res <- riskParityPortfolio(Sigma)
 names(res)
-#> [1] "w"                 "risk_contribution"
+#> [1] "w"                          "relative_risk_contribution"
+#> [3] "is_feasible"
 res$w
 #> [1] 0.32715962 0.27110678 0.14480081 0.09766356 0.15926922
-res$risk_contribution
-#> [1] 0.03857039 0.03857039 0.03857039 0.03857039 0.03857039
-c(res$w * (Sigma %*% res$w))
-#> [1] 0.03857039 0.03857039 0.03857039 0.03857039 0.03857039
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
-res$risk_contribution/sum(res$risk_contribution)
+res$relative_risk_contribution
 #> [1] 0.40 0.40 0.10 0.05 0.05
 ```
 
@@ -140,16 +135,16 @@ the following works:
 
 -   J. V. de M. Cardoso and D. P. Palomar (2019). riskParityPortfolio:
     Design of Risk Parity Portfolios. R package version 0.1.2.
-    <a href="https://CRAN.R-project.org/package=riskParityPortfolio" class="uri">https://CRAN.R-project.org/package=riskParityPortfolio</a>
+    <https://CRAN.R-project.org/package=riskParityPortfolio>
 -   Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex
     Optimization Methods for Risk Parity Portfolio Design. *IEEE Trans.
     on Signal Processing*, vol. 63, no. 19, pp. 5285-5300.
-    <a href="https://doi.org/10.1109/TSP.2015.2452219" class="uri">https://doi.org/10.1109/TSP.2015.2452219</a>
+    <https://doi.org/10.1109/TSP.2015.2452219>
 -   F. Spinu (2013). An Algorithm for Computing Risk Parity Weights.
-    <a href="https://dx.doi.org/10.2139/ssrn.2297383" class="uri">https://dx.doi.org/10.2139/ssrn.2297383</a>
+    <https://dx.doi.org/10.2139/ssrn.2297383>
 -   T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast
     algorithm for computing High-dimensional risk parity portfolios.
-    <a href="https://arxiv.org/pdf/1311.4057.pdf" class="uri">https://arxiv.org/pdf/1311.4057.pdf</a>
+    <https://arxiv.org/pdf/1311.4057.pdf>
 
 Contributing
 ------------
