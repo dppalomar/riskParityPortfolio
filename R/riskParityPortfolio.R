@@ -449,7 +449,11 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   if ((!is_Dmat_null) && is_dvec_null) stop("Matrix Dmat has been given, but vector dvec is NULL.")
   if (is_Dmat_null && (!is_dvec_null)) stop("Vector dvec has been given, but matrix Dmat is NULL.")
   # default values
-  if (is.null(b)) b <- rep(1/N, N)
+  if (is.null(b))
+    b <- rep(1/N, N)
+  else if (sum(b) != 1)
+    warning("Budget vector b does not sum up to 1.")
+
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
   if (length(w_lb) == 1) w_lb <- rep(w_lb, N)
   has_only_equality_constraints <- all(w_lb == (-Inf), w_ub == Inf)
