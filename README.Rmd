@@ -1,10 +1,10 @@
 ---
 output:
-  md_document:
-    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true  
+  md_document:
+    variant: markdown_github
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -129,7 +129,7 @@ For more detailed information, please check the
 If you find this package useful in your research, please consider citing the following works:
 
 - J. V. de M. Cardoso and D. P. Palomar (2019). riskParityPortfolio:
-  Design of Risk Parity Portfolios. R package version 0.1.2.
+  Design of Risk Parity Portfolios. R package version 0.2.0.
   <https://CRAN.R-project.org/package=riskParityPortfolio>
 - Y. Feng, and D. P. Palomar (2015). SCRIP: Successive Convex Optimization Methods for
   Risk Parity Portfolio Design. _IEEE Trans. on Signal Processing_, vol. 63, no. 19,
@@ -149,8 +149,9 @@ Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [Git
 
 README file: [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md).
 
-Vignettes: [CRAN-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html) and
-[R/Finance 2019 slides](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf).
+Vignettes: [CRAN-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
+[slides R/Finance 2019](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf), and
+[slides RPP - Convex Optimization Course (HKUST)](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/slides-ConvexOptimizationCourseHKUST.pdf).
 
 
 ## Disclaimer
