@@ -31,7 +31,7 @@ riskParityPortfolioSCA <- function(Sigma, w0, b = rep(1/nrow(Sigma), nrow(Sigma)
                                                    "rc-over-b vs theta"),
                                    theta0 = NULL, gamma = .9, zeta = 1e-7,
                                    tau = NULL, maxiter = 1000, ftol = 1e-8, wtol = .5e-6,
-                                   use_qp_solver = FALSE) {
+                                   use_qp_solver = TRUE) {
   N <- nrow(Sigma)
   formulation <- match.arg(formulation)
   # define boolean cases for easier reading of code
@@ -361,7 +361,7 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'        \code{"alabama"} or \code{"slsqp"}. If \code{TRUE} (default value), analytical gradients of the
 #'        objective function will be used (strongly recommended to achieve faster results).
 #' @param use_qp_solver Whether or not to use the general QP solver from
-#'        quadprog to solve each iteration of the SCA algorithm. Default is FALSE.
+#'        quadprog to solve each iteration of the SCA algorithm. Default is TRUE.
 #' @return A list containing possibly the following elements:
 #' \item{\code{w}}{Optimal portfolio vector.}
 #' \item{\code{relative_risk_contribution}}{The relative risk contribution of every asset.}
@@ -425,7 +425,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
                                 maxiter = 1000, ftol = 1e-8, wtol = .5e-6,
-                                use_gradient = TRUE, use_qp_solver = FALSE) {
+                                use_gradient = TRUE, use_qp_solver = TRUE) {
   N <- nrow(Sigma)
   stocks_names <- colnames(Sigma)
   # check that constraints are consistent

@@ -10,7 +10,7 @@ riskParityPortfolio(Sigma, b = NULL, mu = NULL, lmd_mu = 0,
   "cyclical-roncalli", "newton"), method = c("sca", "alabama", "slsqp"),
   formulation = NULL, w0 = NULL, theta0 = NULL, gamma = 0.9,
   zeta = 1e-07, tau = NULL, maxiter = 1000, ftol = 1e-08,
-  wtol = 5e-07, use_gradient = TRUE, use_qp_solver = FALSE)
+  wtol = 5e-07, use_gradient = TRUE, use_qp_solver = TRUE)
 }
 \arguments{
 \item{Sigma}{Covariance or correlation matrix (this is the only mandatory argument).}
@@ -84,7 +84,7 @@ the optimum solution for a fixed vector of portfolio weights will be used.}
 objective function will be used (strongly recommended to achieve faster results).}
 
 \item{use_qp_solver}{Whether or not to use the general QP solver from
-quadprog to solve each iteration of the SCA algorithm. Default is FALSE.}
+quadprog to solve each iteration of the SCA algorithm. Default is TRUE.}
 }
 \value{
 A list containing possibly the following elements:
