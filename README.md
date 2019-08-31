@@ -1,17 +1,3 @@
----
-output:
-  html_document:
-    variant: markdown_github
-    keep_md: true  
-  md_document:
-    variant: markdown_github
----
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
-
-
 # riskParityPortfolio
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
@@ -107,14 +93,15 @@ Sigma <- cov(V)
 # risk parity portfolio
 res <- riskParityPortfolio(Sigma)
 names(res)
-#> [1] "w"                 "risk_contribution"
+#> [1] "w"                          "relative_risk_contribution"
+#> [3] "is_feasible"
 res$w
 #> [1] 0.32715962 0.27110678 0.14480081 0.09766356 0.15926922
 
 # risk budggeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$relative_risk_contribution
-#> NULL
+#> [1] 0.40 0.40 0.10 0.05 0.05
 ```
 
 ## Documentation
