@@ -404,7 +404,7 @@ Dmat[2, ] <- c(1, -1, 0, 0, 1, -1, 0, 0)
 dvec <- c(-0.30, -0.05)
 
 # design portfolio
-rpp <- riskParityPortfolio(Sigma, method = "sca", Dmat = Dmat, dvec = dvec)
+rpp <- riskParityPortfolio(Sigma, Dmat = Dmat, dvec = dvec)
 # plot portfolio weights
 barplotPortfolioRisk(rpp$w, Sigma)
 ```
