@@ -12,11 +12,4 @@ RiskParityPortfolio_cache/
 RiskParityPortfolio_files/
 src/*.so
 src/*.o
-python/__pycache__
-python/build
-python/dist
-python/var
-python/riskparityportfolio.egg-info
-python/*.so
-python/.cache
-python/.coverage
+*.dylib
