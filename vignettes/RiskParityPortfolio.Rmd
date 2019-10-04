@@ -2,7 +2,7 @@
 title: "Fast Design of Risk Parity Portfolios"
 author: |
   | Zé Vinícius and Daniel P. Palomar
-  | Hong Kong University of Science and Technology (HKUST)
+  | The Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
   prettydoc::html_pretty:
