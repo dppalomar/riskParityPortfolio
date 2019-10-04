@@ -422,14 +422,13 @@ In [@souza2019], the author showed how to build a risk parity portfolio for FAAN
 attempt to replicate their backtest results, but using the package
 [portfolioBacktest](https://github.com/dppalomar/portfolioBacktest) instead.
 
-```{r, message = FALSE}
+```{r, message = FALSE, fig.width=7, fig.height=4}
 library(portfolioBacktest)
 library(riskParityPortfolio)
 
 # download price data
 faang_data <- stockDataDownload(c("GOOG", "NFLX", "AAPL", "AMZN", "FB"),
-                                from = "2014-01-01", to = "2019-06-30",
-                                local_file_path = NULL)
+                                from = "2014-01-01", to = "2019-06-30")
 
 # define portfolios to be backtested
 # risk parity portfolio
@@ -453,10 +452,21 @@ max_sharpe_ratio <- function(dataset) {
     return(as.vector(result$getValue(weights)/sum(result$getValue(weights))))
 }
 
+library(fPortfolio)
+fPortfolio_tangency <- function(dataset) {
+    prices <- dataset$adjusted
+    log_returns <- diff(log(prices))[-1]
+    res <- tangencyPortfolio(as.timeSeries(log_returns), constraints = "LongOnly")    
+    return(getWeights(res))
+}
+
+
 # call portfolioBacktest and benchmark against the uniform (1/N) portfolio
-bt <- portfolioBacktest(list("risk parity" = riskparity, "tangency" = max_sharpe_ratio),
-                        list(faang_data), optimize_every = 60, rebalance_every = 60,
-                        benchmark = 'uniform')
+bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = riskparity, 
+                                                "tangency"    = max_sharpe_ratio,
+                                                "tangency-fPortfolio" = fPortfolio_tangency),
+                                           list(faang_data), optimize_every = 60, rebalance_every = 60,
+                                           benchmark = "uniform")
 
 # check performance summary
 backtestSummary(bt)$performance
