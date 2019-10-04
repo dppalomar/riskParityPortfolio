@@ -1,8 +1,0 @@
-setup.cfg
-riskparityportfolio.egg-info/PKG-INFO
-riskparityportfolio.egg-info/SOURCES.txt
-riskparityportfolio.egg-info/dependency_links.txt
-riskparityportfolio.egg-info/not-zip-safe
-riskparityportfolio.egg-info/requires.txt
-riskparityportfolio.egg-info/top_level.txt
-src/riskparityportfolio.cpp
