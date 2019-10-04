@@ -306,7 +306,7 @@ for (lmd_mu in lmd_sweep) {
   risk_concentration <- c(risk_concentration, rpp$risk_concentration)
 }
 
-ggplot(data.frame(risk_concentration, mean_return), 
+ggplot(data.frame(risk_concentration, mean_return),
        aes(x = risk_concentration, y = mean_return)) +
   geom_line() + geom_point() +
   labs(title = "Expected Return vs Risk Concentration",
@@ -345,7 +345,7 @@ for (lmd_var in lmd_sweep) {
 }
 volatility <- sqrt(variance)
 
-ggplot(data.frame(risk_concentration, volatility), 
+ggplot(data.frame(risk_concentration, volatility),
        aes(x = risk_concentration, y = volatility)) +
   geom_line() + geom_point() +
   labs(title = "Volatility vs Risk Concentration",
@@ -415,6 +415,67 @@ print(Dmat %*% rpp$w)
 
 The results obtained by our implementation agree with those reported by [@RichardRoncalli2019].
 
+# A pratical example using FAANG price data
+
+In [@souza2019], the author showed how to build a risk parity portfolio for FAANG companies
+(Facebook, Apple, Amazon, Netflix, and Google) using **riskParityPortfolio**.  Here, we will
+attempt to replicate their backtest results, but using the package
+[portfolioBacktest](https://github.com/dppalomar/portfolioBacktest) instead.
+
+```{r, message = FALSE}
+library(portfolioBacktest)
+library(riskParityPortfolio)
+
+# download price data
+faang_data <- stockDataDownload(c("GOOG", "NFLX", "AAPL", "AMZN", "FB"),
+                                from = "2014-01-01", to = "2019-06-30",
+                                local_file_path = NULL)
+
+# define portfolios to be backtested
+# risk parity portfolio
+riskparity <- function(dataset) {
+  prices <- dataset$adjusted
+  log_returns <- diff(log(prices))[-1]
+  return(riskParityPortfolio(cov(log_returns))$w)
+}
+
+# tangency portfolio (maximum sharpe ratio)
+max_sharpe_ratio <- function(dataset) {
+    prices <- dataset$adjusted
+    log_returns <- diff(log(prices))[-1]
+    Sigma <- cov(log_returns)
+    mu <- colMeans(log_returns)
+    weights <- CVXR::Variable(nrow(Sigma))
+    constraints <- list(t(mu) %*% weights == 1, weights >= 0)
+    problem <- CVXR::Problem(CVXR::Minimize(CVXR::quad_form(weights, Sigma)),
+                             constraints = constraints)
+    result <- solve(problem)
+    return(as.vector(result$getValue(weights)/sum(result$getValue(weights))))
+}
+
+# call portfolioBacktest and benchmark against the uniform (1/N) portfolio
+bt <- portfolioBacktest(list("risk parity" = riskparity, "tangency" = max_sharpe_ratio),
+                        list(faang_data), optimize_every = 60, rebalance_every = 60,
+                        benchmark = 'uniform')
+
+# check performance summary
+backtestSummary(bt)$performance
+
+# plot cumulative returns chart
+backtestChartCumReturns(bt)
+```
+```{r, fig.width=7, fig.height=3}
+# plot max drawdown chart
+backtestChartDrawdown(bt)
+```
+```{r, fig.width=7, fig.height=3}
+# plot assets exposures over time
+backtestChartStackedBar(bt, portfolio = names(bt[1]), legend = TRUE)
+backtestChartStackedBar(bt, portfolio = names(bt[2]), legend = TRUE)
+```
+
+Indeed, the charts are quite similar to those reported in [@souza2019].
+
 
 # Comparison with other Packages
 Others R packages with the goal of designing risk parity portfolios do exist,
@@ -439,7 +500,7 @@ w0 <- rep(1/N, N)
 # compute risk parity portfolios using different methods
 rpp <- riskParityPortfolio(Sigma, w0 = w0, formulation = "rc-double-index")
 fincov_w <- FinCovRegularization::RiskParity(Sigma)
-riskport_w <- optimalPortfolio(Sigma = Sigma, 
+riskport_w <- optimalPortfolio(Sigma = Sigma,
                                control = list(type = "erc",
                                               constraint = "lo"))
 cccp_w <- c(getx(cccp::rp(w0, Sigma, mrc = w0, optctrl = ctrl(trace = FALSE))))
