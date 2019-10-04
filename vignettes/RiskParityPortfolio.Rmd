@@ -444,12 +444,17 @@ max_sharpe_ratio <- function(dataset) {
     log_returns <- diff(log(prices))[-1]
     Sigma <- cov(log_returns)
     mu <- colMeans(log_returns)
-    weights <- CVXR::Variable(nrow(Sigma))
-    constraints <- list(t(mu) %*% weights == 1, weights >= 0)
-    problem <- CVXR::Problem(CVXR::Minimize(CVXR::quad_form(weights, Sigma)),
-                             constraints = constraints)
-    result <- solve(problem)
-    return(as.vector(result$getValue(weights)/sum(result$getValue(weights))))
+    if (all(mu <= 1e-8)) w <- rep(0, nrow(Sigma))
+    else {
+      weights <- CVXR::Variable(nrow(Sigma))
+      constraints <- list(t(mu) %*% weights == 1, weights >= 0)
+      problem <- CVXR::Problem(CVXR::Minimize(CVXR::quad_form(weights, Sigma)),
+                               constraints = constraints)
+      browser()
+      result <- solve(problem)
+      w <- as.vector(result$getValue(weights)/sum(result$getValue(weights)))
+    }
+    return(w)
 }
 
 library(fPortfolio)
@@ -463,10 +468,10 @@ fPortfolio_tangency <- function(dataset) {
 
 # call portfolioBacktest and benchmark against the uniform (1/N) portfolio
 bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = riskparity, 
-                                                "tangency"    = max_sharpe_ratio,
+                                                #"tangency"    = max_sharpe_ratio,
                                                 "tangency-fPortfolio" = fPortfolio_tangency),
-                                           list(faang_data), optimize_every = 60, rebalance_every = 60,
-                                           benchmark = "uniform")
+                                           list(faang_data), 
+                                           T_rolling_window = 12*20, optimize_every = 3*20, rebalance_every = 3*20)
 
 # check performance summary
 backtestSummary(bt)$performance
