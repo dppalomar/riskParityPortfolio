@@ -4,13 +4,13 @@ citEntry(entry = "Manual",
          title        = "{riskParityPortfolio: Design of Risk Parity Portfolios}",
          author       = personList(as.person("J. V. de M. Cardoso"),
                                    as.person("D. P. Palomar")),
-         note         = "R package version 0.2.0",
+         note         = "R package version 0.2.1",
          year         = "2019",
          url          = "https://CRAN.R-project.org/package=riskParityPortfolio",
          textVersion  =
            paste("J. V. de M. Cardoso and D. P. Palomar (2019).",
                  "riskParityPortfolio: Design of Risk Parity Portfolios.",
-                 "R package version 0.2.0.",
+                 "R package version 0.2.1.",
                  "https://CRAN.R-project.org/package=riskParityPortfolio")
 )
 

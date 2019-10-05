@@ -1,3 +1,8 @@
+## Changes in riskParityPortfolio version 0.2.1 (2019-10-05)
+
+* Revised vignette with new section "A pratical example using FAANG price data"
+
+
 ## Changes in riskParityPortfolio version 0.2.0 (2019-08-31)
 
 * Included the R/Finance 2019 slides as an additional vignette.
