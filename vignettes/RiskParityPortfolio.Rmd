@@ -415,14 +415,15 @@ print(Dmat %*% rpp$w)
 
 The results obtained by our implementation agree with those reported by [@RichardRoncalli2019].
 
-# A pratical example using FAANG price data
 
+# A pratical example using FAANG price data
 In [@souza2019], the author showed how to build a risk parity portfolio for FAANG companies
 (Facebook, Apple, Amazon, Netflix, and Google) using **riskParityPortfolio**.  Here, we will
 attempt to replicate their backtest results, but using the package
 [portfolioBacktest](https://github.com/dppalomar/portfolioBacktest) instead.
 
 ```{r, message = FALSE, fig.width=7, fig.height=4}
+library(xts)
 library(portfolioBacktest)
 library(riskParityPortfolio)
 
@@ -459,10 +460,14 @@ max_sharpe_ratio <- function(dataset) {
 }
 
 # call portfolioBacktest and benchmark against the uniform (1/N) portfolio
-bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = risk_parity,
-                                                "tangency"    = max_sharpe_ratio),
-                                           list(faang_data),
-                                           T_rolling_window = 12*20, optimize_every = 3*20, rebalance_every = 3*20)
+bt <- portfolioBacktest(list("risk parity portfolio" = risk_parity,
+                             "tangency portfolio"    = max_sharpe_ratio),
+                        list(faang_data),
+                        T_rolling_window = 12*20, 
+                        optimize_every = 3*20, rebalance_every = 3*20)
+
+# dates of the designed portfolios
+index(bt$tangency$data1$w_designed)
 
 # check performance summary
 backtestSummary(bt)$performance
@@ -472,7 +477,7 @@ backtestChartCumReturns(bt)
 ```
 
 <!---
-```{r}
+```{r, eval=FALSE}
 library(fPortfolio)
 fPortfolio_tangency <- function(dataset) {
     prices <- dataset$adjusted
@@ -497,11 +502,11 @@ backtestChartDrawdown(bt)
 ```
 ```{r, fig.width=7, fig.height=3}
 # plot assets exposures over time
-backtestChartStackedBar(bt, portfolio = "risk parity", legend = TRUE)
-backtestChartStackedBar(bt, portfolio = "tangency" , legend = TRUE)
+backtestChartStackedBar(bt, portfolio = "risk parity portfolio", legend = TRUE)
+backtestChartStackedBar(bt, portfolio = "tangency portfolio" , legend = TRUE)
 ```
 
-Indeed, the charts are quite similar to those reported in [@souza2019].
+Indeed, the charts are quite similar to those reported in [@souza2019]. Note that the weights evolution of the Markowitz's tangency portfolio is quite sensitive to minute changes in the rebalance/optimization dates, whereas no significant difference is noticed for the risk parity portfolio weights.
 
 
 # Comparison with other Packages
