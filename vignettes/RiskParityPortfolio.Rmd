@@ -428,7 +428,7 @@ library(riskParityPortfolio)
 
 # download price data
 faang_data <- stockDataDownload(c("GOOG", "NFLX", "AAPL", "AMZN", "FB"),
-                                from = "2014-01-01", to = "2019-06-30")
+                                from = "2014-01-01", to = "2019-06-25")
 
 # define portfolios to be backtested
 # risk parity portfolio
@@ -453,7 +453,8 @@ max_sharpe_ratio <- function(dataset) {
     Amat <- cbind(mu, Amat)
     bvec <- c(1, rep(0, N))
     dvec <- rep(0, N)
-    w <- solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = 1)$solution
+    res <- solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = 1)
+    w <- res$solution
     return(w/sum(w))
 }
 
@@ -479,8 +480,16 @@ fPortfolio_tangency <- function(dataset) {
     res <- tangencyPortfolio(as.timeSeries(log_returns), constraints = "LongOnly")
     return(getWeights(res))
 }
+bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = risk_parity,
+                                                "tangency-fPortfolio"    = fPortfolio_tangency,
+                                                "tangency"    = max_sharpe_ratio),
+                                           list(faang_data),
+                                           T_rolling_window = 12*20, optimize_every = 3*20, rebalance_every = 3*20)
+backtestSummary(bt)$performance
+backtestChartStackedBar(bt, portfolio = "tangency-fPortfolio" , legend = TRUE)
 ```
 --->
+
 
 ```{r, fig.width=7, fig.height=3}
 # plot max drawdown chart
