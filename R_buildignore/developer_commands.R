@@ -49,8 +49,8 @@ devtools::build()
 #devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD build . --compact-vignettes=gs+qpdf  
-#R CMD check riskParityPortfolio_0.2.0.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
-#R CMD install riskParityPortfolio_0.2.0.tar.gz
+#R CMD check riskParityPortfolio_0.2.1.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
+#R CMD install riskParityPortfolio_0.2.1.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
 
 
@@ -58,6 +58,6 @@ devtools::build()
 # tools::dependsOnPkgs("riskParityPortfolio")
 # tools::package_dependencies("riskParityPortfolio", reverse = TRUE)
 # devtools::revdep(pkg = "riskParityPortfolio") 
-# revdepcheck::revdep_check()
+# revdepcheck::revdep_check()  #source("https://install-github.me/r-lib/revdepcheck")
 # remotes::package_deps("riskParityPortfolio")
 
