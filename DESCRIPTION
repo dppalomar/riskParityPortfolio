@@ -50,6 +50,7 @@ Suggests:
     numDeriv,
     pagedown,
     prettydoc,
+    quadprog,
     rmarkdown,
     R.rsp,
     testthat,

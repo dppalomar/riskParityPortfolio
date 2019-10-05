@@ -432,62 +432,34 @@ faang_data <- stockDataDownload(c("GOOG", "NFLX", "AAPL", "AMZN", "FB"),
 
 # define portfolios to be backtested
 # risk parity portfolio
-riskparity <- function(dataset) {
+risk_parity <- function(dataset) {
   prices <- dataset$adjusted
   log_returns <- diff(log(prices))[-1]
   return(riskParityPortfolio(cov(log_returns))$w)
 }
 
 # tangency portfolio (maximum sharpe ratio)
+library(quadprog)
 max_sharpe_ratio <- function(dataset) {
     prices <- dataset$adjusted
     log_returns <- diff(log(prices))[-1]
+    N <- ncol(prices)
     Sigma <- cov(log_returns)
     mu <- colMeans(log_returns)
-    if (all(mu <= 1e-8)) w <- rep(0, nrow(Sigma))
-    else {
-      weights <- CVXR::Variable(nrow(Sigma))
-      constraints <- list(t(mu) %*% weights == 1, weights >= 0)
-      problem <- CVXR::Problem(CVXR::Minimize(CVXR::quad_form(weights, Sigma)),
-                               constraints = constraints)
-      result <- solve(problem)
-      w <- as.vector(result$getValue(weights)/sum(result$getValue(weights)))
-    }
-    return(w)
-}
-
-library(quadprog)
-quadprog_tangency <- function(dataset) {
-    prices <- dataset$adjusted
-    log_returns <- diff(log(prices))[-1]
-    Sigma <- cov(log_returns)
-    mu <- colMeans(log_returns)
-    p <- nrow(Sigma)
     if (all(mu <= 1e-8))
-        return(rep(0, p))
+        return(rep(0, N))
     Dmat <- 2 * Sigma
-    Amat <- diag(p)
+    Amat <- diag(N)
     Amat <- cbind(mu, Amat)
-    bvec <- c(1, rep(0, p))
-    dvec <- rep(0, p)
+    bvec <- c(1, rep(0, N))
+    dvec <- rep(0, N)
     w <- solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = 1)$solution
     return(w/sum(w))
 }
 
-
-library(fPortfolio)
-fPortfolio_tangency <- function(dataset) {
-    prices <- dataset$adjusted
-    log_returns <- diff(log(prices))[-1]
-    res <- tangencyPortfolio(as.timeSeries(log_returns), constraints = "LongOnly")
-    return(getWeights(res))
-}
-
-
 # call portfolioBacktest and benchmark against the uniform (1/N) portfolio
-bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = riskparity,
-                                                "tangency"    = max_sharpe_ratio,
-                                                "quadprog-tangency" = quadprog_tangency),
+bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = risk_parity,
+                                                "tangency"    = max_sharpe_ratio),
                                            list(faang_data),
                                            T_rolling_window = 12*20, optimize_every = 3*20, rebalance_every = 3*20)
 
@@ -497,15 +469,27 @@ backtestSummary(bt)$performance
 # plot cumulative returns chart
 backtestChartCumReturns(bt)
 ```
+
+<!---
+```{r}
+library(fPortfolio)
+fPortfolio_tangency <- function(dataset) {
+    prices <- dataset$adjusted
+    log_returns <- diff(log(prices))[-1]
+    res <- tangencyPortfolio(as.timeSeries(log_returns), constraints = "LongOnly")
+    return(getWeights(res))
+}
+```
+--->
+
 ```{r, fig.width=7, fig.height=3}
 # plot max drawdown chart
 backtestChartDrawdown(bt)
 ```
 ```{r, fig.width=7, fig.height=3}
 # plot assets exposures over time
-backtestChartStackedBar(bt, portfolio = names(bt[1]), legend = TRUE)
-backtestChartStackedBar(bt, portfolio = names(bt[2]), legend = TRUE)
-backtestChartStackedBar(bt, portfolio = names(bt[3]), legend = TRUE)
+backtestChartStackedBar(bt, portfolio = "risk parity", legend = TRUE)
+backtestChartStackedBar(bt, portfolio = "tangency" , legend = TRUE)
 ```
 
 Indeed, the charts are quite similar to those reported in [@souza2019].
