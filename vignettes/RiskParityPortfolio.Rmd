@@ -450,27 +450,45 @@ max_sharpe_ratio <- function(dataset) {
       constraints <- list(t(mu) %*% weights == 1, weights >= 0)
       problem <- CVXR::Problem(CVXR::Minimize(CVXR::quad_form(weights, Sigma)),
                                constraints = constraints)
-      browser()
       result <- solve(problem)
       w <- as.vector(result$getValue(weights)/sum(result$getValue(weights)))
     }
     return(w)
 }
 
+library(quadprog)
+quadprog_tangency <- function(dataset) {
+    prices <- dataset$adjusted
+    log_returns <- diff(log(prices))[-1]
+    Sigma <- cov(log_returns)
+    mu <- colMeans(log_returns)
+    p <- nrow(Sigma)
+    if (all(mu <= 1e-8))
+        return(rep(0, p))
+    Dmat <- 2 * Sigma
+    Amat <- diag(p)
+    Amat <- cbind(mu, Amat)
+    bvec <- c(1, rep(0, p))
+    dvec <- rep(0, p)
+    w <- solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = 1)$solution
+    return(w/sum(w))
+}
+
+
 library(fPortfolio)
 fPortfolio_tangency <- function(dataset) {
     prices <- dataset$adjusted
     log_returns <- diff(log(prices))[-1]
-    res <- tangencyPortfolio(as.timeSeries(log_returns), constraints = "LongOnly")    
+    res <- tangencyPortfolio(as.timeSeries(log_returns), constraints = "LongOnly")
     return(getWeights(res))
 }
 
 
 # call portfolioBacktest and benchmark against the uniform (1/N) portfolio
-bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = riskparity, 
-                                                #"tangency"    = max_sharpe_ratio,
-                                                "tangency-fPortfolio" = fPortfolio_tangency),
-                                           list(faang_data), 
+bt <- portfolioBacktest::portfolioBacktest(list("risk parity" = riskparity,
+                                                "tangency"    = max_sharpe_ratio,
+                                                "quadprog-tangency" = quadprog_tangency),
+                                           list(faang_data),
                                            T_rolling_window = 12*20, optimize_every = 3*20, rebalance_every = 3*20)
 
 # check performance summary
@@ -487,6 +505,7 @@ backtestChartDrawdown(bt)
 # plot assets exposures over time
 backtestChartStackedBar(bt, portfolio = names(bt[1]), legend = TRUE)
 backtestChartStackedBar(bt, portfolio = names(bt[2]), legend = TRUE)
+backtestChartStackedBar(bt, portfolio = names(bt[3]), legend = TRUE)
 ```
 
 Indeed, the charts are quite similar to those reported in [@souza2019].
