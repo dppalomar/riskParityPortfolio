@@ -1,4 +1,4 @@
-This is version 0.2.1 (2019-10-05) in CRAN (package also available in GitHub).
+This is version 0.2.1 (2019-10-07) in CRAN (package also available in GitHub).
 
 ---
 
