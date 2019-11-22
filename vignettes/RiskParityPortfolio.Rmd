@@ -459,11 +459,11 @@ max_sharpe_ratio <- function(dataset) {
     return(w/sum(w))
 }
 
-# call portfolioBacktest and benchmark against the uniform (1/N) portfolio
+# call portfolioBacktest and benchmark against the max. sharpe ratio portfolio
 bt <- portfolioBacktest(list("risk parity portfolio" = risk_parity,
                              "tangency portfolio"    = max_sharpe_ratio),
                         list(faang_data),
-                        T_rolling_window = 12*20, 
+                        T_rolling_window = 12*20,
                         optimize_every = 3*20, rebalance_every = 3*20)
 
 # dates of the designed portfolios
