@@ -568,9 +568,9 @@ b <- rep(1/N, N)
 
 op <- microbenchmark(
           cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
-          riskParityPortfolio = 
+          riskParityPortfolio =
             riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
-          RiskPortfolios = 
+          RiskPortfolios =
             optimalPortfolio(Sigma = Sigma,
                              control = list(type = 'erc', constraint = 'lo')),
           times = 10L)
@@ -660,7 +660,7 @@ Unfortunately, even though these two problems are convex, they do not conform wi
 Nevertheless, there are several simple iterative algorithms that can be used, like the Newton method and the cyclical coordinate descent algorithm.
 
 
-**Newton method**    
+**Newton method**
 The Newton method obtains the iterates based on the gradient $\nabla f$ and the Hessian ${\sf H}$ of the objective function $f(\mathbf{x})$ as follows:
 $$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} - {\sf H}^{-1}(\mathbf{x}^{(k)})\nabla f(\mathbf{x}^{(k)})$$
 
@@ -681,7 +681,7 @@ In practice, one may need to use the backtracking method to properly adjust the 
     \end{array}$$
 
 
-**Cyclical coordinate descent algorithm**    
+**Cyclical coordinate descent algorithm**
 This method simply minimizes in a cyclical manner with respect to each element
 of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\ldots,x_{i-1},0,x_{i+1},\ldots,x_N]^T$),
 while helding the other elements fixed.
