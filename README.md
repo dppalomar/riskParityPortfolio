@@ -134,8 +134,9 @@ README file: [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/bl
 
 Vignettes: [CRAN-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
 [slides R/Finance 2019](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf),
-[slides RPP - Convex Optimization Course (HKUST)](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/slides-ConvexOptimizationCourseHKUST.pdf), and
-[slides HKML meetup 2020](https://speakerdeck.com/mirca/breaking-down-risk-parity-portfolios-a-practical-open-source-implementation).
+[slides RPP - Convex Optimization Course (HKUST)](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/slides-ConvexOptimizationCourseHKUST.pdf),
+[slides HKML meetup 2020](https://speakerdeck.com/mirca/breaking-down-risk-parity-portfolios-a-practical-open-source-implementation), and
+[tutorial - Data-driven Portfolio Optimization Course (HKUST)](https://www.youtube.com/watch?v=xb1Xxf5LQks)
 
 
 ## Disclaimer
