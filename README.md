@@ -98,7 +98,7 @@ names(res)
 res$w
 #> [1] 0.32715962 0.27110678 0.14480081 0.09766356 0.15926922
 
-# risk budggeting portfolio
+# risk budgeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$relative_risk_contribution
 #> [1] 0.40 0.40 0.10 0.05 0.05
