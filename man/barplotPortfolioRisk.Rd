@@ -4,8 +4,7 @@
 \alias{barplotPortfolioRisk}
 \title{Create portfolio barplots with the capital allocation and the risk allocation}
 \usage{
-barplotPortfolioRisk(w, Sigma, type = c("ggplot2", "simple"),
-  colors = NULL)
+barplotPortfolioRisk(w, Sigma, type = c("ggplot2", "simple"), colors = NULL)
 }
 \arguments{
 \item{w}{Vector or matrix containing the portfolio(s) weights. 

@@ -14,20 +14,17 @@ package?riskParityPortfolio
 ?riskParityPortfolio
 citation("riskParityPortfolio")
 vignette(package = "riskParityPortfolio")
-
+#tools::showNonASCIIfile("R/riskParityPortfolio.R")
 
 
 ##
 ## Developer commands (https://r-pkgs.org/)
 ##
 devtools::load_all()  #or Ctrl-Shift-L
+devtools::document()  #or Ctrl-Shift-L (to generate all documentation via roxygen)
 devtools::install()
 #devtools::install(build_vignettes = TRUE)
 library(riskParityPortfolio)
-
-# Documentation
-devtools::document()  #or Ctrl-Shift-L (to generate all documentation via roxygen)
-?riskParityPortfolio
 
 
 # Code tests (https://codecov.io/gh/mirca/riskParityPortfolio)

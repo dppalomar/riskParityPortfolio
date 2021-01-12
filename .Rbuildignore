@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$
+^LICENSE$
 ^AUTHORS\.md$
 ^README\.Rmd$
 ^README\.html$

@@ -23,7 +23,7 @@ citEntry(entry = "Article",
          volume       = "63",
          number       = "19",
          pages        = "5285--5300",
-         year         = "2018",
+         year         = "2015",
          url          = "https://doi.org/10.1109/TSP.2015.2452219",
          textVersion  =
            paste("Y. Feng and D. P. Palomar (2015).",

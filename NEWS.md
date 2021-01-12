@@ -1,6 +1,8 @@
 ## Changes in riskParityPortfolio version 0.2.1 (2019-10-07)
 
-* A new section "A practical example using FAANG price data" was added to the vignette. This section is inspired by Tharsis Souza's blog post on risk parity: https://towardsdatascience.com/ray-dalio-etf-900edfe64b05
+* A new section "A practical example using FAANG price data" was added to the vignette. 
+  This section is inspired by Tharsis Souza's blog post on risk parity: 
+  https://towardsdatascience.com/ray-dalio-etf-900edfe64b05
 
 
 ## Changes in riskParityPortfolio version 0.2.0 (2019-08-31)
