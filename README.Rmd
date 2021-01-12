@@ -116,7 +116,7 @@ res <- riskParityPortfolio(Sigma)
 names(res)
 res$w
 
-# risk budggeting portfolio
+# risk budgeting portfolio
 res <- riskParityPortfolio(Sigma, b = c(0.4, 0.4, 0.1, 0.05, 0.05))
 res$relative_risk_contribution
 ```
@@ -150,8 +150,10 @@ Package: [CRAN](https://CRAN.R-project.org/package=riskParityPortfolio) and [Git
 README file: [GitHub-readme](https://github.com/dppalomar/riskParityPortfolio/blob/master/README.md).
 
 Vignettes: [CRAN-vignette](https://CRAN.R-project.org/package=riskParityPortfolio/vignettes/RiskParityPortfolio.html),
-[slides R/Finance 2019](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf), and
-[slides RPP - Convex Optimization Course (HKUST)](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/slides-ConvexOptimizationCourseHKUST.pdf).
+[slides R/Finance 2019](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/RFinance2019-slides.pdf),
+[slides RPP - Convex Optimization Course (HKUST)](https://docs.google.com/viewer?url=https://github.com/dppalomar/riskParityPortfolio/raw/master/vignettes/slides-ConvexOptimizationCourseHKUST.pdf),
+[slides HKML meetup 2020](https://speakerdeck.com/mirca/breaking-down-risk-parity-portfolios-a-practical-open-source-implementation), and
+[tutorial - Data-driven Portfolio Optimization Course (HKUST)](https://www.youtube.com/watch?v=xb1Xxf5LQks)
 
 
 ## Disclaimer

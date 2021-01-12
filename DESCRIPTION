@@ -36,8 +36,7 @@ LazyData: true
 LinkingTo:
     Rcpp,
     RcppEigen
-RoxygenNote: 7.0.0
-Depends:
+RoxygenNote: 7.0.2
 Imports:
     alabama,
     Matrix,
