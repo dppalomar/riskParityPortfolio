@@ -1,3 +1,8 @@
+## Changes in riskParityPortfolio version 0.2.2 (2021-05-31)
+
+* Improved initial point + minor fixes to conform with R 4.0.
+
+
 ## Changes in riskParityPortfolio version 0.2.1 (2019-10-07)
 
 * A new section "A practical example using FAANG price data" was added to the vignette. 
