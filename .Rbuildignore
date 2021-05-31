@@ -31,3 +31,4 @@
 ^vignettes/.*\.RData$
 ^vignettes/LinearConstraints\.Rmd$
 ^vignettes/LinearConstraints\.html$
+^.github$
