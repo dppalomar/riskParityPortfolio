@@ -1,7 +1,7 @@
 Package: riskParityPortfolio
 Title: Design of Risk Parity Portfolios
-Version: 0.2.1.9000
-Date: 2019-10-07
+Version: 0.2.2
+Date: 2020-05-31
 Description: Fast design of risk parity portfolios for financial investment.
     The goal of the risk parity portfolio formulation is to equalize or distribute
     the risk contributions of the different assets, which is missing if we simply
@@ -18,7 +18,7 @@ Description: Fast design of risk parity portfolios for financial investment.
     no. 19, pp. 5285-5300. <doi:10.1109/TSP.2015.2452219>.
     F. Spinu (2013), An Algorithm for Computing Risk Parity Weights.
     <doi:10.2139/ssrn.2297383>.
-    T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing 
+    T. Griveau-Billion, J. Richard, and T. Roncalli (2013). A fast algorithm for computing
     High-dimensional risk parity portfolios. <arXiv:1311.4057>.
 Authors@R: c(
   person("Ze", "Vinicius", role = "aut", email = "jvmirca@gmail.com"),
