@@ -3,7 +3,8 @@ context("Constraints")
 # generate a random Sigma
 set.seed(123)
 N <- 10
-V <- matrix(rnorm(10000), N, N)
+T <- 10000
+V <- matrix(rnorm(T), T/N, N)
 Sigma <- cov(V)
 formulations_list <- c("rc-double-index", "rc-over-b-double-index",
                        "rc-over-var vs b", "rc-over-var",
