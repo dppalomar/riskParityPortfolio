@@ -229,7 +229,12 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
                                              maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_spinu(Sigma, b, ftol, maxiter)
   w_Sigmaw <- c(w * (Sigma %*% w))
-  return(list(w = w, relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw)))
+  return(list(
+              w = w,
+              relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw),
+              obj_fun = obj_function_spinu(Sigma, w, b)
+        )
+  )
 }
 
 # minimize ||w - w0||^2
