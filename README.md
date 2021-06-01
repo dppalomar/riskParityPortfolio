@@ -1,3 +1,4 @@
+
 # riskParityPortfolio
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://CRAN.R-project.org/package=riskParityPortfolio)
@@ -23,7 +24,7 @@ The latest stable version of **riskParityPortfolio** is available at https://CRA
 
 The latest development version of **riskParityPortfolio** is available at https://github.com/dppalomar/riskParityPortfolio.
 
-**Check out the documentation here: [https://mirca.github.io/riskParityPortfolio](https://mirca.github.io/riskParityPortfolio).**
+**Check out the documentation here: [https://mirca.github.io/riskParityPortfolio](https://mirca.github.io/riskParityPortfolio/).**
 
 ## Installation
 To install the latest stable version of **riskParityPortfolio** from CRAN, run the following commands in R:
