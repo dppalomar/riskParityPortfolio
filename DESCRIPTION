@@ -1,6 +1,6 @@
 Package: riskParityPortfolio
 Title: Design of Risk Parity Portfolios
-Version: 0.2.2
+Version: 0.2.2.9000
 Date: 2021-05-31
 Description: Fast design of risk parity portfolios for financial investment.
     The goal of the risk parity portfolio formulation is to equalize or distribute
