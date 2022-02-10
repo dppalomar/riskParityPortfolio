@@ -1,17 +1,3 @@
----
-output:
-  html_document:
-    variant: markdown_github
-    keep_md: true  
-  md_document:
-    variant: markdown_github
----
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
-
-
 # riskParityPortfolio
 
 [![codecov](https://codecov.io/gh/mirca/riskParityPortfolio/branch/master/graph/badge.svg?token=NhOMM6MOAv)](https://codecov.io/gh/mirca/riskParityPortfolio)
