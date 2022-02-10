@@ -1,3 +1,16 @@
+---
+output:
+  html_document:
+    variant: markdown_github
+    keep_md: true  
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+
+
 
 # riskParityPortfolio
 
@@ -6,12 +19,6 @@
 [![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)](https://CRAN.R-project.org/package=riskParityPortfolio)
 [![Rcpp](https://img.shields.io/badge/powered%20by-Rcpp-orange.svg?style=flat)](http://www.rcpp.org/)
 
-[![codecov](https://codecov.io/gh/mirca/riskParityPortfolio/branch/master/graph/badge.svg)](https://codecov.io/gh/mirca/riskParityPortfolio)
-[![Travis (.org) branch](https://img.shields.io/travis/mirca/riskParityPortfolio/master.svg?label=travis-ci&style=flat-square)](https://travis-ci.org/mirca/riskParityPortfolio)
-[![Build status](https://img.shields.io/appveyor/ci/mirca/riskParityPortfolio.svg?label=windows&style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/mirca/riskparityportfolio/branch/master)
-[![CircleCI](https://circleci.com/gh/mirca/riskParityPortfolio.svg?style=svg)](https://circleci.com/gh/mirca/riskParityPortfolio)
-[![Docker Build Status](https://img.shields.io/docker/build/mirca/riskparityportfolio.svg)](https://hub.docker.com/r/mirca/riskparityportfolio/)
-[![Build Status](https://dev.azure.com/jvmirca/riskParityPortfolio/_apis/build/status/mirca.riskParityPortfolio?branchName=master)](https://dev.azure.com/jvmirca/riskParityPortfolio/_build/latest?definitionId=1&branchName=master)
 
 **riskParityPortfolio** provides tools to design risk parity portfolios.
 In its simplest form, we consider the convex formulation with a unique solution proposed by
@@ -95,7 +102,7 @@ Sigma <- cov(V)
 res <- riskParityPortfolio(Sigma)
 names(res)
 #> [1] "w"                          "relative_risk_contribution"
-#> [3] "is_feasible"
+#> [3] "obj_fun"                    "is_feasible"
 res$w
 #> [1] 0.32715962 0.27110678 0.14480081 0.09766356 0.15926922
 
