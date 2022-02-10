@@ -32,7 +32,6 @@ URL: https://CRAN.R-project.org/package=riskParityPortfolio,
 BugReports: https://github.com/dppalomar/riskParityPortfolio/issues
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
 LinkingTo:
     Rcpp,
     RcppEigen
@@ -47,7 +46,6 @@ Suggests:
     knitr,
     ggplot2,
     numDeriv,
-    pagedown,
     portfolioBacktest,
     prettydoc,
     rmarkdown,
