@@ -433,7 +433,7 @@ faang_data <- stockDataDownload(c("GOOG", "NFLX", "AAPL", "AMZN", "FB"),
 
 # define portfolios to be backtested
 # risk parity portfolio
-risk_parity <- function(dataset) {
+risk_parity <- function(dataset, w_current) {
   prices <- dataset$adjusted
   log_returns <- diff(log(prices))[-1]
   return(riskParityPortfolio(cov(log_returns))$w)
@@ -441,7 +441,7 @@ risk_parity <- function(dataset) {
 
 # tangency portfolio (maximum sharpe ratio)
 library(quadprog)
-max_sharpe_ratio <- function(dataset) {
+max_sharpe_ratio <- function(dataset, w_current) {
     prices <- dataset$adjusted
     log_returns <- diff(log(prices))[-1]
     N <- ncol(prices)
@@ -463,8 +463,9 @@ max_sharpe_ratio <- function(dataset) {
 bt <- portfolioBacktest(list("risk parity portfolio" = risk_parity,
                              "tangency portfolio"    = max_sharpe_ratio),
                         list(faang_data),
-                        T_rolling_window = 12*20,
-                        optimize_every = 3*20, rebalance_every = 3*20)
+                        lookback = 12*20,
+                        optimize_every = 3*20,
+                        rebalance_every = 3*20)
 
 # dates of the designed portfolios
 index(bt$tangency$data1$w_designed)
@@ -473,7 +474,7 @@ index(bt$tangency$data1$w_designed)
 backtestSummary(bt)$performance
 
 # plot cumulative returns chart
-backtestChartCumReturns(bt)
+backtestChartCumReturn(bt)
 ```
 
 <!---
@@ -569,7 +570,7 @@ b <- rep(1/N, N)
 op <- microbenchmark(
           cccp = rp(b, Sigma, b, optctrl = ctrl(trace = FALSE)),
           riskParityPortfolio =
-            riskParityPortfolio:::risk_parity_portfolio_ccd_spinu(Sigma, b, 1e-6, 50),
+            riskParityPortfolio:::risk_parity_portfolio_ccd_choi(Sigma, b, 1e-6, 50),
           RiskPortfolios =
             optimalPortfolio(Sigma = Sigma,
                              control = list(type = 'erc', constraint = 'lo')),
