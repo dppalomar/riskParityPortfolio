@@ -229,8 +229,7 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
                                              maxiter = 50, ftol = 1e-8) {
   w <- risk_parity_portfolio_ccd_spinu(Sigma, b, ftol, maxiter)
   w_Sigmaw <- c(w * (Sigma %*% w))
-  return(list(
-              w = w,
+  return(list(w = w,
               relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw),
               obj_fun = obj_function_spinu(Sigma, w, b)
         )
@@ -456,7 +455,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
   # default values
   if (is.null(b))
     b <- rep(1/N, N)
-  else if (sum(b) != 1)
+  else if (abs(sum(b) - 1) > 1e-14)
     warning("Budget vector b does not sum up to 1.")
 
   if (length(w_ub) == 1) w_ub <- rep(w_ub, N)
