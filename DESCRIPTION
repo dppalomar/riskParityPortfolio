@@ -35,7 +35,7 @@ Encoding: UTF-8
 LinkingTo:
     Rcpp,
     RcppEigen
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
 Imports:
     alabama,
     Matrix,

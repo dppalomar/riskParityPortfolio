@@ -67,9 +67,9 @@ barplotPortfolioRisk <- function(w, Sigma, type = c("ggplot2", "simple"), colors
          "ggplot2" = {
            if (!requireNamespace("ggplot2", quietly = TRUE)) 
              stop("Please install package \"ggplot2\" or choose another plot type", call. = FALSE)
-           molten_portf_matrix <- rbind(cbind(melt_portf_matrix(w), type = "w"),
+           molten_portf_matrix <- rbind(cbind(melt_portf_matrix(w), type = "portf"),
                                         cbind(melt_portf_matrix(RRC), type = "RRC"))
-           labels <- c(w = "Weight allocation", RRC = "Relative risk contribution")
+           labels <- c(portf = "Weight allocation", RRC = "Relative risk contribution")
            p <- ggplot2::ggplot(molten_portf_matrix, ggplot2::aes_string(x = "stock", y = "value")) + 
              ggplot2::geom_bar(ggplot2::aes_string(fill = "portfolio"), color = "black", stat = "identity", position = "dodge", width = 0.8) +
              ggplot2::facet_wrap(~ type, ncol = 1, scales = "free", labeller = ggplot2::labeller(type = labels)) +
