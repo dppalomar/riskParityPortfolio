@@ -3,6 +3,34 @@
 using namespace Eigen;
 using namespace std;
 
+// cyclical coordinate descent algo by Choi & Chen 2022
+// ref: https://arxiv.org/pdf/2203.00148.pdf
+// [[Rcpp::export]]
+Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::VectorXd& cov,
+                                        const Eigen::VectorXd& b,
+                                        const double tol = 1E-4,
+                                        const unsigned int maxiter = 100) {
+  const unsigned int n = b.size();
+  Eigen::VectorXd a(n);
+  Eigen::VectorXd vol = cov.diagonal().array().sqrt();
+  Eigen::VectorXd invvol = (1 / vol.array()).matrix();
+  Eigen::MatrixXd corr = cov.array().colwise() * invvol.array();
+  corr = corr.array().rowwise() * invvol.transpose().array();
+  Eigen::MatrixXd adj = corr;
+  adj.diagonal().array() = 0;
+  Eigen::VectorXd wk = Eigen::VectorXd::Ones(n);
+  wk = (wk.array() / std::sqrt(corr.sum())).matrix();
+  for (unsigned int k = 0; k < maxiter; ++k) {
+    // compute portfolio weights
+    a = 0.5 * adj * wk;
+    wk = ((a.array() * a.array() + b.array()).sqrt() - a.array()).matrix();
+    if ((wk.array() * (corr * wk).array() - b.array()).abs().maxCoeff() < tol)
+      break;
+  }
+  Eigen::VectorXd w = wk.array() / vol.array();
+  return (w / w.sum()).matrix();
+}
+
 // Cyclical coordinate descent for Spinu's formulation
 // of the risk parity portfolio problem
 // [[Rcpp::export]]

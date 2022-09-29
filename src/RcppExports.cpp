@@ -6,6 +6,25 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// risk_parity_portfolio_ccd_choi
+Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::VectorXd& cov, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
+RcppExport SEXP _riskParityPortfolio_risk_parity_portfolio_ccd_choi(SEXP covSEXP, SEXP bSEXP, SEXP tolSEXP, SEXP maxiterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type cov(covSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type b(bSEXP);
+    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(risk_parity_portfolio_ccd_choi(cov, b, tol, maxiter));
+    return rcpp_result_gen;
+END_RCPP
+}
 // risk_parity_portfolio_ccd_spinu
 Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
 RcppExport SEXP _riskParityPortfolio_risk_parity_portfolio_ccd_spinu(SEXP SigmaSEXP, SEXP bSEXP, SEXP tolSEXP, SEXP maxiterSEXP) {
@@ -143,6 +162,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_riskParityPortfolio_risk_parity_portfolio_ccd_choi", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_ccd_choi, 4},
     {"_riskParityPortfolio_risk_parity_portfolio_ccd_spinu", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_ccd_spinu, 4},
     {"_riskParityPortfolio_risk_parity_portfolio_ccd_roncalli", (DL_FUNC) &_riskParityPortfolio_risk_parity_portfolio_ccd_roncalli, 4},
     {"_riskParityPortfolio_active_risk_parity_portfolio_ccd", (DL_FUNC) &_riskParityPortfolio_active_risk_parity_portfolio_ccd, 7},
