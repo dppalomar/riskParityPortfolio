@@ -237,6 +237,19 @@ riskParityPortfolioCyclicalSpinu <- function(Sigma, b = rep(1/nrow(Sigma), nrow(
   )
 }
 
+
+riskParityPortfolioCyclicalChoi <- function(Sigma, b = rep(1/nrow(Sigma), nrow(Sigma)),
+                                            maxiter = 50, ftol = 1e-8) {
+  w <- risk_parity_portfolio_ccd_choi(Sigma, b, ftol, maxiter)
+  w_Sigmaw <- c(w * (Sigma %*% w))
+  return(list(
+              w = w,
+              relative_risk_contribution = w_Sigmaw / sum(w_Sigmaw),
+              obj_fun = obj_function_spinu(Sigma, w, b)
+        )
+  )
+}
+
 # minimize ||w - w0||^2
 # s.t.     sum(w) = 1
 #          w_lb <= w <= w_ub
@@ -425,7 +438,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                                 w_lb = 0, w_ub = 1,
                                 Cmat = NULL, cvec = NULL,
                                 Dmat = NULL, dvec = NULL,
-                                method_init = c("cyclical-spinu", "cyclical-roncalli", "newton"),
+                                method_init = c("cyclical-spinu", "cyclical-roncalli", "cyclical-choi", "newton"),
                                 method = c("sca", "alabama", "slsqp"),
                                 formulation = NULL, w0 = NULL, theta0 = NULL,
                                 gamma = .9, zeta = 1e-7, tau = NULL,
@@ -522,6 +535,7 @@ riskParityPortfolio <- function(Sigma, b = NULL, mu = NULL,
                         "newton" = riskParityPortfolioNewton(Sigma, b, maxiter, ftol),
                         "cyclical-spinu" = riskParityPortfolioCyclicalSpinu(Sigma, b, maxiter, ftol),
                         "cyclical-roncalli" = riskParityPortfolioCyclicalRoncalli(Sigma, b, maxiter, ftol),
+                        "cyclical-choi" = riskParityPortfolioCyclicalChoi(Sigma, b, maxiter, ftol),
                         stop("method_init ", method_init, " is not supported."))
   } else {  # nonconvex solver
     if (!has_initial_point) {
