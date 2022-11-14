@@ -5,14 +5,13 @@ author: |
   | The Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
-  prettydoc::html_pretty:
-    theme: tactile
-    highlight: vignette
+  html_document:
     toc: yes
-    toc_depth: 2
-  pagedown::html_paged:
-csl: ieee.csl
+    toc_depth: 2    
+csl: apalike.csl
+csl-entry-spacing: 1.2em
 bibliography: refs.bib
+link-citations: yes
 vignette: >
   %\VignetteIndexEntry{Design of Risk Parity Portfolios}
   %\VignetteKeyword{risk parity}
@@ -36,7 +35,7 @@ opts_chunk$set(
 )
 knit_hooks$set(pngquant = hook_pngquant)  # brew install pngquant
 options(width=120)
-# rmarkdown::render("vignettes/RiskParityPortfolio.Rmd", "prettydoc::html_pretty")
+# rmarkdown::render("vignettes/RiskParityPortfolio.Rmd")
 ```
 
 -----------
@@ -44,6 +43,9 @@ options(width=120)
   widely used by practitioners in the financial industry, with the package
   `riskParityPortfolio`, giving a description of the algorithms and
   comparing the performance against existing packages.
+
+\newcommand{\bm}[1]{\boldsymbol{#1}}
+\def\T{{\mkern-2mu\raise-1mu\textsf{T}}}
 
 
 # Quick Start
@@ -96,8 +98,8 @@ rpp_naive <- riskParityPortfolio(Sigma, formulation = "diag")
 
 For a more realistic formulation including the expected return in the objective and box constraints:
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(\dfrac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}}{b_i}-\dfrac{w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}}{b_j}\right)^{2} \color{blue}{- \lambda \;\mathbf{w}^T\boldsymbol{\mu}}\\
-\textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1, \quad\color{blue}{\mathbf{l}\le\mathbf{w}\le\mathbf{u}}.
+\underset{\bm{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(\dfrac{w_{i}\left(\bm{\Sigma}\bm{w}\right)_{i}}{b_i}-\dfrac{w_{j}\left(\bm{\Sigma}\bm{w}\right)_{j}}{b_j}\right)^{2} \color{blue}{- \lambda \;\bm{w}^\T\bm{\mu}}\\
+\textsf{subject to} & \bm{w} \ge \bm{0}, \quad\bm{1}^\T\bm{w}=1, \quad\color{blue}{\bm{l}\le\bm{w}\le\bm{u}}.
 \end{array}$$
 ```{r, echo=TRUE, size="small"}
 rpp_mu <- riskParityPortfolio(Sigma, formulation = "rc-over-b-double-index",
@@ -117,18 +119,18 @@ barplotPortfolioRisk(w_all, Sigma)
 
 # What is a Risk Parity Portfolio?
 ## Signal model
-Let us denote by $\mathbf{r}_{t}$ the vector of the **returns** of $N$ assets at time $t$ and suppose they follow an i.i.d. distribution
-(which is not a totally accurate assumption, but it is widely adopted, nonetheless) with mean $\boldsymbol{\mu}$ and covariance matrix $\boldsymbol{\Sigma}$.
+Let us denote by $\bm{r}_{t}$ the vector of the **returns** of $N$ assets at time $t$ and suppose they follow an i.i.d. distribution
+(which is not a totally accurate assumption, but it is widely adopted, nonetheless) with mean $\bm{\mu}$ and covariance matrix $\bm{\Sigma}$.
 
-The portfolio vector $\mathbf{w}$ denotes the normalized dollar weights allocated to the $N$ assets, such that $\mathbf{1}^{T}\mathbf{w}=1$, and the
-**portfolio return** is then $r_{t}^{\sf portf} = \mathbf{w}^{T}\mathbf{r}_{t}$,
-with expected return $\mathbf{w}^{T}\boldsymbol{\mu}$ and variance $\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$.
+The portfolio vector $\bm{w}$ denotes the normalized dollar weights allocated to the $N$ assets, such that $\bm{1}^{\T}\bm{w}=1$, and the
+**portfolio return** is then $r_{t}^{\sf portf} = \bm{w}^{\T}\bm{r}_{t}$,
+with expected return $\bm{w}^{\T}\bm{\mu}$ and variance $\bm{w}^{\T}\bm{\Sigma}\bm{w}$.
 
 ## Modern Portfolio Theory
 In 1952, Markowitz proposed in his seminal paper [@Markowitz1952] to find a trade-off between the portfolio expected return and its risk measured by the variance:
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{maximize}} & \mathbf{w}^{T}\boldsymbol{\mu}-\lambda\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
-\textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1,
+\underset{\bm{w}}{\textsf{maximize}} & \bm{w}^{\T}\bm{\mu}-\lambda\bm{w}^{\T}\bm{\Sigma}\bm{w}\\
+\textsf{subject to} & \bm{w} \ge \bm{0}, \quad\bm{1}^\T\bm{w}=1,
 \end{array}$$
 where $\lambda$ is a parameter that controls how risk-averse the investor is.
 
@@ -168,79 +170,79 @@ knitr::include_graphics("figures/EWP-and-RPP-w-and-RRC.png")
 ```
 
 ## Risk parity portfolio
-From Euler's theorem, the volatility of the portfolio $\sigma\left(\mathbf{w}\right)=\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$ can be decomposed as
-$$\sigma\left(\mathbf{w}\right)=\sum_{i=1}^{N}w_i\frac{\partial\sigma}{\partial w_i}
-= \sum_{i=1}^N\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}}{\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}}.$$
+From Euler's theorem, the volatility of the portfolio $\sigma\left(\bm{w}\right)=\sqrt{\bm{w}^{\T}\bm{\Sigma}\bm{w}}$ can be decomposed as
+$$\sigma\left(\bm{w}\right)=\sum_{i=1}^{N}w_i\frac{\partial\sigma}{\partial w_i}
+= \sum_{i=1}^N\frac{w_i\left(\bm{\Sigma}\bm{w}\right)_{i}}{\sqrt{\bm{w}^{\T}\bm{\Sigma}\bm{w}}}.$$
 
-The **risk contribution (RC)** from the $i$th asset to the total risk $\sigma(\mathbf{w})$ is defined as
-$${\sf RC}_i =\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}}$$
-which satisfies $\sum_{i=1}^{N}{\sf RC}_i=\sigma\left(\mathbf{w}\right)$.
+The **risk contribution (RC)** from the $i$th asset to the total risk $\sigma(\bm{w})$ is defined as
+$${\sf RC}_i =\frac{w_i\left(\bm{\Sigma}\bm{w}\right)_i}{\sqrt{\bm{w}^{\T}\bm{\Sigma}\bm{w}}}$$
+which satisfies $\sum_{i=1}^{N}{\sf RC}_i=\sigma\left(\bm{w}\right)$.
 
 The **relative risk contribution (RRC)** is a normalized version:
-$${\sf RRC}_i = \frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$$
+$${\sf RRC}_i = \frac{w_i\left(\bm{\Sigma}\bm{w}\right)_i}{\bm{w}^{\T}\bm{\Sigma}\bm{w}}$$
 so that $\sum_{i=1}^{N}{\sf RRC}_i=1$.
 
 The **risk parity portfolio (RPP)** attemps to “equalize” the risk contributions:
-$${\sf RC}_i = \frac{1}{N}\sigma(\mathbf{w})\quad\text{or}\quad{\sf RRC}_i = \frac{1}{N}.$$
+$${\sf RC}_i = \frac{1}{N}\sigma(\bm{w})\quad\text{or}\quad{\sf RRC}_i = \frac{1}{N}.$$
 
-More generally, the **risk budgeting portfolio (RBP)** attemps to allocate the risk according to the risk profile determined by the weights $\mathbf{b}$ (with $\mathbf{1}^T\mathbf{b}=1$ and $\mathbf{b}\ge \mathbf{0}$):
-$${\sf RC}_i = b_i \sigma(\mathbf{w})\quad\text{or}\quad{\sf RRC}_i = b_i.$$
+More generally, the **risk budgeting portfolio (RBP)** attemps to allocate the risk according to the risk profile determined by the weights $\bm{b}$ (with $\bm{1}^\T\bm{b}=1$ and $\bm{b}\ge \bm{0}$):
+$${\sf RC}_i = b_i \sigma(\bm{w})\quad\text{or}\quad{\sf RRC}_i = b_i.$$
 
-In practice, one can express the condition ${\sf RC}_i = \frac{1}{N}\sigma(\mathbf{w})$ in different equivalent ways such as
-$$w_i(\Sigma \mathbf{w})_{i} = w_j(\Sigma \mathbf{w})_{j}, \quad\forall i, j.$$ The budget condition ${\sf RC}_i = b_i \sigma(\mathbf{w})$ can also be expressed as
-$$w_i (\Sigma \mathbf{w})_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}, \quad\forall i.$$
+In practice, one can express the condition ${\sf RC}_i = \frac{1}{N}\sigma(\bm{w})$ in different equivalent ways such as
+$$w_i(\Sigma \bm{w})_{i} = w_j(\Sigma \bm{w})_{j}, \quad\forall i, j.$$ The budget condition ${\sf RC}_i = b_i \sigma(\bm{w})$ can also be expressed as
+$$w_i (\Sigma \bm{w})_i = b_i \bm{w}^{\T}\Sigma\bm{w}, \quad\forall i.$$
 
 
 # Solving the Risk Parity Portfolio (RPP)
 ## Naive diagonal formulation
-Assuming that the assets are uncorrelated, i.e., that $\boldsymbol{\Sigma}$ is diagonal, and simply using the volatilities $\boldsymbol{\sigma} = \sqrt{{\sf diag(\boldsymbol{\Sigma})}}$, one obtains
-$$\mathbf{w} = \frac{\boldsymbol{\sigma}^{-1}}{\mathbf{1}^T\boldsymbol{\sigma}^{-1}}$$
+Assuming that the assets are uncorrelated, i.e., that $\bm{\Sigma}$ is diagonal, and simply using the volatilities $\bm{\sigma} = \sqrt{{\sf diag(\bm{\Sigma})}}$, one obtains
+$$\bm{w} = \frac{\bm{\sigma}^{-1}}{\bm{1}^\T\bm{\sigma}^{-1}}$$
 or, more generally,
-$$\mathbf{w} = \frac{\sqrt{\mathbf{b}}\odot\boldsymbol{\sigma}^{-1}}{\mathbf{1}^T\left(\sqrt{\mathbf{b}}\odot\boldsymbol{\sigma}^{-1}\right)}.$$
-However, for non-diagonal $\boldsymbol{\Sigma}$ or with other additional constraints or objective function terms, a closed-form solution does not exist and some optimization procedures have to be constructed. The previous diagonal solution can always be used and is called _naive risk budgeting portfolio_.
+$$\bm{w} = \frac{\sqrt{\bm{b}}\odot\bm{\sigma}^{-1}}{\bm{1}^\T\left(\sqrt{\bm{b}}\odot\bm{\sigma}^{-1}\right)}.$$
+However, for non-diagonal $\bm{\Sigma}$ or with other additional constraints or objective function terms, a closed-form solution does not exist and some optimization procedures have to be constructed. The previous diagonal solution can always be used and is called _naive risk budgeting portfolio_.
 
 
 
 ## Vanilla convex formulation
-Suppose we only have the constraints $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$. Then, after the change of variable $\mathbf{x}=\mathbf{w}/\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$, the equations $w_i (\Sigma \mathbf{w})_i = b_i \mathbf{w}^{T}\Sigma\mathbf{w}$ become $x_i\left(\boldsymbol{\Sigma}\mathbf{x}\right)_i = b_i$ or, more compactly in vector form, as
-$$\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$$
-with $\mathbf{x} \ge \mathbf{0}$ and we can always recover the portfolio by normalizing: $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
+Suppose we only have the constraints $\bm{1}^\T\bm{w}=1$ and $\bm{w} \ge \bm{0}$. Then, after the change of variable $\bm{x}=\bm{w}/\sqrt{\bm{w}^{\T}\bm{\Sigma}\bm{w}}$, the equations $w_i (\Sigma \bm{w})_i = b_i \bm{w}^{\T}\Sigma\bm{w}$ become $x_i\left(\bm{\Sigma}\bm{x}\right)_i = b_i$ or, more compactly in vector form, as
+$$\bm{\Sigma}\bm{x} = \bm{b}/\bm{x}$$
+with $\bm{x} \ge \bm{0}$ and we can always recover the portfolio by normalizing: $\bm{w} = \bm{x}/(\bm{1}^\T\bm{x})$.
 
-At this point, one could use a nonlinear multivariate root finder for $\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$. For example, in R we can use the package [rootSolve](https://CRAN.R-project.org/package=rootSolve).
+At this point, one could use a nonlinear multivariate root finder for $\bm{\Sigma}\bm{x} = \bm{b}/\bm{x}$. For example, in R we can use the package [rootSolve](https://CRAN.R-project.org/package=rootSolve).
 
 
 With the goal of designing risk budget portfolios, Spinu proposed in [@Spinu2013] to solve the
 following convex optimization problem:
-$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \sum_{i=1}^{N}b_i\log(x_i),$$
-where the portfolio can be recovered as $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
+$$\underset{\bm{x}\ge\bm{0}}{\textsf{minimize}} \quad \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} - \sum_{i=1}^{N}b_i\log(x_i),$$
+where the portfolio can be recovered as $\bm{w} = \bm{x}/(\bm{1}^\T\bm{x})$.
 
-Indeed, Spinu realized in [@Spinu2013] that precisely the risk budgeting equation $\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$ corresponds to the gradient of the convex function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$ set to zero: 
-$$\nabla f(\mathbf{x}) = \boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}/\mathbf{x} = \mathbf{0}.$$
+Indeed, Spinu realized in [@Spinu2013] that precisely the risk budgeting equation $\bm{\Sigma}\bm{x} = \bm{b}/\bm{x}$ corresponds to the gradient of the convex function $f(\bm{x}) = \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} - \bm{b}^\T\log(\bm{x})$ set to zero: 
+$$\nabla f(\bm{x}) = \bm{\Sigma}\bm{x} - \bm{b}/\bm{x} = \bm{0}.$$
 
 Thus, a convenient way to solve the problem is by solving the following convex optimization problem:
-$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$$
-which has optimality condition $\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$.
+$$\underset{\bm{x}\ge\bm{0}}{\textsf{minimize}} \quad \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} - \bm{b}^\T\log(\bm{x})$$
+which has optimality condition $\bm{\Sigma}\bm{x} = \bm{b}/\bm{x}$.
 
 Such solution can be computed using a general-purpose convex optimization package, but faster algorithms such as the **Newton method** and the **cyclical coordinate descent method**, employed in [@Spinu2013] and [@GriveauRichardRoncalli2013], are implemented in this package. (Yet another convex formulation was proposed in [@KayaLee2012].)
 
 
 
 ## General nonconvex formulation
-The previous methods are based on a convex reformulation of the problem so they are guaranteed to converge to the optimal risk budgeting solution. However, they can only be employed for the simplest risk budgeting formulation with a simplex constraint set (i.e., $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$). They cannot be used if
+The previous methods are based on a convex reformulation of the problem so they are guaranteed to converge to the optimal risk budgeting solution. However, they can only be employed for the simplest risk budgeting formulation with a simplex constraint set (i.e., $\bm{1}^\T\bm{w}=1$ and $\bm{w} \ge \bm{0}$). They cannot be used if
 
 - we have other constraints like allowing shortselling or box constraints: $l_i \le w_i \le u_i$
-- on top of the risk budgeting constraints $w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = b_i \;\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$ we have other objectives like maximizing the expected return $\mathbf{w}^T\boldsymbol{\mu}$ or minimizing the overall variance $\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
+- on top of the risk budgeting constraints $w_i\left(\bm{\Sigma}\bm{w}\right)_i = b_i \;\bm{w}^{\T}\bm{\Sigma}\bm{w}$ we have other objectives like maximizing the expected return $\bm{w}^\T\bm{\mu}$ or minimizing the overall variance $\bm{w}^\T\bm{\Sigma}\bm{w}$.
 
 For those more general cases, we need more sophisticated formulations, which unfortunately are not convex. The idea is to try to achieve equal risk contributions
-${\sf RC}_i = \frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}}$
-by penalizing the differences between the terms $w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}$.
+${\sf RC}_i = \frac{w_i\left(\bm{\Sigma}\bm{w}\right)_i}{\sqrt{\bm{w}^{\T}\bm{\Sigma}\bm{w}}}$
+by penalizing the differences between the terms $w_{i}\left(\bm{\Sigma}\bm{w}\right)_{i}$.
 
 There are many reformulations possible. For illustrative purposes, one such formulation is
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{j}\right)^{2} \color{blue}{- \;F(\mathbf{w})}\\
-\textsf{subject to} & \mathbf{w} \ge \mathbf{0}, \quad\mathbf{1}^T\mathbf{w}=1, \quad\color{blue}{\mathbf{w}\in\cal{W}}
+\underset{\bm{w}}{\textsf{minimize}} & \sum_{i,j=1}^{N}\left(w_{i}\left(\bm{\Sigma}\bm{w}\right)_{i}-w_{j}\left(\bm{\Sigma}\bm{w}\right)_{j}\right)^{2} \color{blue}{- \;F(\bm{w})}\\
+\textsf{subject to} & \bm{w} \ge \bm{0}, \quad\bm{1}^\T\bm{w}=1, \quad\color{blue}{\bm{w}\in\cal{W}}
 \end{array}$$
-where $F(\mathbf{w})$ denotes some additional objective function and $\cal{W}$ denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in
+where $F(\bm{w})$ denotes some additional objective function and $\cal{W}$ denotes an arbitrary convex set of constraints. More expressions for the risk concentration terms are listed in
 [Appendix I](#appendix-i---risk-concentration-formulations).
 
 The way to solve this general problem is derived in [@FengPal2015riskparity; @FengPal2016monograph] and is based on a powerful optimization framework named successive convex approximation (SCA) [@ScuFacSonPal2013]. See
@@ -281,11 +283,11 @@ or additional constraints.
 Let us explore, for instance, the effect of including the expected return as an
 additional objective in the optimization problem. The problem can be formulated as
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} &
-R(\mathbf{w}) - \lambda_{\mu} \mathbf{w}^{T}\boldsymbol{\mu}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
+\underset{\bm{w}}{\textsf{minimize}} &
+R(\bm{w}) - \lambda_{\mu} \bm{w}^{\T}\bm{\mu}\\
+\textsf{subject to} & \bm{1}^\T\bm{w}=1, \bm{w} \ge \bm{0},
 \end{array}$$
-where $R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}$ is the risk concentration function or risk parity function, $\mathbf{w}^{T}\boldsymbol{\mu}$ is the expected return, and $\lambda_{\mu}$ is a trade-off parameter.
+where $R(\bm{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\bm{\Sigma}\bm{w}\right)_i - b_i\bm{w}^\T\bm{\Sigma}\bm{w}\right)^{2}$ is the risk concentration function or risk parity function, $\bm{w}^{\T}\bm{\mu}$ is the expected return, and $\lambda_{\mu}$ is a trade-off parameter.
 
 ```{r, message=FALSE, cache=TRUE}
 library(ggplot2)
@@ -309,18 +311,17 @@ for (lmd_mu in lmd_sweep) {
 ggplot(data.frame(risk_concentration, mean_return),
        aes(x = risk_concentration, y = mean_return)) +
   geom_line() + geom_point() +
-  labs(title = "Expected Return vs Risk Concentration",
-       x = "Risk Concentration", y = "Expected Return")
+  labs(title = "Expected Return vs Risk Concentration", x = "Risk Concentration", y = "Expected Return")
 ```
 
 
 ## RPP with additional variance term
-Similarly, the `riskParityPortfolio` package allows us to include the variance $\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}$
+Similarly, the `riskParityPortfolio` package allows us to include the variance $\bm{w}^{\T}\bm{\Sigma}\bm{w}$
 as an objective term:
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} &
-R(\mathbf{w}) + \lambda_{\sf var} \mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}\\
-\textsf{subject to} & \mathbf{1}^T\mathbf{w}=1, \mathbf{w} \ge \mathbf{0},
+\underset{\bm{w}}{\textsf{minimize}} &
+R(\bm{w}) + \lambda_{\sf var} \bm{w}^{\T}\bm{\Sigma}\bm{w}\\
+\textsf{subject to} & \bm{1}^\T\bm{w}=1, \bm{w} \ge \bm{0},
 \end{array}$$
 where $\lambda_{\sf var}$ is a trade-off parameter.
 
@@ -348,8 +349,7 @@ volatility <- sqrt(variance)
 ggplot(data.frame(risk_concentration, volatility),
        aes(x = risk_concentration, y = volatility)) +
   geom_line() + geom_point() +
-  labs(title = "Volatility vs Risk Concentration",
-       x = "Risk Concentration", y = "Volatility")
+  labs(title = "Volatility vs Risk Concentration", x = "Risk Concentration", y = "Volatility")
 ```
 
 
@@ -357,9 +357,9 @@ ggplot(data.frame(risk_concentration, volatility),
 In version 2.0, we added support for general linear constraints, i.e., `riskParityPortfolio` is now able
 to solve the following problem:
 $$\begin{array}{ll}
-\underset{\mathbf{w}}{\textsf{minimize}} &
-R(\mathbf{w}) + \lambda F(\mathbf{w})\\
-\textsf{subject to} & \mathbf{C}\mathbf{w} = \mathbf{c},~~\mathbf{D}\mathbf{w} \leq \mathbf{d}.
+\underset{\bm{w}}{\textsf{minimize}} &
+R(\bm{w}) + \lambda F(\bm{w})\\
+\textsf{subject to} & \bm{C}\bm{w} = \bm{c},~~\bm{D}\bm{w} \leq \bm{d}.
 \end{array}$$
 
 Users interested in the details of the algorithm used to solve this problems
@@ -372,7 +372,7 @@ that, after imposing general linear constraints, the property of equal risk cont
 is unlikely to be preserved among the assets affected by the constraints.
 
 Let's check out a numerical example from [@RichardRoncalli2019]. Consider we have a universe of
-eight assets and we would like to design a risk parity portfolio $\mathbf{w}$ satisfying the
+eight assets and we would like to design a risk parity portfolio $\bm{w}$ satisfying the
 following constraints:
 $$ w_5 + w_6 + w_7 + w_8 \geq 30\%, $$ $$ w_2 + w_6 \geq w_1 + w_5 + 5\%, $$ and $$ \sum_i w_i = 100\% . $$
 
@@ -584,9 +584,9 @@ the interior-point method used by `cccp` and the formulation used by `RiskPortfo
 
 # Appendix I - Risk concentration formulations {-}
 In general, with different constraints and objective functions, exact parity cannot be achieved and one needs to define a risk term to be
-minimized: $R(\mathbf{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\mathbf{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}$.
+minimized: $R(\bm{w}) = \sum_{i=1}^{N}\left(g_{i}\left(\bm{w}\right)\right)^{2}$, where the $g_{i}$'s denote the different risk contribution errors, e.g., $g_{i} = w_{i}\left(\bm{\Sigma}\bm{w}\right)_i - b_i\bm{w}^\T\bm{\Sigma}\bm{w}$.
 A double-index summation can also be used:
-$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\mathbf{w}\right)\right)^{2}$.
+$R(\bm{w}) = \sum_{i,j=1}^{N}\left(g_{ij}\left(\bm{w}\right)\right)^{2}$.
 
 We consider the risk formulations as presented in [@FengPal2015riskparity; @FengPal2016monograph].
 They can be passed through the keyword argument `formulation` in the function
@@ -595,41 +595,41 @@ They can be passed through the keyword argument `formulation` in the function
 The name of the formulations and their mathematical expressions are presented as follows.
 
 **Formulation "rc-double-index"**:
-$$R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_{i}-w_{j}\left(\boldsymbol{\Sigma}\mathbf{w    }\right)_{j}\right)^{2}$$
+$$R(\bm{w}) = \sum_{i,j=1}^{N}\left(w_{i}\left(\bm{\Sigma}\bm{w}\right)_{i}-w_{j}\left(\bm{\Sigma}\bm{w    }\right)_{j}\right)^{2}$$
 
 **Formulation "rc-vs-theta"**:
 $$
-R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - \theta \right)^{2}
+R(\bm{w},\theta) = \sum_{i=1}^{N}\left(w_{i}\left(\bm{\Sigma}\bm{w}\right)_i - \theta \right)^{2}
 $$
 
 **Formulation "rc-over-var-vs-b"**:
 $$
-R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}-b_i\right)^{2}
+R(\bm{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\bm{\Sigma}\bm{w}\right)_i}{\bm{w}^\T\bm{\Sigma}\bm{w}}-b_i\right)^{2}
 $$
 
 **Formulation "rc-over-b double-index"**:
 $$
-R(\mathbf{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \frac{w_j\left(\boldsymbol{\Sigma}\mathbf{w}\right)_j}{b_j}\right)^{2}
+R(\bm{w}) = \sum_{i,j=1}^{N}\left(\frac{w_i\left(\bm{\Sigma}\bm{w}\right)_i}{b_i} - \frac{w_j\left(\bm{\Sigma}\bm{w}\right)_j}{b_j}\right)^{2}
 $$
 
 **Formulation "rc-vs-b-times-var"**:
 $$
-R(\mathbf{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i - b_i\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}\right)^{2}
+R(\bm{w}) = \sum_{i=1}^{N}\left(w_{i}\left(\bm{\Sigma}\bm{w}\right)_i - b_i\bm{w}^\T\bm{\Sigma}\bm{w}\right)^{2}
 $$
 
 **Formulation "rc-over-sd vs b-times-sd"**:
 $$
-R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}}-b_i\sqrt{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
+R(\bm{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\bm{\Sigma}\bm{w}\right)_i}{\sqrt{\bm{w}^\T\bm{\Sigma}\bm{w}}}-b_i\sqrt{\bm{w}^\T\bm{\Sigma}\bm{w}}\right)^{2}
 $$
 
 **Formulation "rc-over-b vs theta"**:
 $$
-R(\mathbf{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{b_i} - \theta \right)^{2}
+R(\bm{w},\theta) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\bm{\Sigma}\bm{w}\right)_i}{b_i} - \theta \right)^{2}
 $$
 
 **Formulation "rc-over-var"**:
 $$
-R(\mathbf{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i}{\mathbf{w}^T\boldsymbol{\Sigma}\mathbf{w}}\right)^{2}
+R(\bm{w}) = \sum_{i=1}^{N}\left(\frac{w_{i}\left(\bm{\Sigma}\bm{w}\right)_i}{\bm{w}^\T\bm{\Sigma}\bm{w}}\right)^{2}
 $$
 
 
@@ -642,19 +642,19 @@ additional objective terms and constraints.
 We now describe the implementation of the Newton method and the cyclical (coordinate) descent algorithm for the vanilla risk parity formulations presented in [@Spinu2013] and [@GriveauRichardRoncalli2013].
 
 Consider the risk budgeting equations
-$$w_i\left(\boldsymbol{\Sigma}\mathbf{w}\right)_i = b_i \;\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}, \qquad i=1,\ldots,N$$
-with $\mathbf{1}^T\mathbf{w}=1$ and $\mathbf{w} \ge \mathbf{0}$.
+$$w_i\left(\bm{\Sigma}\bm{w}\right)_i = b_i \;\bm{w}^{\T}\bm{\Sigma}\bm{w}, \qquad i=1,\ldots,N$$
+with $\bm{1}^\T\bm{w}=1$ and $\bm{w} \ge \bm{0}$.
 
-If we define $\mathbf{x}=\mathbf{w}/\sqrt{\mathbf{w}^{T}\boldsymbol{\Sigma}\mathbf{w}}$, then we can rewrite the risk budgeting equations compactly as
-$$\boldsymbol{\Sigma}\mathbf{x} = \mathbf{b}/\mathbf{x}$$ with $\mathbf{x} \ge \mathbf{0}$ and we can always recover the portfolio by normalizing: $\mathbf{w} = \mathbf{x}/(\mathbf{1}^T\mathbf{x})$.
+If we define $\bm{x}=\bm{w}/\sqrt{\bm{w}^{\T}\bm{\Sigma}\bm{w}}$, then we can rewrite the risk budgeting equations compactly as
+$$\bm{\Sigma}\bm{x} = \bm{b}/\bm{x}$$ with $\bm{x} \ge \bm{0}$ and we can always recover the portfolio by normalizing: $\bm{w} = \bm{x}/(\bm{1}^\T\bm{x})$.
 
-Spinu [@Spinu2013] realized that precisely that equation corresponds to the gradient of the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x})$ set to zero, which is the optimality condition for its minimization.
+Spinu [@Spinu2013] realized that precisely that equation corresponds to the gradient of the function $f(\bm{x}) = \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} - \bm{b}^\T\log(\bm{x})$ set to zero, which is the optimality condition for its minimization.
 
 So we can finally formulate the risk budgeting problem as the following convex optimization problem:
-$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}^T\log(\mathbf{x}).$$
+$$\underset{\bm{x}\ge\bm{0}}{\textsf{minimize}} \quad \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} - \bm{b}^\T\log(\bm{x}).$$
 
 Roncalli et al. [@GriveauRichardRoncalli2013] proposed a slightly different formulation (also convex):
-$$\underset{\mathbf{x}\ge\mathbf{0}}{\textsf{minimize}} \quad \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x}).$$
+$$\underset{\bm{x}\ge\bm{0}}{\textsf{minimize}} \quad \sqrt{\bm{x}^{\T}\bm{\Sigma}\bm{x}} - \bm{b}^\T\log(\bm{x}).$$
 
 Unfortunately, even though these two problems are convex, they do not conform with the typical classes that most solvers embrace (i.e., LP, QP, QCQP, SOCP, SDP, GP, etc.).
 
@@ -662,46 +662,46 @@ Nevertheless, there are several simple iterative algorithms that can be used, li
 
 
 **Newton method**
-The Newton method obtains the iterates based on the gradient $\nabla f$ and the Hessian ${\sf H}$ of the objective function $f(\mathbf{x})$ as follows:
-$$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} - {\sf H}^{-1}(\mathbf{x}^{(k)})\nabla f(\mathbf{x}^{(k)})$$
+The Newton method obtains the iterates based on the gradient $\nabla f$ and the Hessian ${\sf H}$ of the objective function $f(\bm{x})$ as follows:
+$$\bm{x}^{(k+1)} = \bm{x}^{(k)} - {\sf H}^{-1}(\bm{x}^{(k)})\nabla f(\bm{x}^{(k)})$$
 
 In practice, one may need to use the backtracking method to properly adjust the step size of each iteration [@BoydVandenberghe2004].
 
-* For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} -
-  \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
+* For the function $f(\bm{x}) = \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} -
+  \bm{b}^\T\log(\bm{x})$, the gradient and Hessian are given by
     $$\begin{array}{ll}
-    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x} - \mathbf{b}/\mathbf{x}\\
-    {\sf H}(\mathbf{x}) &= \boldsymbol{\Sigma} + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
+    \nabla f(\bm{x}) &= \bm{\Sigma}\bm{x} - \bm{b}/\bm{x}\\
+    {\sf H}(\bm{x}) &= \bm{\Sigma} + {\sf Diag}(\bm{b}/\bm{x}^2).
     \end{array}$$
 
-* For the function $f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} -
-  \mathbf{b}^T\log(\mathbf{x})$, the gradient and Hessian are given by
+* For the function $f(\bm{x}) = \sqrt{\bm{x}^{\T}\bm{\Sigma}\bm{x}} -
+  \bm{b}^\T\log(\bm{x})$, the gradient and Hessian are given by
     $$\begin{array}{ll}
-    \nabla f(\mathbf{x}) &= \boldsymbol{\Sigma}\mathbf{x}/\sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}/\mathbf{x}\\
-    {\sf H}(\mathbf{x}) &= \left(\boldsymbol{\Sigma} - \boldsymbol{\Sigma}\mathbf{x}\mathbf{x}^T\boldsymbol{\Sigma}/\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}\right) / \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} + {\sf Diag}(\mathbf{b}/\mathbf{x}^2).
+    \nabla f(\bm{x}) &= \bm{\Sigma}\bm{x}/\sqrt{\bm{x}^{\T}\bm{\Sigma}\bm{x}} - \bm{b}/\bm{x}\\
+    {\sf H}(\bm{x}) &= \left(\bm{\Sigma} - \bm{\Sigma}\bm{x}\bm{x}^\T\bm{\Sigma}/\bm{x}^{\T}\bm{\Sigma}\bm{x}\right) / \sqrt{\bm{x}^{\T}\bm{\Sigma}\bm{x}} + {\sf Diag}(\bm{b}/\bm{x}^2).
     \end{array}$$
 
 
 **Cyclical coordinate descent algorithm**
 This method simply minimizes in a cyclical manner with respect to each element
-of the variable $\mathbf{x}$ (denote $\mathbf{x}_{-i}=[x_1,\ldots,x_{i-1},0,x_{i+1},\ldots,x_N]^T$),
+of the variable $\bm{x}$ (denote $\bm{x}_{-i}=[x_1,\ldots,x_{i-1},0,x_{i+1},\ldots,x_N]^\T$),
 while helding the other elements fixed.
 
-* For the function $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x} -
-  \mathbf{b}^T\log(\mathbf{x})$, the minimization w.r.t. $x_i$ is
-    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i}) - b_i\log{x_i}$$
-with gradient $\nabla_i f = x_i\boldsymbol{\Sigma}_{ii} + (\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i}) - b_i/x_i$.
+* For the function $f(\bm{x}) = \frac{1}{2}\bm{x}^{\T}\bm{\Sigma}\bm{x} -
+  \bm{b}^\T\log(\bm{x})$, the minimization w.r.t. $x_i$ is
+    $$\underset{x_i>0}{\textsf{minimize}} \quad \frac{1}{2}x_i^2\bm{\Sigma}_{ii} + x_i(\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i}) - b_i\log{x_i}$$
+with gradient $\nabla_i f = x_i\bm{\Sigma}_{ii} + (\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i}) - b_i/x_i$.
 Setting the gradient to zero gives us the second order equation
-$$x_i^2\boldsymbol{\Sigma}_{ii} + x_i(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i}) - b_i = 0$$
+$$x_i^2\bm{\Sigma}_{ii} + x_i(\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i}) - b_i = 0$$
 with positive solution given by
-$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})^2+
-4\boldsymbol{\Sigma}_{ii} b_i}}{2\boldsymbol{\Sigma}_{ii}}.$$
+$$x_i^\star = \frac{-(\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i})+\sqrt{(\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i})^2+
+4\bm{\Sigma}_{ii} b_i}}{2\bm{\Sigma}_{ii}}.$$
 
 * The derivation for the function
-$f(\mathbf{x}) = \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}} - \mathbf{b}^T\log(\mathbf{x})$
+$f(\bm{x}) = \sqrt{\bm{x}^{\T}\bm{\Sigma}\bm{x}} - \bm{b}^\T\log(\bm{x})$
 follows similarly. The update for $x_i$ is given by
-$$x_i^\star = \frac{-(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})+\sqrt{(\mathbf{x}_{-i}^T\boldsymbol{\Sigma}_{\cdot,i})^2+
-4\boldsymbol{\Sigma}_{ii} b_i \sqrt{\mathbf{x}^{T}\boldsymbol{\Sigma}\mathbf{x}}}}{2\boldsymbol{\Sigma}_{ii}}.$$
+$$x_i^\star = \frac{-(\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i})+\sqrt{(\bm{x}_{-i}^\T\bm{\Sigma}_{\cdot,i})^2+
+4\bm{\Sigma}_{ii} b_i \sqrt{\bm{x}^{\T}\bm{\Sigma}\bm{x}}}}{2\bm{\Sigma}_{ii}}.$$
 
 ## Successive convex approximation algorithm for the modern risk parity formulation
 Many practical formulations deployed to design risk parity portfolios lead to nonconvex problems,
@@ -715,31 +715,31 @@ to highlight that the SCA method always converges to a stationary point.
 
 At the $k$-th iteration, the SCA method aims to solve
 \begin{align}\begin{array}{ll}
-    \underset{\mathbf{w}}{\textsf{minimize}} & \sum_{i=1}^{n}\left(g_i(\mathbf{w}^k) +
-    (\nabla g_i(\mathbf{w}^{k}))^{T}(\mathbf{w} - \mathbf{w}^{k})\right)^2 +
-    \tau ||\mathbf{w} - \mathbf{w}^{k}||^{2}_{2} + \lambda F(\mathbf{w})\\
-\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
+    \underset{\bm{w}}{\textsf{minimize}} & \sum_{i=1}^{n}\left(g_i(\bm{w}^k) +
+    (\nabla g_i(\bm{w}^{k}))^{\T}(\bm{w} - \bm{w}^{k})\right)^2 +
+    \tau ||\bm{w} - \bm{w}^{k}||^{2}_{2} + \lambda F(\bm{w})\\
+\textsf{subject to} & \bm{w}^{\T}\bm{1} = 1, \bm{w} \in \mathcal{W},
 \end{array}\end{align}
-where the first order Taylor expasion of $g_i(\mathbf{w})$ has been used.
+where the first order Taylor expasion of $g_i(\bm{w})$ has been used.
 
 After some mathematical manipulations described in detail in [@FengPal2015riskparity], the optimization
 problem above can be rewritten as
 \begin{align}\begin{array}{ll}
-    \underset{\mathbf{w}}{\textsf{minimize}} & \dfrac{1}{2}\mathbf{w}^{T}\mathbf{Q}^{k}\mathbf{w} +
-    \mathbf{w}^{T}\mathbf{q}^{k} + \lambda F(\mathbf{w})\\
-\textsf{subject to} & \mathbf{w}^{T}\mathbf{1} = 1, \mathbf{w} \in \mathcal{W},
+    \underset{\bm{w}}{\textsf{minimize}} & \dfrac{1}{2}\bm{w}^{\T}\bm{Q}^{k}\bm{w} +
+    \bm{w}^{\T}\bm{q}^{k} + \lambda F(\bm{w})\\
+\textsf{subject to} & \bm{w}^{\T}\bm{1} = 1, \bm{w} \in \mathcal{W},
 \end{array}\end{align}
 where
 \begin{align}
-    \mathbf{Q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{A}^{k} + \tau \mathbf{I},\\
-    \mathbf{q}^{k} & \triangleq 2(\mathbf{A}^{k})^{T}\mathbf{g}(\mathbf{w}^{k}) - \mathbf{Q}^{k}\mathbf{w}^{k},
+    \bm{Q}^{k} & \triangleq 2(\bm{A}^{k})^{\T}\bm{A}^{k} + \tau \bm{I},\\
+    \bm{q}^{k} & \triangleq 2(\bm{A}^{k})^{\T}\bm{g}(\bm{w}^{k}) - \bm{Q}^{k}\bm{w}^{k},
 \end{align}
 and
 \begin{align}
-    \mathbf{A}^{k} & \triangleq \left[\nabla_{\mathbf{w}} g_{1}\left(\mathbf{w}^{k}\right), ...,
-                              \nabla_{\mathbf{w}} g_{n}\left(\mathbf{w}^{k}\right)\right]^{T} \\
-    \mathbf{g}\left(\mathbf{w}^{k}\right) & \triangleq \left[g_{1}\left(\mathbf{w}^{k}\right), ...,
-                                                   g_{n}\left(\mathbf{w}^{k}\right)\right]^{T}.
+    \bm{A}^{k} & \triangleq \left[\nabla_{\bm{w}} g_{1}\left(\bm{w}^{k}\right), ...,
+                              \nabla_{\bm{w}} g_{n}\left(\bm{w}^{k}\right)\right]^{\T} \\
+    \bm{g}\left(\bm{w}^{k}\right) & \triangleq \left[g_{1}\left(\bm{w}^{k}\right), ...,
+                                                   g_{n}\left(\bm{w}^{k}\right)\right]^{\T}.
 \end{align}
 
 The above problem is a quadratic program (QP) which can be efficiently solved by
@@ -761,35 +761,27 @@ library(microbenchmark)
 library(riskParityPortfolio)
 library(ggplot2)
 
-sizes <- c(10, 50, 100, 200, 300, 400, 500, 600, 700)
-size_seq <- c(1:length(sizes))
-times <- matrix(0, 3, length(sizes))
-for (i in size_seq) {
-  V <- matrix(rnorm(1000 * sizes[i]), nrow = sizes[i])
+size_seq <- c(10, 50, 100, 200, 300, 400, 500, 600, 700)
+df <- data.frame()
+for (i in seq_along(size_seq)) {
+  V <- matrix(rnorm(1000 * size_seq[i]), nrow = size_seq[i])
   Sigma <- V %*% t(V)
   bench <- microbenchmark(
-            newton = riskParityPortfolio(Sigma, method_init="newton"),
-            cyclical_spinu = riskParityPortfolio(Sigma, method_init="cyclical-spinu"),
-            cyclical_roncalli = riskParityPortfolio(Sigma, method_init="cyclical-roncalli"),
-            times = 10L, unit = "ms", control = list(order = "inorder", warmup = 4))
-  times[1, i] <- median(bench$time[c(TRUE, FALSE, FALSE)] / 10 ^ 6)
-  times[2, i] <- median(bench$time[c(FALSE, TRUE, FALSE)] / 10 ^ 6)
-  times[3, i] <- median(bench$time[c(FALSE, FALSE, TRUE)] / 10 ^ 6)
+            "Newton"            = riskParityPortfolio(Sigma, method_init = "newton"),
+            "Cyclical Spinu"    = riskParityPortfolio(Sigma, method_init = "cyclical-spinu"),
+            "Cyclical Roncalli" = riskParityPortfolio(Sigma, method_init = "cyclical-roncalli"),
+            times = 10L, unit = "milliseconds", control = list(order = "inorder", warmup = 4))
+  df <- rbind(df, data.frame("size" = size_seq[i], aggregate(. ~ expr, data = bench, FUN = median)))
 }
 
-df <- data.frame(sizes, newton = times[1, ], cyclical_spinu = times[2, ], cyclical_roncalli = times[3, ])
-molten_df <- reshape2::melt(df, id.vars = "sizes")
-ggplot(molten_df, aes(x = sizes, y = value, col = variable)) +
+ggplot(df, aes(x = size, y = time/1e6, col = expr)) +
   geom_line() + geom_point() +
+  theme(legend.title = element_blank()) +
   scale_color_manual(values = c("#2d3436", "#6c5ce7", "#74b9ff")) +
-  theme(legend.title = ggplot2::element_blank()) +
-  labs(title = "Speed comparison of methods for the convex formulation",
-       x = "Portfolio size N", y = "CPU time [ms]")
+  labs(title = "Convergence time for the convex formulation", x = "Portfolio size N", y = "CPU time [ms]")
 ```
 
 
 # References {-}
-\setlength{\parindent}{-0.2in}
-\setlength{\leftskip}{0.2in}
-\setlength{\parskip}{8pt}
-\noindent
+
+
