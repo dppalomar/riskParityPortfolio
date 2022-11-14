@@ -305,10 +305,10 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #' terms (through the argument \code{formulation}), namely:
 #' \itemize{
 #' \item{\code{formulation = "rc-double-index":} }{\code{sum_{i,j} (r_i - r_j)^2}}
-#' \item{\code{formulation = "rc-vs-theta":} }{\code{sum_{i} (r_i - theta)^2}}
-#' \item{\code{formulation = "rc-over-var-vs-b":} }{\code{sum_{i} (r_i/r - b_i)^2}}
-#' \item{\code{formulation = "rc-over-b double-index":} }{\code{sum_{i,j} (r_i/b_i - r_j/b_j)^2}}
-#' \item{\code{formulation = "rc-vs-b-times-var":} }{\code{sum_{i} (r_i - b_i*r)^2}}
+#' \item{\code{formulation = "rc vs theta":} }{\code{sum_{i} (r_i - theta)^2}}
+#' \item{\code{formulation = "rc-over-var vs b":} }{\code{sum_{i} (r_i/r - b_i)^2}}
+#' \item{\code{formulation = "rc-over-b-double-index":} }{\code{sum_{i,j} (r_i/b_i - r_j/b_j)^2}}
+#' \item{\code{formulation = "rc vs b-times-var":} }{\code{sum_{i} (r_i - b_i*r)^2}}
 #' \item{\code{formulation = "rc-over-sd vs b-times-sd":} }{\code{sum_{i} (r_i/sqrt(r) - b_i*sqrt(r))^2}}
 #' \item{\code{formulation = "rc-over-b vs theta":} }{\code{sum_{i} (r_i/b_i - theta)^2}}
 #' \item{\code{formulation = "rc-over-var":} }{\code{sum_{i} (r_i/r)^2}}}
@@ -344,12 +344,12 @@ project_onto_eq_and_ineq_constraint_set <- function(w0, Cmat, cvec, Dmat, dvec) 
 #'        "rc-over-b-double-index", "rc-over-var vs b",
 #'        "rc-over-var", "rc-over-sd vs b-times-sd",
 #'        "rc vs b-times-var", "rc vs theta", or
-#'        "rc-over-b vs theta". The default is "rc-over-b-double-index".
+#'        "rc-over-b vs theta". The default is "rc-over-var vs b".
 #'        If \code{formulation} is not provided and no additional terms or
 #'        constraints are set, such as expected return or shortselling, then the
 #'        vanilla risk parity portfolio will be returned. If formulation is
 #'        "diag" then the analytical solution of the risk parity optimization for
-#'        for a diagonal covariance matrix will be returned. See details below.
+#'        a diagonal covariance matrix will be returned. See details below.
 #' @param w0 Initial value for the portfolio weights. Default is a convex
 #'        combination of the risk parity portfolio, the (uncorrelated) minimum variance
 #'        portfolio, and the maximum return portfolio.
