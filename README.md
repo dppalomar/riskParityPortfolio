@@ -69,9 +69,13 @@ $ pip install riskparityportfolio
 Alternatively, the development version can be installed as
 ```
 $ git clone https://github.com/dppalomar/riskparity.py
-$ cd python
+$ cd riskparity.py
 $ pip install -e .
 ```
+
+### Rust
+
+A Rust version is avaiable at: [https://github.com/mirca/riskparity.rs](https://github.com/mirca/riskparity.rs).
 
 ## Basic usage
 

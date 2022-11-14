@@ -6,12 +6,12 @@ using namespace std;
 // cyclical coordinate descent algo by Choi & Chen 2022
 // ref: https://arxiv.org/pdf/2203.00148.pdf
 // [[Rcpp::export]]
-Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::VectorXd& cov,
-                                        const Eigen::VectorXd& b,
-                                        const double tol = 1E-4,
-                                        const unsigned int maxiter = 100) {
-  const unsigned int n = b.size();
-  Eigen::VectorXd a(n);
+Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::MatrixXd& cov,
+                                               const Eigen::VectorXd& b,
+                                               const double tol,
+                                               const unsigned int maxiter) {
+  double ai;
+  auto n = b.size();
   Eigen::VectorXd vol = cov.diagonal().array().sqrt();
   Eigen::VectorXd invvol = (1 / vol.array()).matrix();
   Eigen::MatrixXd corr = cov.array().colwise() * invvol.array();
@@ -20,10 +20,13 @@ Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::VectorXd& cov,
   adj.diagonal().array() = 0;
   Eigen::VectorXd wk = Eigen::VectorXd::Ones(n);
   wk = (wk.array() / std::sqrt(corr.sum())).matrix();
-  for (unsigned int k = 0; k < maxiter; ++k) {
-    // compute portfolio weights
-    a = 0.5 * adj * wk;
-    wk = ((a.array() * a.array() + b.array()).sqrt() - a.array()).matrix();
+  for (auto k = 0; k < maxiter; ++k) {
+    for (auto i = 0; i < n; ++i) {
+      // compute portfolio weights
+      ai = 0.5 * ((adj.col(i).array() * wk.array()).sum());
+      wk(i) = std::sqrt(ai * ai + b(i)) - ai;
+    }
+    wk = wk.array() / std::sqrt(wk.transpose() * corr * wk);
     if ((wk.array() * (corr * wk).array() - b.array()).abs().maxCoeff() < tol)
       break;
   }
@@ -42,7 +45,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd_spinu(const Eigen::MatrixXd& Sigma,
   const unsigned int n = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(n, 1);
   Eigen::VectorXd x_star(n), Sigma_xk(n), rc(n);
-  xk = (1 / Sigma.sum()) * xk;
+  xk = std::sqrt(b.sum() / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   for (unsigned int k = 0; k < maxiter; ++k) {
     for (unsigned int i = 0; i < n; ++i) {
@@ -73,7 +76,7 @@ Eigen::VectorXd risk_parity_portfolio_ccd_roncalli(const Eigen::MatrixXd& Sigma,
   const unsigned int n = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(n, 1);
   Eigen::VectorXd x_star(n), Sigma_xk(n), rc(n);
-  xk = (1 / Sigma.sum()) * xk;
+  xk = std::sqrt(b.sum() / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   sigma = std::sqrt(xk.transpose() * Sigma * xk);
   for (unsigned int k = 0; k < maxiter; ++k) {
@@ -110,7 +113,7 @@ Eigen::VectorXd active_risk_parity_portfolio_ccd(const Eigen::MatrixXd& Sigma,
   const unsigned int n = b.size();
   Eigen::VectorXd xk = Eigen::VectorXd::Constant(n, 1);
   Eigen::VectorXd x_star(n), Sigma_xk(n), pi(n), rc(n);
-  xk = (1 / Sigma.sum()) * xk;
+  xk = std::sqrt(b.sum() / Sigma.sum()) * xk;
   Sigma_xk = Sigma * xk;
   pi.array() = mu.array() - r;
   sigma = std::sqrt(xk.transpose() * Sigma * xk);

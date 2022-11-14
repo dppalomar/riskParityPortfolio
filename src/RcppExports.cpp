@@ -12,12 +12,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // risk_parity_portfolio_ccd_choi
-Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::VectorXd& cov, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
+Eigen::VectorXd risk_parity_portfolio_ccd_choi(const Eigen::MatrixXd& cov, const Eigen::VectorXd& b, const double tol, const unsigned int maxiter);
 RcppExport SEXP _riskParityPortfolio_risk_parity_portfolio_ccd_choi(SEXP covSEXP, SEXP bSEXP, SEXP tolSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type cov(covSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type cov(covSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type b(bSEXP);
     Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type maxiter(maxiterSEXP);
